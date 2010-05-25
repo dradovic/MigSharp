@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using NMig.Core;
+
 namespace NMig
 {
     public class Database

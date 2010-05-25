@@ -1,4 +1,4 @@
-﻿namespace NMig
+﻿namespace NMig.Core
 {
     internal class ColumnCollection : AdHocCollection<Column>, IColumnCollection
     {

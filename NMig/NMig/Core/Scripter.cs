@@ -3,7 +3,7 @@
 using NMig.Commands;
 using NMig.Providers;
 
-namespace NMig
+namespace NMig.Core
 {
     internal class Scripter
     {

@@ -1,4 +1,4 @@
-﻿namespace NMig
+﻿namespace NMig.Core
 {
     internal abstract class Command
     {

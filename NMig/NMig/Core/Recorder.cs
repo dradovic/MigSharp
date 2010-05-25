@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NMig
+namespace NMig.Core
 {
     internal class Recorder : IRecorder
     {

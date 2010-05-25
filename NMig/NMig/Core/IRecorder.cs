@@ -1,4 +1,4 @@
-﻿namespace NMig
+﻿namespace NMig.Core
 {
     internal interface IRecorder
     {

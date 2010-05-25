@@ -1,4 +1,5 @@
-﻿using NMig.Providers;
+﻿using NMig.Core;
+using NMig.Providers;
 
 using NUnit.Framework;
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NMig
+namespace NMig.Core
 {
     internal abstract class AdHocCollection<T>
     {
@@ -12,8 +12,6 @@ namespace NMig
             _recorder = recorder;
         }
 
-        //internal event EventHandler<ItemAddedEventArgs<T>> ItemAdded;
-
         public T this[string name]
         {
             get
@@ -23,21 +21,11 @@ namespace NMig
                 {
                     value = CreateItem(name, _recorder);
                     _items.Add(name, value);
-                    //OnItemAdded(new ItemAddedEventArgs<T>(value));
                 }
                 return value;
             }
         }
 
         protected abstract T CreateItem(string name, IRecorder recorder);
-
-        //private void OnItemAdded(ItemAddedEventArgs<T> e)
-        //{
-        //    EventHandler<ItemAddedEventArgs<T>> tmp = ItemAdded;
-        //    if (tmp != null)
-        //    {
-        //        tmp(this, e);
-        //    }
-        //}
     }
 }

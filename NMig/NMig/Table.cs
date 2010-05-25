@@ -1,4 +1,5 @@
 ﻿using NMig.Commands;
+using NMig.Core;
 
 namespace NMig
 {

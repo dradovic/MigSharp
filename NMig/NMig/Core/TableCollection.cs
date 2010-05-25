@@ -1,4 +1,4 @@
-﻿namespace NMig
+﻿namespace NMig.Core
 {
     internal class TableCollection : AdHocCollection<Table>, ITableCollection
     {

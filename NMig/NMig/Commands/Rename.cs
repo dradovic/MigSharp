@@ -1,4 +1,6 @@
-﻿namespace NMig.Commands
+﻿using NMig.Core;
+
+namespace NMig.Commands
 {
     internal class Rename : Command
     {
