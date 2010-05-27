@@ -45,22 +45,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Commands\AddColumnCommand.cs" />
+    <Compile Include="Core\Commands\AlterColumnCommand.cs" />
     <Compile Include="Column.cs" />
+    <Compile Include="Core\Commands\AlterTableCommand.cs" />
+    <Compile Include="Core\Commands\CreateColumnCommand.cs" />
+    <Compile Include="Core\Commands\CreateTableCommand.cs" />
     <Compile Include="Core\ColumnCollection.cs" />
+    <Compile Include="Core\Commands\MigrateCommand.cs" />
+    <Compile Include="Core\ICommand.cs" />
     <Compile Include="DbObject.cs" />
     <Compile Include="IColumnCollection.cs" />
-    <Compile Include="Core\IRecorder.cs" />
     <Compile Include="ITableCollection.cs" />
     <Compile Include="Core\AdHocCollection.cs" />
-    <Compile Include="Core\Command.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="IMigration.cs" />
+    <Compile Include="NewTable.cs" />
+    <Compile Include="Providers\AddedColumn.cs" />
     <Compile Include="Providers\IProvider.cs" />
-    <Compile Include="Commands\Rename.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\SqlServerProvider.cs" />
-    <Compile Include="Core\Recorder.cs" />
     <Compile Include="Core\Scripter.cs" />
+    <Compile Include="Providers\NewColumn.cs" />
+    <Compile Include="Core\Commands\RenameCommand.cs" />
     <Compile Include="Table.cs" />
     <Compile Include="Core\TableCollection.cs" />
   </ItemGroup>

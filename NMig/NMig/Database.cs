@@ -1,24 +1,27 @@
-﻿using System.Collections.Generic;
-
-using NMig.Core;
+﻿using NMig.Core;
+using NMig.Core.Commands;
 
 namespace NMig
 {
     public class Database
     {
-        private readonly Recorder _recorder = new Recorder();
+        private readonly MigrateCommand _root = new MigrateCommand();
         private readonly TableCollection _tables;
 
+        internal ICommand Root { get { return _root; } }
         public ITableCollection Tables { get { return _tables; } }
 
         public Database()
         {
-            _tables = new TableCollection(_recorder);
+            _tables = new TableCollection(_root);
         }
 
-        internal IEnumerable<Command> GetCommands()
+        public NewTable CreateTable(string tableName)
         {
-            return _recorder.GetCommands();
+            CreateTableCommand createTableCommand = new CreateTableCommand();
+            _root.Add(createTableCommand);
+            NewTable table = new NewTable(tableName, createTableCommand);
+            return table;
         }
     }
 }

@@ -4,13 +4,7 @@ namespace NMig.Core
 {
     internal abstract class AdHocCollection<T>
     {
-        private readonly IRecorder _recorder;
         private readonly Dictionary<string, T> _items = new Dictionary<string, T>();
-
-        internal AdHocCollection(IRecorder recorder)
-        {
-            _recorder = recorder;
-        }
 
         public T this[string name]
         {
@@ -19,13 +13,13 @@ namespace NMig.Core
                 T value;
                 if (!_items.TryGetValue(name, out value))
                 {
-                    value = CreateItem(name, _recorder);
+                    value = CreateItem(name);
                     _items.Add(name, value);
                 }
                 return value;
             }
         }
 
-        protected abstract T CreateItem(string name, IRecorder recorder);
+        protected abstract T CreateItem(string name);
     }
 }

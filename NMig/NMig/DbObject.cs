@@ -1,6 +1,6 @@
 ﻿namespace NMig
 {
-    public abstract class DbObject
+    public abstract class DbObject // TODO: eliminate this class
     {
         private readonly string _name;
 

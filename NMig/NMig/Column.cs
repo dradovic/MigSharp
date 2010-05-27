@@ -1,20 +1,19 @@
-﻿using NMig.Commands;
-using NMig.Core;
+﻿using NMig.Core.Commands;
 
 namespace NMig
 {
     public class Column : DbObject
     {
-        private readonly IRecorder _recorder;
+        private readonly AlterColumnCommand _alterColumnCommand;
 
-        internal Column(string name, IRecorder recorder) : base(name)
+        internal Column(string name, AlterColumnCommand alterColumnCommand) : base(name)
         {
-            _recorder = recorder;
+            _alterColumnCommand = alterColumnCommand;
         }
 
         public void Rename(string newName)
         {
-            _recorder.Record(new Rename(this, newName));
+            _alterColumnCommand.Add(new RenameCommand(newName));
         }
     }
 }

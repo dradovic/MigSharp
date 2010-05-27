@@ -1,14 +1,21 @@
-﻿namespace NMig.Core
+﻿using NMig.Core.Commands;
+
+namespace NMig.Core
 {
     internal class TableCollection : AdHocCollection<Table>, ITableCollection
     {
-        internal TableCollection(IRecorder recorder) : base(recorder)
+        private readonly MigrateCommand _migrateCommand;
+
+        internal TableCollection(MigrateCommand migrateCommand)
         {
+            _migrateCommand = migrateCommand;
         }
 
-        protected override Table CreateItem(string name, IRecorder recorder)
+        protected override Table CreateItem(string name)
         {
-            return new Table(name, recorder);
+            AlterTableCommand alterTableCommand = new AlterTableCommand(name);
+            _migrateCommand.Add(alterTableCommand);
+            return new Table(name, alterTableCommand);
         }
     }
 }
