@@ -18,41 +18,28 @@ namespace MigSharp.Core
         /// </summary>
         public IEnumerable<string> GetCommandTexts(Database database)
         {
-            Visitor visitor = new Visitor(_provider);
-            return visitor.Visit(database.Root);
+            return Visit(database.Root, null);
         }
 
-        private class Visitor // TODO: still need a class for this?
+        /// <summary>
+        /// Recursively visits all command nodes and scripts them out against the _provider.
+        /// </summary>
+        private IEnumerable<string> Visit(ICommand command, ICommand parentCommand)
         {
-            private readonly IProvider _provider;
-
-            public Visitor(IProvider provider)
+            IScriptableCommand scriptableCommand = command as IScriptableCommand;
+            if (scriptableCommand != null)
             {
-                _provider = provider;
-            }
-
-            public IEnumerable<string> Visit(ICommand root)
-            {
-                return Visit(root, null);
-            }
-
-            private IEnumerable<string> Visit(ICommand command, ICommand parentCommand)
-            {
-                IScriptableCommand scriptableCommand = command as IScriptableCommand;
-                if (scriptableCommand != null)
+                foreach (string commandText in scriptableCommand.Script(_provider, parentCommand))
                 {
-                    foreach (string commandText in scriptableCommand.Script(_provider, parentCommand))
-                    {
-                        yield return commandText;
-                    }
+                    yield return commandText;
                 }
+            }
 
-                foreach (ICommand child in command.Children)
+            foreach (ICommand child in command.Children)
+            {
+                foreach (string commandText in Visit(child, command))
                 {
-                    foreach (string commandText in Visit(child, command))
-                    {
-                        yield return commandText;
-                    }
+                    yield return commandText;
                 }
             }
         }
