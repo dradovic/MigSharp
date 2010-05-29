@@ -1,9 +1,8 @@
-﻿using MigSharp.Core;
-using MigSharp.Core.Commands;
+﻿using MigSharp.Core.Commands;
 
-namespace MigSharp
+namespace MigSharp.Core
 {
-    public class Database
+    internal class Database : IDatabase
     {
         private readonly MigrateCommand _root = new MigrateCommand();
         private readonly TableCollection _tables;
@@ -16,11 +15,11 @@ namespace MigSharp
             _tables = new TableCollection(_root);
         }
 
-        public NewTable CreateTable(string tableName)
+        public INewTable CreateTable(string tableName)
         {
-            CreateTableCommand createTableCommand = new CreateTableCommand();
+            var createTableCommand = new CreateTableCommand();
             _root.Add(createTableCommand);
-            NewTable table = new NewTable(tableName, createTableCommand);
+            var table = new NewTable(tableName, createTableCommand);
             return table;
         }
     }

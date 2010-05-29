@@ -2,6 +2,6 @@
 {
     public interface IMigration
     {
-        void Up(Database db);
+        void Up(IDatabase db);
     }
 }

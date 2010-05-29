@@ -2,9 +2,9 @@
 
 using MigSharp.Core.Commands;
 
-namespace MigSharp
+namespace MigSharp.Core
 {
-    public class NewTable
+    internal class NewTable : INewTable
     {
         private readonly string _name;
         private readonly CreateTableCommand _createTableCommand;
@@ -15,13 +15,13 @@ namespace MigSharp
             _createTableCommand = createTableCommand;
         }
 
-        public NewTable WithPrimaryKeyColumn(string columnName, DbType type)
+        public INewTable WithPrimaryKeyColumn(string columnName, DbType type)
         {
             _createTableCommand.Add(new CreateColumnCommand(columnName, type, true));
             return this;
         }
 
-        public NewTable WithNullableColumn(string columnName, DbType type)
+        public INewTable WithNullableColumn(string columnName, DbType type)
         {
             _createTableCommand.Add(new CreateColumnCommand(columnName, type, false));
             return this;
