@@ -55,8 +55,8 @@ namespace NMig.NUnit
   [ValidFlag] SMALLINT NOT NULL CONSTRAINT DF_S_Aggregator_ValidFlag DEFAULT 0,
   [Paths] INT NULL,
   [PathGridpoints] INT NULL,
-  [PathTimeSeries] NVARCHAR(MAX) NULL", @"ALTER TABLE dbo.S_Aggregator
- DROP CONSTRAINT DF_S_Aggregator_ValidFlag" }, commandTexts);
+  [PathTimeSeries] NVARCHAR(MAX) NULL", /*@"ALTER TABLE dbo.S_Aggregator
+ DROP CONSTRAINT DF_S_Aggregator_ValidFlag" TODO: comment in */ }, commandTexts);
         }
     }
 }

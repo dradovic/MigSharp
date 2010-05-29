@@ -67,15 +67,6 @@ namespace NMig.Core
 
             private string PostProcess(ICommand changeNode, Stack<ICommand> parentNodes)
             {
-                AddColumnCommand addColumnCommand = changeNode as AddColumnCommand;
-                if (addColumnCommand != null)
-                {
-                    Debug.Assert(parentNodes.Count > 0 && parentNodes.Peek() is AlterTableCommand);
-                    AlterTableCommand parent = (AlterTableCommand)parentNodes.Peek();
-                    parent.AddColumnCommands.Add(addColumnCommand);
-                    return null;
-                }
-
                 AlterTableCommand alterTableCommand = changeNode as AlterTableCommand;
                 if (alterTableCommand != null && alterTableCommand.AddColumnCommands.Count > 0)
                 {

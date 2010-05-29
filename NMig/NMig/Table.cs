@@ -13,12 +13,12 @@ namespace NMig
         DropDefaultAfterCreation = 1,
     }
 
-    public class Table : DbObject
+    public class Table
     {
         private readonly AlterTableCommand _alterTableCommand;
         private readonly ColumnCollection _columns;
 
-        internal Table(string name, AlterTableCommand alterTableCommand) : base(name)
+        internal Table(AlterTableCommand alterTableCommand)
         {
             _alterTableCommand = alterTableCommand;
             _columns = new ColumnCollection(alterTableCommand);

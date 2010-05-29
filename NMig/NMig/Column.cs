@@ -2,11 +2,11 @@
 
 namespace NMig
 {
-    public class Column : DbObject
+    public class Column
     {
         private readonly AlterColumnCommand _alterColumnCommand;
 
-        internal Column(string name, AlterColumnCommand alterColumnCommand) : base(name)
+        internal Column(AlterColumnCommand alterColumnCommand)
         {
             _alterColumnCommand = alterColumnCommand;
         }

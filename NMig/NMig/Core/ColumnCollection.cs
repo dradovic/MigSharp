@@ -15,7 +15,7 @@ namespace NMig.Core
         {
             AlterColumnCommand alterColumnCommand = new AlterColumnCommand(name);
             _alterTableCommand.Add(alterColumnCommand);
-            return new Column(name, alterColumnCommand);
+            return new Column(alterColumnCommand);
         }
     }
 }

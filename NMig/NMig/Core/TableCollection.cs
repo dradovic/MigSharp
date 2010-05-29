@@ -15,7 +15,7 @@ namespace NMig.Core
         {
             AlterTableCommand alterTableCommand = new AlterTableCommand(name);
             _migrateCommand.Add(alterTableCommand);
-            return new Table(name, alterTableCommand);
+            return new Table(alterTableCommand);
         }
     }
 }
