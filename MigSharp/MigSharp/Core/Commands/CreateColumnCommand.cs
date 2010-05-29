@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 
 namespace MigSharp.Core.Commands
 {
-    internal class CreateColumnCommand : ICommand
+    internal class CreateColumnCommand : Command
     {
         private readonly string _columnName;
         private readonly DbType _type;
@@ -19,7 +18,5 @@ namespace MigSharp.Core.Commands
             _type = type;
             _isPrimaryKey = isPrimaryKey;
         }
-
-        public IEnumerable<ICommand> Children { get { yield break; } }
     }
 }

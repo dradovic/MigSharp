@@ -8,11 +8,11 @@ using System.Linq;
 
 namespace MigSharp.Core
 {
-    internal class Scripter
+    internal class CommandScripter
     {
         private readonly IProvider _provider;
 
-        public Scripter(IProvider provider)
+        public CommandScripter(IProvider provider)
         {
             _provider = provider;
         }
@@ -55,10 +55,14 @@ namespace MigSharp.Core
             private IEnumerable<string> Process(ICommand changeNode, Stack<ICommand> parentNodes)
             {
                 AlterTableCommand alterTableCommand = changeNode as AlterTableCommand;
-                if (alterTableCommand != null && alterTableCommand.AddColumnCommands.Count > 0)
+                if (alterTableCommand != null)
                 {
-                    return _provider.AddColumns(alterTableCommand.TableName,
-                        alterTableCommand.AddColumnCommands.ConvertAll(c => new AddedColumn(c.Name, c.Type, c.IsNullable, c.DefaultValue, c.Options)));
+                    IEnumerable<AddColumnCommand> addColumnCommands = alterTableCommand.Children.OfType<AddColumnCommand>();
+                    if (addColumnCommands.Count() > 0)
+                    {
+                        return _provider.AddColumns(alterTableCommand.TableName,
+                            addColumnCommands.Select(c => new AddedColumn(c.Name, c.Type, c.IsNullable, c.DefaultValue, c.Options)));
+                    }
                 }
 
                 RenameCommand renameCommand = changeNode as RenameCommand;

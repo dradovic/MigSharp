@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace MigSharp.Core.Commands
+﻿namespace MigSharp.Core.Commands
 {
-    internal class RenameCommand : ICommand
+    internal class RenameCommand : Command
     {
         private readonly string _newName;
 
@@ -12,7 +10,5 @@ namespace MigSharp.Core.Commands
         {
             _newName = newName;
         }
-
-        public IEnumerable<ICommand> Children { get { yield break; } }
     }
 }

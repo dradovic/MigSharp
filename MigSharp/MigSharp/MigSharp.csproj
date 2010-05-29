@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="IAlteredTable.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
     <Compile Include="Core\Commands\AlterColumnCommand.cs" />
@@ -69,7 +70,7 @@
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\SqlServerProvider.cs" />
-    <Compile Include="Core\Scripter.cs" />
+    <Compile Include="Core\CommandScripter.cs" />
     <Compile Include="Providers\NewColumn.cs" />
     <Compile Include="Core\Commands\RenameCommand.cs" />
     <Compile Include="Core\Table.cs" />

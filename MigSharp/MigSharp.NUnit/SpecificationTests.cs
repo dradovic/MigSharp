@@ -17,7 +17,7 @@ namespace MigSharp.NUnit
             Database db = new Database();
             db.Tables["Customers"].Rename("Customer");
             IProvider provider = new SqlServerProvider();
-            Scripter scripter = new Scripter(provider);
+            CommandScripter scripter = new CommandScripter(provider);
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
             CollectionAssert.AreEqual(new[] { "sp_rename N'Customers', N'Customer'" }, commandTexts);
         }
@@ -29,7 +29,7 @@ namespace MigSharp.NUnit
             db.Tables["S_AggregatorValues"]
                 .Columns["Val"].Rename("ValAbsoluteIncome");
             IProvider provider = new SqlServerProvider();
-            Scripter scripter = new Scripter(provider);
+            CommandScripter scripter = new CommandScripter(provider);
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
             CollectionAssert.AreEqual(new[] { "sp_rename N'Val', N'ValAbsoluteIncome', 'COLUMN'" }, commandTexts);
         }
@@ -48,7 +48,7 @@ namespace MigSharp.NUnit
                 .WithPrimaryKeyColumn("ObjectKey", DbType.Int32)
                 .WithNullableColumn("RateCurveKey", DbType.Int32);
             IProvider provider = new SqlServerProvider();
-            Scripter scripter = new Scripter(provider);
+            CommandScripter scripter = new CommandScripter(provider);
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
             CollectionAssert.AreEqual(new[]
             {

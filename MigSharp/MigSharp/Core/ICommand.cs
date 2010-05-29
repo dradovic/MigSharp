@@ -4,7 +4,7 @@ namespace MigSharp.Core
 {
     internal interface ICommand
     {
-        //void Add(ICommand child);
+        void Add(ICommand child);
         IEnumerable<ICommand> Children { get; }
     }
 }

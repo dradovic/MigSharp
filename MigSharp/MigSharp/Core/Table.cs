@@ -14,31 +14,31 @@ namespace MigSharp.Core
 
     internal class Table : IExistingTable, IAlteredTable
     {
-        private readonly AlterTableCommand _alterTableCommand;
+        private readonly ICommand _command;
         private readonly ColumnCollection _columns;
 
         public IExistingColumnCollection Columns { get { return _columns; } }
 
-        internal Table(AlterTableCommand alterTableCommand)
+        internal Table(ICommand command)
         {
-            _alterTableCommand = alterTableCommand;
-            _columns = new ColumnCollection(alterTableCommand);
+            _command = command;
+            _columns = new ColumnCollection(_command);
         }
 
         public void Rename(string newName)
         {
-            _alterTableCommand.Add(new RenameCommand(newName));
+            _command.Add(new RenameCommand(newName));
         }
 
         public IAlteredTable AddColumn<T>(string name, DbType type, T defaultValue, AddColumnOptions options) where T : struct
         {
-            _alterTableCommand.Add(new AddColumnCommand(name, type, false, defaultValue, options));
+            _command.Add(new AddColumnCommand(name, type, false, defaultValue, options));
             return this;
         }
 
         public IAlteredTable AddNullableColumn(string name, DbType type)
         {
-            _alterTableCommand.Add(new AddColumnCommand(name, type, true, null, AddColumnOptions.None));
+            _command.Add(new AddColumnCommand(name, type, true, null, AddColumnOptions.None));
             return this;
         }
     }

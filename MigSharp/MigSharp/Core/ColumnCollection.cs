@@ -4,17 +4,17 @@ namespace MigSharp.Core
 {
     internal class ColumnCollection : AdHocCollection<IExistingColumn>, IExistingColumnCollection
     {
-        private readonly AlterTableCommand _alterTableCommand;
+        private readonly ICommand _command;
 
-        public ColumnCollection(AlterTableCommand alterTableCommand)
+        public ColumnCollection(ICommand command)
         {
-            _alterTableCommand = alterTableCommand;
+            _command = command;
         }
 
         protected override IExistingColumn CreateItem(string name)
         {
             AlterColumnCommand alterColumnCommand = new AlterColumnCommand(name);
-            _alterTableCommand.Add(alterColumnCommand);
+            _command.Add(alterColumnCommand);
             return new Column(alterColumnCommand);
         }
     }
