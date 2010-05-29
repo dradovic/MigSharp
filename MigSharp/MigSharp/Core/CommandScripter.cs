@@ -1,10 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 
-using MigSharp.Core.Commands;
 using MigSharp.Providers;
-
-using System.Linq;
 
 namespace MigSharp.Core
 {
@@ -26,7 +22,7 @@ namespace MigSharp.Core
             return visitor.Visit(database.Root);
         }
 
-        private class Visitor
+        private class Visitor // TODO: still need a class for this?
         {
             private readonly IProvider _provider;
 
@@ -37,56 +33,27 @@ namespace MigSharp.Core
 
             public IEnumerable<string> Visit(ICommand root)
             {
-                return Visit(new Stack<ICommand>(), root);
+                return Visit(root, null);
             }
 
-            private IEnumerable<string> Visit(Stack<ICommand> parentNodes, ICommand command)
+            private IEnumerable<string> Visit(ICommand command, ICommand parentCommand)
             {
-                IEnumerable<string> commandTexts = Process(command, parentNodes);
-                parentNodes.Push(command);
+                IScriptableCommand scriptableCommand = command as IScriptableCommand;
+                if (scriptableCommand != null)
+                {
+                    foreach (string commandText in scriptableCommand.Script(_provider, parentCommand))
+                    {
+                        yield return commandText;
+                    }
+                }
+
                 foreach (ICommand child in command.Children)
                 {
-                    commandTexts = commandTexts.Concat(Visit(parentNodes, child));
-                }
-                parentNodes.Pop();
-                return commandTexts;
-            }
-
-            private IEnumerable<string> Process(ICommand changeNode, Stack<ICommand> parentNodes)
-            {
-                AlterTableCommand alterTableCommand = changeNode as AlterTableCommand;
-                if (alterTableCommand != null)
-                {
-                    IEnumerable<AddColumnCommand> addColumnCommands = alterTableCommand.Children.OfType<AddColumnCommand>();
-                    if (addColumnCommands.Count() > 0)
+                    foreach (string commandText in Visit(child, command))
                     {
-                        return _provider.AddColumns(alterTableCommand.TableName,
-                            addColumnCommands.Select(c => new AddedColumn(c.Name, c.Type, c.IsNullable, c.DefaultValue, c.Options)));
+                        yield return commandText;
                     }
                 }
-
-                RenameCommand renameCommand = changeNode as RenameCommand;
-                if (renameCommand != null)
-                {
-                    Debug.Assert(parentNodes.Count > 0);
-                    ICommand parent = parentNodes.Peek();
-                    AlterTableCommand parentAlterTableCommand;
-                    AlterColumnCommand parentAlterColumnCommand;
-                    if ((parentAlterTableCommand = parent as AlterTableCommand) != null)
-                    {
-                        return _provider.RenameTable(parentAlterTableCommand.TableName, renameCommand.NewName);
-                    }
-                    else if ((parentAlterColumnCommand = parent as AlterColumnCommand) != null)
-                    {
-                        return _provider.RenameColumn(parentAlterColumnCommand.ColumnName, renameCommand.NewName);
-                    }
-                    else
-                    {
-                        Debug.Assert(false, "The parent command of a RenameNode should either be a alterColumnCommand or a alterTableCommand.");
-                    }
-                }
-
-                return new string[] { };
             }
         }
     }

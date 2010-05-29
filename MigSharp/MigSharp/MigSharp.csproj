@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Commands\Command.cs" />
+    <Compile Include="Core\IScriptableCommand.cs" />
     <Compile Include="IAlteredTable.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
     <Compile Include="Core\Commands\AlterColumnCommand.cs" />
