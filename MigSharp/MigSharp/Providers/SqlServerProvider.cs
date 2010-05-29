@@ -4,13 +4,62 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 
-using MigSharp.Core;
-
 namespace MigSharp.Providers
 {
     internal class SqlServerProvider : IProvider
     {
         private const string Identation = "  ";
+
+        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns)
+        {
+            const string filegroup = "PRIMARY"; // TODO: make file group configurable
+
+            List<string> primaryKeyColumns = new List<string>();
+            string commandText = string.Format(@"{0} ({1}", CreateTable(tableName), Environment.NewLine);
+            bool columnDelimiterIsNeeded = false;
+            foreach (CreatedColumn column in columns)
+            {
+                if (columnDelimiterIsNeeded) commandText += string.Format(",{0}", Environment.NewLine);
+
+                if (column.IsPrimaryKey)
+                {
+                    primaryKeyColumns.Add(column.Name);
+                }
+
+                commandText += string.Format("{0}{1} {2} {3}NULL", 
+                    Identation, 
+                    Escape(column.Name),
+                    GetTypeSpecifier(column.Type),
+                    column.IsNullable ? string.Empty : "NOT ");
+
+                columnDelimiterIsNeeded = true;
+            }
+            commandText += Environment.NewLine;
+
+            if (primaryKeyColumns.Count > 0)
+            {
+                // TODO: make clustering configurable
+                commandText += string.Format("{0}CONSTRAINT PK_{1} PRIMARY KEY NONCLUSTERED ({2}", 
+                    Identation, 
+                    EscapeAsNamePart(tableName), 
+                    Environment.NewLine);
+                columnDelimiterIsNeeded = false;
+                foreach (string column in primaryKeyColumns)
+                {
+                    if (columnDelimiterIsNeeded) commandText += string.Format(",{0}", Environment.NewLine);
+
+                    // TODO: make sort order configurable
+                    commandText += string.Format("{0}{0}{1} ASC", Identation, Escape(column));
+
+                    columnDelimiterIsNeeded = true;
+                }
+                commandText += string.Format("{0}{1}) ON [{2}]", Environment.NewLine, Identation, filegroup);
+                commandText += Environment.NewLine;
+            }
+
+            commandText += string.Format(") ON [{0}]", filegroup);
+            yield return commandText;
+        }
 
         public IEnumerable<string> AddColumns(string tableName, IEnumerable<AddedColumn> columns)
         {
@@ -18,8 +67,8 @@ namespace MigSharp.Providers
 
             // assemble ALTER TABLE statement
             List<string> defaultConstraintsToDrop = new List<string>();
-            bool columnDelimiterIsNeeded = false;
             string commandText = string.Format(@"{0} ADD{1}", AlterTable(tableName), Environment.NewLine);
+            bool columnDelimiterIsNeeded = false;
             foreach (AddedColumn column in columns)
             {
                 if (columnDelimiterIsNeeded) commandText += string.Format(",{0}", Environment.NewLine);
@@ -38,7 +87,9 @@ namespace MigSharp.Providers
                     Identation,
                     Escape(column.Name), 
                     GetTypeSpecifier(column.Type), 
-                    column.IsNullable ? string.Empty : "NOT ", defaultConstraintClause);
+                    column.IsNullable ? string.Empty : "NOT ",
+                    defaultConstraintClause);
+
                 columnDelimiterIsNeeded = true;
             }
             IEnumerable<string> commandTexts = new[] { commandText };
@@ -65,6 +116,11 @@ namespace MigSharp.Providers
         public IEnumerable<string> DropDefaultConstraint(string tableName, string constraintName)
         {
             yield return string.Format(string.Format("{0} DROP CONSTRAINT {1}", AlterTable(tableName), constraintName));
+        }
+
+        private static string CreateTable(string tableName)
+        {
+            return string.Format("CREATE TABLE dbo.{0}", Escape(tableName));
         }
 
         private static string AlterTable(string tableName)

@@ -1,17 +1,9 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 
 using MigSharp.Core.Commands;
 
 namespace MigSharp.Core
 {
-    [Flags]
-    public enum AddColumnOptions
-    {
-        None = 0,
-        DropDefaultAfterCreation = 1,
-    }
-
     internal class Table : IExistingTable, IAlteredTable
     {
         private readonly ICommand _command;

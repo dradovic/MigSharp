@@ -1,25 +1,25 @@
 ﻿using System.Data;
 
-namespace MigSharp.Core.Commands
+namespace MigSharp.Providers
 {
-    internal class CreateColumnCommand : Command
+    public class CreatedColumn
     {
-        private readonly string _columnName;
+        private readonly string _name;
         private readonly DbType _type;
         private readonly bool _isNullable;
         private readonly bool _isPrimaryKey;
 
-        public string ColumnName { get { return _columnName; } }
+        public string Name { get { return _name; } }
         public DbType Type { get { return _type; } }
         public bool IsNullable { get { return _isNullable; } }
         public bool IsPrimaryKey { get { return _isPrimaryKey; } }
 
-        public CreateColumnCommand(string columnName, DbType type, bool isNullable, bool isPrimaryKey)
+        public CreatedColumn(string name, DbType type, bool isNullable, bool isPrimaryKey)
         {
-            _columnName = columnName;
-            _type = type;
+            _name = name;
             _isNullable = isNullable;
             _isPrimaryKey = isPrimaryKey;
+            _type = type;
         }
     }
 }

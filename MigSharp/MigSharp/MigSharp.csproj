@@ -72,7 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\SqlServerProvider.cs" />
     <Compile Include="Core\CommandScripter.cs" />
-    <Compile Include="Providers\NewColumn.cs" />
+    <Compile Include="Providers\CreatedColumn.cs" />
     <Compile Include="Core\Commands\RenameCommand.cs" />
     <Compile Include="Core\Table.cs" />
     <Compile Include="Core\TableCollection.cs" />

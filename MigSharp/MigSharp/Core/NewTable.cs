@@ -4,26 +4,24 @@ using MigSharp.Core.Commands;
 
 namespace MigSharp.Core
 {
-    internal class NewTable : INewTable
+    internal class NewTable : INewTable // TODO: merge NewTable and Table
     {
-        private readonly string _name;
         private readonly CreateTableCommand _createTableCommand;
 
-        internal NewTable(string name, CreateTableCommand createTableCommand)
+        internal NewTable(CreateTableCommand createTableCommand)
         {
-            _name = name;
             _createTableCommand = createTableCommand;
         }
 
         public INewTable WithPrimaryKeyColumn(string columnName, DbType type)
         {
-            _createTableCommand.Add(new CreateColumnCommand(columnName, type, true));
+            _createTableCommand.Add(new CreateColumnCommand(columnName, type, false, true));
             return this;
         }
 
         public INewTable WithNullableColumn(string columnName, DbType type)
         {
-            _createTableCommand.Add(new CreateColumnCommand(columnName, type, false));
+            _createTableCommand.Add(new CreateColumnCommand(columnName, type, true, false));
             return this;
         }
     }

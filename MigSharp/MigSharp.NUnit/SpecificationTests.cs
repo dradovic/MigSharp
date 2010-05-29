@@ -46,7 +46,8 @@ namespace MigSharp.NUnit
             db.CreateTable("S_EvaluatedPaths")
                 .WithPrimaryKeyColumn("AnalysisKey", DbType.Int32)
                 .WithPrimaryKeyColumn("ObjectKey", DbType.Int32)
-                .WithNullableColumn("RateCurveKey", DbType.Int32);
+                .WithNullableColumn("RateCurveKey", DbType.Int32)
+                .WithNullableColumn("Paths", DbType.String);
             IProvider provider = new SqlServerProvider();
             CommandScripter scripter = new CommandScripter(provider);
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
@@ -57,7 +58,17 @@ namespace MigSharp.NUnit
   [Paths] INT NULL,
   [PathGridpoints] INT NULL,
   [PathTimeSeries] NVARCHAR(MAX) NULL",
-                @"ALTER TABLE dbo.[S_Aggregator] DROP CONSTRAINT DF_S_Aggregator_ValidFlag"
+                @"ALTER TABLE dbo.[S_Aggregator] DROP CONSTRAINT DF_S_Aggregator_ValidFlag",
+                @"CREATE TABLE dbo.[S_EvaluatedPaths] (
+  [AnalysisKey] INT NOT NULL,
+  [ObjectKey] INT NOT NULL,
+  [RateCurveKey] INT NULL,
+  [Paths] NVARCHAR(MAX) NULL
+  CONSTRAINT PK_S_EvaluatedPaths PRIMARY KEY NONCLUSTERED (
+    [AnalysisKey] ASC,
+    [ObjectKey] ASC
+  ) ON [PRIMARY]
+) ON [PRIMARY]"
             },
                 commandTexts);
         }
