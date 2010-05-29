@@ -45,17 +45,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IAlteredTable.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
     <Compile Include="Core\Commands\AlterColumnCommand.cs" />
-    <Compile Include="Column.cs" />
+    <Compile Include="Core\Column.cs" />
     <Compile Include="Core\Commands\AlterTableCommand.cs" />
     <Compile Include="Core\Commands\CreateColumnCommand.cs" />
     <Compile Include="Core\Commands\CreateTableCommand.cs" />
     <Compile Include="Core\ColumnCollection.cs" />
     <Compile Include="Core\Commands\MigrateCommand.cs" />
     <Compile Include="Core\ICommand.cs" />
-    <Compile Include="IColumnCollection.cs" />
-    <Compile Include="ITableCollection.cs" />
+    <Compile Include="IExistingColumnCollection.cs" />
+    <Compile Include="IExistingColumn.cs" />
+    <Compile Include="IExistingTable.cs" />
+    <Compile Include="IExistingTableCollection.cs" />
     <Compile Include="Core\AdHocCollection.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="IMigration.cs" />
@@ -67,7 +70,7 @@
     <Compile Include="Core\Scripter.cs" />
     <Compile Include="Providers\NewColumn.cs" />
     <Compile Include="Core\Commands\RenameCommand.cs" />
-    <Compile Include="Table.cs" />
+    <Compile Include="Core\Table.cs" />
     <Compile Include="Core\TableCollection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

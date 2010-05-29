@@ -2,7 +2,7 @@
 
 namespace MigSharp.Core
 {
-    internal class TableCollection : AdHocCollection<Table>, ITableCollection
+    internal class TableCollection : AdHocCollection<IExistingTable>, IExistingTableCollection
     {
         private readonly MigrateCommand _migrateCommand;
 
@@ -11,7 +11,7 @@ namespace MigSharp.Core
             _migrateCommand = migrateCommand;
         }
 
-        protected override Table CreateItem(string name)
+        protected override IExistingTable CreateItem(string name)
         {
             AlterTableCommand alterTableCommand = new AlterTableCommand(name);
             _migrateCommand.Add(alterTableCommand);

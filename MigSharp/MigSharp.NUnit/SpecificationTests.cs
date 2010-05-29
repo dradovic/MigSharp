@@ -27,7 +27,6 @@ namespace MigSharp.NUnit
         {
             Database db = new Database();
             db.Tables["S_AggregatorValues"]
-                //.AddColumn("bla", DbType.Byte, 0, AddColumnOptions.None) // TODO: should not compile by return AlteredTable from .AddColumn
                 .Columns["Val"].Rename("ValAbsoluteIncome");
             IProvider provider = new SqlServerProvider();
             Scripter scripter = new Scripter(provider);

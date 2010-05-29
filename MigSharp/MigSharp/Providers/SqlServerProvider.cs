@@ -4,6 +4,8 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 
+using MigSharp.Core;
+
 namespace MigSharp.Providers
 {
     internal class SqlServerProvider : IProvider

@@ -1,8 +1,8 @@
 ﻿using MigSharp.Core.Commands;
 
-namespace MigSharp
+namespace MigSharp.Core
 {
-    public class Column
+    internal class Column : IExistingColumn
     {
         private readonly AlterColumnCommand _alterColumnCommand;
 

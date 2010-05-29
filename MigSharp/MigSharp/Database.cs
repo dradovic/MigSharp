@@ -9,7 +9,7 @@ namespace MigSharp
         private readonly TableCollection _tables;
 
         internal ICommand Root { get { return _root; } }
-        public ITableCollection Tables { get { return _tables; } }
+        public IExistingTableCollection Tables { get { return _tables; } }
 
         public Database()
         {

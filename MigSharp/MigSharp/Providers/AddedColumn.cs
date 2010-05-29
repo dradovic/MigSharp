@@ -1,5 +1,7 @@
 ﻿using System.Data;
 
+using MigSharp.Core;
+
 namespace MigSharp.Providers
 {
     public class AddedColumn
