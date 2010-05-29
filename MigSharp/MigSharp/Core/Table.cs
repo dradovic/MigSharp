@@ -4,7 +4,7 @@ using MigSharp.Core.Commands;
 
 namespace MigSharp.Core
 {
-    internal class Table : IExistingTable, IAlteredTable
+    internal class Table : IExistingTable, IAlteredTable, INewTable
     {
         private readonly ICommand _command;
         private readonly ColumnCollection _columns;
@@ -31,6 +31,18 @@ namespace MigSharp.Core
         public IAlteredTable AddNullableColumn(string name, DbType type)
         {
             _command.Add(new AddColumnCommand(name, type, true, null, AddColumnOptions.None));
+            return this;
+        }
+
+        public INewTable WithPrimaryKeyColumn(string columnName, DbType type)
+        {
+            _command.Add(new CreateColumnCommand(columnName, type, false, true));
+            return this;
+        }
+
+        public INewTable WithNullableColumn(string columnName, DbType type)
+        {
+            _command.Add(new CreateColumnCommand(columnName, type, true, false));
             return this;
         }
     }

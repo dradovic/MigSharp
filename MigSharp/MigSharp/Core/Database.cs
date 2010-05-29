@@ -19,7 +19,7 @@ namespace MigSharp.Core
         {
             var createTableCommand = new CreateTableCommand(tableName);
             _root.Add(createTableCommand);
-            var table = new NewTable(createTableCommand);
+            var table = new Table(createTableCommand);
             return table;
         }
     }
