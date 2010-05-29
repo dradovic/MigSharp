@@ -47,16 +47,20 @@ namespace MigSharp.NUnit
             db.CreateTable("S_EvaluatedPaths")
                 .WithPrimaryKeyColumn("AnalysisKey", DbType.Int32)
                 .WithPrimaryKeyColumn("ObjectKey", DbType.Int32)
-                .WithNullableColumn("RateCurveKey", DbType.Int32); 
+                .WithNullableColumn("RateCurveKey", DbType.Int32);
             IProvider provider = new SqlServerProvider();
             Scripter scripter = new Scripter(provider);
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
-            CollectionAssert.AreEqual(new[] { @"ALTER TABLE dbo.[S_Aggregator] ADD
+            CollectionAssert.AreEqual(new[]
+            {
+                @"ALTER TABLE dbo.[S_Aggregator] ADD
   [ValidFlag] SMALLINT NOT NULL CONSTRAINT DF_S_Aggregator_ValidFlag DEFAULT 0,
   [Paths] INT NULL,
   [PathGridpoints] INT NULL,
-  [PathTimeSeries] NVARCHAR(MAX) NULL", /*@"ALTER TABLE dbo.S_Aggregator
- DROP CONSTRAINT DF_S_Aggregator_ValidFlag" TODO: comment in */ }, commandTexts);
+  [PathTimeSeries] NVARCHAR(MAX) NULL",
+                @"ALTER TABLE dbo.[S_Aggregator] DROP CONSTRAINT DF_S_Aggregator_ValidFlag"
+            },
+                commandTexts);
         }
     }
 }

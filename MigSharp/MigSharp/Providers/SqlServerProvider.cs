@@ -8,35 +8,66 @@ namespace MigSharp.Providers
 {
     internal class SqlServerProvider : IProvider
     {
-        public string AddColumns(string tableName, IEnumerable<AddedColumn> columns)
+        private const string Identation = "  ";
+
+        public IEnumerable<string> AddColumns(string tableName, IEnumerable<AddedColumn> columns)
         {
             Debug.Assert(columns.Count() > 0);
 
+            // assemble ALTER TABLE statement
+            List<string> defaultConstraintsToDrop = new List<string>();
             bool columnDelimiterIsNeeded = false;
-            string sql = string.Format(@"ALTER TABLE dbo.{0} ADD{1}", Escape(tableName), Environment.NewLine);
+            string commandText = string.Format(@"{0} ADD{1}", AlterTable(tableName), Environment.NewLine);
             foreach (AddedColumn column in columns)
             {
-                if (columnDelimiterIsNeeded) sql += string.Format(",{0}", Environment.NewLine);
+                if (columnDelimiterIsNeeded) commandText += string.Format(",{0}", Environment.NewLine);
 
-                string defaultConstraint = string.Empty;
+                string defaultConstraintClause = string.Empty;
                 if (column.DefaultValue != null)
                 {
-                    defaultConstraint = string.Format(" CONSTRAINT DF_{0}_{1} DEFAULT {2}", EscapeAsNamePart(tableName), EscapeAsNamePart(column.Name), column.DefaultValue);
+                    string defaultConstraint = string.Format("DF_{0}_{1}", EscapeAsNamePart(tableName), EscapeAsNamePart(column.Name));
+                    defaultConstraintClause = string.Format(" CONSTRAINT {0} DEFAULT {1}", defaultConstraint, column.DefaultValue);
+                    if ((column.Options | AddColumnOptions.DropDefaultAfterCreation) != 0)
+                    {
+                        defaultConstraintsToDrop.Add(defaultConstraint);
+                    }
                 }
-                sql += string.Format("  {0} {1} {2}NULL{3}", Escape(column.Name), GetTypeSpecifier(column.Type), column.IsNullable ? string.Empty : "NOT ", defaultConstraint);
+                commandText += string.Format("{0}{1} {2} {3}NULL{4}",
+                    Identation,
+                    Escape(column.Name), 
+                    GetTypeSpecifier(column.Type), 
+                    column.IsNullable ? string.Empty : "NOT ", defaultConstraintClause);
                 columnDelimiterIsNeeded = true;
             }
-            return sql;
+            IEnumerable<string> commandTexts = new[] { commandText };
+
+            // add commands to drop default constraints
+            foreach (string defaultConstraint in defaultConstraintsToDrop)
+            {
+                commandTexts = commandTexts.Concat(DropDefaultConstraint(tableName, defaultConstraint));
+            }
+
+            return commandTexts;
         }
 
-        public string RenameTable(string oldName, string newName)
+        public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            return string.Format("sp_rename N'{0}', N'{1}'", oldName, newName);
+            yield return string.Format("sp_rename N'{0}', N'{1}'", oldName, newName);
         }
 
-        public string RenameColumn(string oldName, string newName)
+        public IEnumerable<string> RenameColumn(string oldName, string newName)
         {
-            return string.Format("sp_rename N'{0}', N'{1}', 'COLUMN'", oldName, newName);
+            yield return string.Format("sp_rename N'{0}', N'{1}', 'COLUMN'", oldName, newName);
+        }
+
+        public IEnumerable<string> DropDefaultConstraint(string tableName, string constraintName)
+        {
+            yield return string.Format(string.Format("{0} DROP CONSTRAINT {1}", AlterTable(tableName), constraintName));
+        }
+
+        private static string AlterTable(string tableName)
+        {
+            return string.Format("ALTER TABLE dbo.{0}", Escape(tableName));
         }
 
         private static string Escape(string name)

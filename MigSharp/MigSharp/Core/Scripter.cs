@@ -4,6 +4,8 @@ using System.Diagnostics;
 using MigSharp.Core.Commands;
 using MigSharp.Providers;
 
+using System.Linq;
+
 namespace MigSharp.Core
 {
     internal class Scripter
@@ -40,32 +42,17 @@ namespace MigSharp.Core
 
             private IEnumerable<string> Visit(Stack<ICommand> parentNodes, ICommand command)
             {
-                //PreProcess(command, parentNodes);
+                IEnumerable<string> commandTexts = Process(command, parentNodes);
                 parentNodes.Push(command);
                 foreach (ICommand child in command.Children)
                 {
-                    foreach (string ct in Visit(parentNodes, child))
-                    {
-                        yield return ct;
-                    }
+                    commandTexts = commandTexts.Concat(Visit(parentNodes, child));
                 }
                 parentNodes.Pop();
-                string commandText = PostProcess(command, parentNodes);
-                if (!string.IsNullOrEmpty(commandText))
-                {
-                    yield return commandText;
-                }
-                else
-                {
-                    yield break;
-                }
+                return commandTexts;
             }
 
-            //private void PreProcess(ChangeNode changeNode, Stack<ChangeNode> parentNodes)
-            //{
-            //}
-
-            private string PostProcess(ICommand changeNode, Stack<ICommand> parentNodes)
+            private IEnumerable<string> Process(ICommand changeNode, Stack<ICommand> parentNodes)
             {
                 AlterTableCommand alterTableCommand = changeNode as AlterTableCommand;
                 if (alterTableCommand != null && alterTableCommand.AddColumnCommands.Count > 0)
@@ -95,7 +82,7 @@ namespace MigSharp.Core
                     }
                 }
 
-                return null;
+                return new string[] { };
             }
         }
     }
