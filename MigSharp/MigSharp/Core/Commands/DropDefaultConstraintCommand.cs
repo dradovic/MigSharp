@@ -6,15 +6,15 @@ namespace MigSharp.Core.Commands
 {
     internal class DropDefaultConstraintCommand : Command, IScriptableCommand
     {
+        private new AlterColumnCommand Parent { get { return (AlterColumnCommand)base.Parent; } }
+
         public DropDefaultConstraintCommand(AlterColumnCommand parent) : base(parent)
         {
         }
 
         public IEnumerable<string> Script(IProvider provider)
         {
-            AlterColumnCommand alterColumnCommand = (AlterColumnCommand)Parent; // TODO: provider type-safe Parents
-            AlterTableCommand alterTableCommand = (AlterTableCommand)alterColumnCommand.Parent; // TODO: provider type-safe Parents
-            return provider.DropDefaultConstraint(alterTableCommand.TableName, alterColumnCommand.ColumnName);
+            return provider.DropDefaultConstraint(Parent.Parent.TableName, Parent.ColumnName);
         }
     }
 }
