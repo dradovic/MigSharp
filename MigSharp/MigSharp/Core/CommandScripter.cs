@@ -18,18 +18,18 @@ namespace MigSharp.Core
         /// </summary>
         public IEnumerable<string> GetCommandTexts(Database database)
         {
-            return Visit(database.Root, null);
+            return Visit(database.Root);
         }
 
         /// <summary>
         /// Recursively visits all command nodes and scripts them out against the _provider.
         /// </summary>
-        private IEnumerable<string> Visit(ICommand command, ICommand parentCommand)
+        private IEnumerable<string> Visit(ICommand command)
         {
             IScriptableCommand scriptableCommand = command as IScriptableCommand;
             if (scriptableCommand != null)
             {
-                foreach (string commandText in scriptableCommand.Script(_provider, parentCommand))
+                foreach (string commandText in scriptableCommand.Script(_provider))
                 {
                     yield return commandText;
                 }
@@ -37,7 +37,7 @@ namespace MigSharp.Core
 
             foreach (ICommand child in command.Children)
             {
-                foreach (string commandText in Visit(child, command))
+                foreach (string commandText in Visit(child))
                 {
                     yield return commandText;
                 }

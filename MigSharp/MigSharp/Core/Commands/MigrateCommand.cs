@@ -2,5 +2,8 @@
 {
     internal class MigrateCommand : Command
     {
+        public MigrateCommand() : base(null)
+        {
+        }
     }
 }

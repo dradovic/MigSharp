@@ -13,7 +13,7 @@ namespace MigSharp.Core
 
         public void Rename(string newName)
         {
-            _alterColumnCommand.Add(new RenameCommand(newName));
+            _alterColumnCommand.Add(new RenameCommand(_alterColumnCommand, newName));
         }
     }
 }

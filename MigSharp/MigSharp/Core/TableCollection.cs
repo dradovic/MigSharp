@@ -13,7 +13,7 @@ namespace MigSharp.Core
 
         protected override IExistingTable CreateItem(string name)
         {
-            AlterTableCommand alterTableCommand = new AlterTableCommand(name);
+            AlterTableCommand alterTableCommand = new AlterTableCommand(_migrateCommand, name);
             _migrateCommand.Add(alterTableCommand);
             return new Table(alterTableCommand);
         }

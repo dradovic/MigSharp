@@ -17,7 +17,7 @@ namespace MigSharp.Core
 
         public INewTable CreateTable(string tableName)
         {
-            var createTableCommand = new CreateTableCommand(tableName);
+            var createTableCommand = new CreateTableCommand(_root, tableName);
             _root.Add(createTableCommand);
             var table = new Table(createTableCommand);
             return table;

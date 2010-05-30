@@ -13,7 +13,7 @@ namespace MigSharp.Core
 
         protected override IExistingColumn CreateItem(string name)
         {
-            AlterColumnCommand alterColumnCommand = new AlterColumnCommand(name);
+            AlterColumnCommand alterColumnCommand = new AlterColumnCommand(_command, name);
             _command.Add(alterColumnCommand);
             return new Column(alterColumnCommand);
         }

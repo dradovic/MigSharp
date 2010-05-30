@@ -9,12 +9,13 @@ namespace MigSharp.Core.Commands
     {
         private readonly string _tableName;
 
-        public CreateTableCommand(string tableName)
+        public CreateTableCommand(ICommand parent, string tableName)
+            : base(parent)
         {
             _tableName = tableName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, ICommand parentCommand)
+        public IEnumerable<string> Script(IProvider provider)
         {
             IEnumerable<CreateColumnCommand> createColumnCommands = Children.OfType<CreateColumnCommand>();
             if (createColumnCommands.Count() > 0)

@@ -9,17 +9,17 @@ namespace MigSharp.Core.Commands
     {
         private readonly string _newName;
 
-        public RenameCommand(string newName)
+        public RenameCommand(ICommand parent, string newName) 
+            : base(parent)
         {
             _newName = newName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, ICommand parentCommand)
+        public IEnumerable<string> Script(IProvider provider)
         {
-            if (parentCommand == null) throw new ArgumentNullException("parentCommand");
-            AlterTableCommand parentAlterTableCommand = parentCommand as AlterTableCommand;
-            AlterColumnCommand parentAlterColumnCommand = parentCommand as AlterColumnCommand;
-            if (parentAlterTableCommand == null && parentAlterColumnCommand == null) throw new ArgumentException("The parent command of a RenameNode should either be a alterColumnCommand or a alterTableCommand.");
+            AlterTableCommand parentAlterTableCommand = Parent as AlterTableCommand;
+            AlterColumnCommand parentAlterColumnCommand = Parent as AlterColumnCommand;
+            if (parentAlterTableCommand == null && parentAlterColumnCommand == null) throw new InvalidOperationException("The parent command of a RenameCommand must either be a alterColumnCommand or a alterTableCommand.");
 
             if ((parentAlterTableCommand) != null)
             {
@@ -27,7 +27,9 @@ namespace MigSharp.Core.Commands
             }
             else
             {
-                return provider.RenameColumn("xxx", parentAlterColumnCommand.ColumnName, _newName); // TODO: provide tableName
+                parentAlterTableCommand = parentAlterColumnCommand.Parent as AlterTableCommand;
+                if (parentAlterTableCommand == null) throw new InvalidOperationException("The parent command of the AlterColumnCommand must be a AlterTableCommand."); // TODO: make sure this is true by design
+                return provider.RenameColumn(parentAlterTableCommand.TableName, parentAlterColumnCommand.ColumnName, _newName);
             }
         }
     }

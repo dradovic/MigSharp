@@ -19,30 +19,30 @@ namespace MigSharp.Core
 
         public void Rename(string newName)
         {
-            _command.Add(new RenameCommand(newName));
+            _command.Add(new RenameCommand(_command, newName));
         }
 
         public IAlteredTable AddColumn<T>(string name, DbType type, T defaultValue, AddColumnOptions options) where T : struct
         {
-            _command.Add(new AddColumnCommand(name, type, false, defaultValue, options));
+            _command.Add(new AddColumnCommand(_command, name, type, false, defaultValue, options));
             return this;
         }
 
         public IAlteredTable AddNullableColumn(string name, DbType type)
         {
-            _command.Add(new AddColumnCommand(name, type, true, null, AddColumnOptions.None));
+            _command.Add(new AddColumnCommand(_command, name, type, true, null, AddColumnOptions.None));
             return this;
         }
 
         public INewTable WithPrimaryKeyColumn(string columnName, DbType type)
         {
-            _command.Add(new CreateColumnCommand(columnName, type, false, true));
+            _command.Add(new CreateColumnCommand(_command, columnName, type, false, true));
             return this;
         }
 
         public INewTable WithNullableColumn(string columnName, DbType type)
         {
-            _command.Add(new CreateColumnCommand(columnName, type, true, false));
+            _command.Add(new CreateColumnCommand(_command, columnName, type, true, false));
             return this;
         }
     }

@@ -16,7 +16,8 @@ namespace MigSharp.Core.Commands
         public object DefaultValue { get { return _defaultValue; } }
         public AddColumnOptions Options { get { return _options; } }
 
-        public AddColumnCommand(string name, DbType type, bool isNullable, object defaultValue, AddColumnOptions options)
+        public AddColumnCommand(ICommand parent, string name, DbType type, bool isNullable, object defaultValue, AddColumnOptions options)
+            : base(parent)
         {
             _name = name;
             _type = type;

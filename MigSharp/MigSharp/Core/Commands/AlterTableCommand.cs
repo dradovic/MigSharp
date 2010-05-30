@@ -11,12 +11,13 @@ namespace MigSharp.Core.Commands
 
         public string TableName { get { return _tableName; } }
 
-        public AlterTableCommand(string tableName)
+        public AlterTableCommand(ICommand parent, string tableName)
+            : base(parent)
         {
             _tableName = tableName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, ICommand parentCommand)
+        public IEnumerable<string> Script(IProvider provider)
         {
             IEnumerable<AddColumnCommand> addColumnCommands = Children.OfType<AddColumnCommand>();
             if (addColumnCommands.Count() > 0)

@@ -14,7 +14,8 @@ namespace MigSharp.Core.Commands
         public bool IsNullable { get { return _isNullable; } }
         public bool IsPrimaryKey { get { return _isPrimaryKey; } }
 
-        public CreateColumnCommand(string columnName, DbType type, bool isNullable, bool isPrimaryKey)
+        public CreateColumnCommand(ICommand parent, string columnName, DbType type, bool isNullable, bool isPrimaryKey)
+            : base(parent)
         {
             _columnName = columnName;
             _type = type;
