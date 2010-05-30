@@ -64,42 +64,39 @@ namespace MigSharp.Providers
         {
             Debug.Assert(columns.Count() > 0);
 
-            // assemble ALTER TABLE statement
+            // assemble ALTER TABLE statements
             List<string> defaultConstraintsToDrop = new List<string>();
-            string commandText = string.Format(@"{0} ADD{1}", AlterTable(tableName), Environment.NewLine);
-            bool columnDelimiterIsNeeded = false;
             foreach (AddedColumn column in columns)
             {
-                if (columnDelimiterIsNeeded) commandText += string.Format(",{0}", Environment.NewLine);
+                string commandText = string.Format(@"{0} ADD ", AlterTable(tableName));
 
                 string defaultConstraintClause = string.Empty;
                 if (column.DefaultValue != null)
                 {
-                    string defaultConstraint = string.Format("DF_{0}_{1}", EscapeAsNamePart(tableName), EscapeAsNamePart(column.Name));
-                    defaultConstraintClause = string.Format(" CONSTRAINT {0} DEFAULT {1}", defaultConstraint, column.DefaultValue);
+                    string defaultConstraint = string.Format("[DF_{0}_{1}]", EscapeAsNamePart(tableName), EscapeAsNamePart(column.Name));
+                    defaultConstraintClause = string.Format(" CONSTRAINT {0}  DEFAULT {1}", defaultConstraint, column.DefaultValue);
                     if ((column.Options | AddColumnOptions.DropDefaultAfterCreation) != 0)
                     {
                         defaultConstraintsToDrop.Add(defaultConstraint);
                     }
                 }
-                commandText += string.Format("{0}{1} {2} {3}NULL{4}",
-                    Identation,
+                commandText += string.Format("{0} {1} {2}NULL{3}",
                     Escape(column.Name), 
                     GetTypeSpecifier(column.Type), 
                     column.IsNullable ? string.Empty : "NOT ",
                     defaultConstraintClause);
 
-                columnDelimiterIsNeeded = true;
+                yield return commandText;
             }
-            IEnumerable<string> commandTexts = new[] { commandText };
 
             // add commands to drop default constraints
             foreach (string defaultConstraint in defaultConstraintsToDrop)
             {
-                commandTexts = commandTexts.Concat(DropDefaultConstraint(tableName, defaultConstraint));
+                foreach (string commandText in DropDefaultConstraint(tableName, defaultConstraint))
+                {
+                    yield return commandText;
+                }
             }
-
-            return commandTexts;
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)

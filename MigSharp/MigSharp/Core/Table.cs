@@ -40,7 +40,17 @@ namespace MigSharp.Core
             _command.Add(new RenameCommand(_command, newName));
         }
 
+        public IAlteredTable AddColumn(string name, DbType type)
+        {
+            return AddColumn(name, type, null, AddColumnOptions.None);
+        }
+
         public IAlteredTable AddColumn<T>(string name, DbType type, T defaultValue, AddColumnOptions options) where T : struct
+        {
+            return AddColumn(name, type, (object)defaultValue, options);
+        }
+
+        private IAlteredTable AddColumn(string name, DbType type, object defaultValue, AddColumnOptions options)
         {
             _command.Add(new AddColumnCommand(_command, name, type, false, defaultValue, options));
             return this;

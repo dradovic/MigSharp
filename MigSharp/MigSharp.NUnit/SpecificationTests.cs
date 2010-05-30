@@ -53,18 +53,17 @@ namespace MigSharp.NUnit
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
             CollectionAssert.AreEqual(new[]
             {
-                @"ALTER TABLE [dbo].[S_Aggregator] ADD
-" + "\t" + @"[ValidFlag] [smallint] NOT NULL CONSTRAINT DF_S_Aggregator_ValidFlag DEFAULT 0,
-" + "\t" + @"[Paths] [int] NULL,
-" + "\t" + @"[PathGridpoints] [int] NULL,
-" + "\t" + @"[PathTimeSeries] [nvarchar](max) NULL",
-                @"ALTER TABLE [dbo].[S_Aggregator] DROP CONSTRAINT DF_S_Aggregator_ValidFlag",
+                @"ALTER TABLE [dbo].[S_Aggregator] ADD [ValidFlag] [smallint] NOT NULL CONSTRAINT [DF_S_Aggregator_ValidFlag]  DEFAULT 0",
+                @"ALTER TABLE [dbo].[S_Aggregator] ADD [Paths] [int] NULL",
+                @"ALTER TABLE [dbo].[S_Aggregator] ADD [PathGridpoints] [int] NULL",
+                @"ALTER TABLE [dbo].[S_Aggregator] ADD [PathTimeSeries] [nvarchar](max) NULL",
+                @"ALTER TABLE [dbo].[S_Aggregator] DROP CONSTRAINT [DF_S_Aggregator_ValidFlag]",
                 @"CREATE TABLE [dbo].[S_EvaluatedPaths](
 " + "\t" + @"[AnalysisKey] [int] NOT NULL,
 " + "\t" + @"[ObjectKey] [int] NOT NULL,
 " + "\t" + @"[RateCurveKey] [int] NULL,
 " + "\t" + @"[Paths] [nvarchar](max) NULL,
- CONSTRAINT [PK_S_EvaluatedPaths] PRIMARY KEY " /* NONCLUSTERED TODO: comment int*/+ @"
+ CONSTRAINT [PK_S_EvaluatedPaths] PRIMARY KEY " /* NONCLUSTERED TODO: comment in*/+ @"
 (
 " + "\t" + @"[AnalysisKey],
 " + "\t" + @"[ObjectKey]

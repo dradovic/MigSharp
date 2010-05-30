@@ -19,6 +19,13 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db).SetDescription("CreateTable");
 
             db = new Database();
+            db.Tables["Customers"]
+                .AddColumn("NewNonNullableColumn", DbType.Int32)
+                .AddColumn("NewNonNullableColumnWithDefault", DbType.Int32, 7, AddColumnOptions.DropDefaultAfterCreation)
+                .AddNullableColumn("NewNullableColumn", DbType.Int32);
+            yield return new TestCaseData(db).SetDescription("AddColumns");
+
+            db = new Database();
             db.Tables["Customers"].Rename("Customer");
             yield return new TestCaseData(db).SetDescription("RenameTable");
 

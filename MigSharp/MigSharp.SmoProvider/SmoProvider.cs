@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 
+using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 
 using MigSharp.Providers;
@@ -13,9 +13,11 @@ namespace MigSharp.Smo
 {
     public class SmoProvider : IProvider
     {
+        private readonly Server _server = new Server();
+
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns)
         {
-            Table table = CreateTable(tableName);
+            Table table = GetTable(tableName);
             foreach (CreatedColumn createdColumn in columns)
             {
                 Column column = new Column(table, createdColumn.Name)
@@ -36,43 +38,51 @@ namespace MigSharp.Smo
                 }
                 table.Indexes.Add(pkIndex);
             }
-            ScriptingOptions options = new ScriptingOptions
-            {
-                PrimaryObject = true,
-                Indexes = true,
-                SchemaQualify = true
-            };
-            return table.Script(options).Cast<string>();
+            table.Create();
+            return ScriptChanges();
         }
 
         public IEnumerable<string> AddColumns(string tableName, IEnumerable<AddedColumn> columns)
         {
-            throw new NotImplementedException();
+            Table table = GetTable(tableName);
+            List<DefaultConstraint> defaultConstraints = new List<DefaultConstraint>();
+            foreach (AddedColumn addedColumn in columns)
+            {
+                Column column = new Column(table, addedColumn.Name)
+                {
+                    DataType = Convert(addedColumn.Type),
+                    Nullable = addedColumn.IsNullable,
+                };
+                if (addedColumn.DefaultValue != null)
+                {
+                    DefaultConstraint defaultConstraint = column.AddDefaultConstraint();
+                    defaultConstraint.Text = addedColumn.DefaultValue.ToString();
+                    defaultConstraints.Add(defaultConstraint);
+                }
+                table.Columns.Add(column);
+            }
+            table.Alter();
+            foreach (DefaultConstraint defaultConstraint in defaultConstraints)
+            {
+                defaultConstraint.Drop();
+            }
+            return ScriptChanges();
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            Table table = CreateTable(oldName);
-            StringCollection query = GetRenameQuery(table, newName);
-            return query.Cast<string>().Where(c => c.StartsWith("EXEC"));
+            Table table = GetTable(oldName);
+            table.Rename(newName);
+            return ScriptChanges();
         }
 
         public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
         {
-            Table table = CreateTable(tableName);
+            Table table = GetTable(tableName);
             Column column = new Column(table, oldName);
             table.Columns.Add(column);
-            StringCollection query = GetRenameQuery(column, newName);
-            return query.Cast<string>().Where(c => c.StartsWith("EXEC"));            
-        }
-
-        private static StringCollection GetRenameQuery(SqlSmoObject obj, string newName)
-        {
-            MethodInfo scriptRename = obj.GetType().GetMethod("ScriptRename", BindingFlags.Instance | BindingFlags.NonPublic);
-            StringCollection query = new StringCollection();
-            ScriptingOptions options = new ScriptingOptions();
-            scriptRename.Invoke(obj, new object[] { query, options, newName });
-            return query;
+            column.Rename(newName);
+            return ScriptChanges();
         }
 
         public IEnumerable<string> DropDefaultConstraint(string tableName, string constraintName)
@@ -80,15 +90,31 @@ namespace MigSharp.Smo
             throw new NotImplementedException();
         }
 
-        private static Table CreateTable(string tableName)
+        private Table GetTable(string tableName)
         {
-            return new Table(CreateDatabase(), tableName);
+            return new Table(GetDatabase(), tableName);
         }
 
-        private static Database CreateDatabase()
+        private Database GetDatabase()
         {
-            Server server = new Server();
-            return new Database(server, "SmoProvider"); // the name of the database does not matter
+            Database database;
+            if (!_server.Databases.Contains("MigSharp_SmoProvider"))
+            {
+                database = new Database(_server, "MigSharp_SmoProvider");
+                database.Create();
+            }
+            else
+            {
+                database = _server.Databases["MigSharp_SmoProvider"];
+            }
+            _server.ConnectionContext.SqlExecutionModes = SqlExecutionModes.CaptureSql;
+            return database;
+        }
+
+        private IEnumerable<string> ScriptChanges()
+        {
+            Trace.WriteLine(_server.ConnectionContext.CapturedSql.Text.Cast<string>().Aggregate((s1, s2) => s1 + Environment.NewLine + s2));
+            return _server.ConnectionContext.CapturedSql.Text.Cast<string>().Where(c => !c.StartsWith("USE "));
         }
 
         private static DataType Convert(DbType dbType)
