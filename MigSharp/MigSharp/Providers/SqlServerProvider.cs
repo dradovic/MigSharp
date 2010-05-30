@@ -8,14 +8,12 @@ namespace MigSharp.Providers
 {
     internal class SqlServerProvider : IProvider
     {
-        private const string Identation = "  ";
+        private const string Identation = "\t";
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns)
         {
-            const string filegroup = "PRIMARY"; // TODO: make file group configurable
-
             List<string> primaryKeyColumns = new List<string>();
-            string commandText = string.Format(@"{0} ({1}", CreateTable(tableName), Environment.NewLine);
+            string commandText = string.Format(@"{0}({1}", CreateTable(tableName), Environment.NewLine);
             bool columnDelimiterIsNeeded = false;
             foreach (CreatedColumn column in columns)
             {
@@ -34,30 +32,31 @@ namespace MigSharp.Providers
 
                 columnDelimiterIsNeeded = true;
             }
-            commandText += Environment.NewLine;
 
             if (primaryKeyColumns.Count > 0)
             {
                 // TODO: make clustering configurable
-                commandText += string.Format("{0}CONSTRAINT PK_{1} PRIMARY KEY NONCLUSTERED ({2}", 
-                    Identation, 
+                commandText += string.Format(",{0} CONSTRAINT [PK_{1}] PRIMARY KEY {2}",
+                    Environment.NewLine,
                     EscapeAsNamePart(tableName), 
                     Environment.NewLine);
+                commandText += string.Format("({0}", Environment.NewLine);
+
                 columnDelimiterIsNeeded = false;
                 foreach (string column in primaryKeyColumns)
                 {
                     if (columnDelimiterIsNeeded) commandText += string.Format(",{0}", Environment.NewLine);
 
                     // TODO: make sort order configurable
-                    commandText += string.Format("{0}{0}{1} ASC", Identation, Escape(column));
+                    commandText += string.Format("{0}{1}", Identation, Escape(column));
 
                     columnDelimiterIsNeeded = true;
                 }
-                commandText += string.Format("{0}{1}) ON [{2}]", Environment.NewLine, Identation, filegroup);
-                commandText += Environment.NewLine;
+                commandText += string.Format("{0})WITH (IGNORE_DUP_KEY = OFF)", Environment.NewLine);
             }
 
-            commandText += string.Format(") ON [{0}]", filegroup);
+            commandText += Environment.NewLine;
+            commandText += string.Format("){0}", Environment.NewLine);
             yield return commandText;
         }
 
@@ -120,12 +119,12 @@ namespace MigSharp.Providers
 
         private static string CreateTable(string tableName)
         {
-            return string.Format("CREATE TABLE dbo.{0}", Escape(tableName));
+            return string.Format("CREATE TABLE [dbo].{0}", Escape(tableName));
         }
 
         private static string AlterTable(string tableName)
         {
-            return string.Format("ALTER TABLE dbo.{0}", Escape(tableName));
+            return string.Format("ALTER TABLE [dbo].{0}", Escape(tableName));
         }
 
         private static string Escape(string name)
@@ -147,7 +146,7 @@ namespace MigSharp.Providers
                 case DbType.Binary:
                     break;
                 case DbType.Byte:
-                    return "SMALLINT";
+                    return "[smallint]";
                 case DbType.Boolean:
                     break;
                 case DbType.Currency:
@@ -165,7 +164,7 @@ namespace MigSharp.Providers
                 case DbType.Int16:
                     break;
                 case DbType.Int32:
-                    return "INT";
+                    return "[int]";
                 case DbType.Int64:
                     break;
                 case DbType.Object:
@@ -175,7 +174,7 @@ namespace MigSharp.Providers
                 case DbType.Single:
                     break;
                 case DbType.String:
-                    return "NVARCHAR(MAX)";
+                    return "[nvarchar](max)";
                 case DbType.Time:
                     break;
                 case DbType.UInt16:

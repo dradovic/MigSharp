@@ -64,7 +64,7 @@ namespace MigSharp.NUnit
   [ObjectKey] INT NOT NULL,
   [RateCurveKey] INT NULL,
   [Paths] NVARCHAR(MAX) NULL
-  CONSTRAINT PK_S_EvaluatedPaths PRIMARY KEY NONCLUSTERED (
+  CONSTRAINT PK_S_EvaluatedPaths PRIMARY KEY"/* NONCLUSTERED TODO: comment int*/+ @" (
     [AnalysisKey] ASC,
     [ObjectKey] ASC
   ) ON [PRIMARY]

@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp", "MigSharp\MigSha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.NUnit", "MigSharp.NUnit\MigSharp.NUnit.csproj", "{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.Smo", "MigSharp.SmoProvider\MigSharp.Smo.csproj", "{E89185F6-58CF-4FCC-A7C1-0BFB51D46F47}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E89185F6-58CF-4FCC-A7C1-0BFB51D46F47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E89185F6-58CF-4FCC-A7C1-0BFB51D46F47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E89185F6-58CF-4FCC-A7C1-0BFB51D46F47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E89185F6-58CF-4FCC-A7C1-0BFB51D46F47}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
