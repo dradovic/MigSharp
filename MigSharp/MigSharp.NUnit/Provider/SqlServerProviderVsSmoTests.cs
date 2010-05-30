@@ -23,9 +23,13 @@ namespace MigSharp.NUnit.Provider
         {
             CommandScripter sqlScripter = new CommandScripter(sqlProvider);
             CommandScripter smoScripter = new CommandScripter(smoProvider);
+            List<string> sqlCommandTexts = new List<string>(sqlScripter.GetCommandTexts(database));
+            List<string> smoCommandTexts = new List<string>(smoScripter.GetCommandTexts(database));
             CollectionAssert.AreEqual(
-                new List<string>(smoScripter.GetCommandTexts(database)),
-                new List<string>(sqlScripter.GetCommandTexts(database)));
+                smoCommandTexts,
+                sqlCommandTexts);
+            CollectionAssert.IsNotEmpty(sqlCommandTexts);
+            CollectionAssert.IsNotEmpty(smoCommandTexts);
         }
     }
 }

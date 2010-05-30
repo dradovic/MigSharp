@@ -30,8 +30,12 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db).SetDescription("RenameTable");
 
             db = new Database();
-            db.Tables["Customers"].Columns["Name"].Rename("LastName");
+            db.Tables["Customers"].Columns["ColumnName"].Rename("LastName");
             yield return new TestCaseData(db).SetDescription("RenameColumn");
+
+            db = new Database();
+            db.Tables["Customers"].Columns["ColumnName"].DropDefaultConstraint();
+            yield return new TestCaseData(db).SetDescription("DropDefaultConstraint");
         }
     }
 }

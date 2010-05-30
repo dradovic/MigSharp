@@ -85,9 +85,13 @@ namespace MigSharp.Smo
             return ScriptChanges();
         }
 
-        public IEnumerable<string> DropDefaultConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropDefaultConstraint(string tableName, string columnName)
         {
-            throw new NotImplementedException();
+            Table table = GetTable(tableName);
+            Column column = new Column(table, columnName);
+            DefaultConstraint defaultConstraint = column.AddDefaultConstraint();
+            defaultConstraint.Drop();
+            return ScriptChanges();
         }
 
         private Table GetTable(string tableName)

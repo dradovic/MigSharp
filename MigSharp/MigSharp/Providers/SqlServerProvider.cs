@@ -65,7 +65,6 @@ namespace MigSharp.Providers
             Debug.Assert(columns.Count() > 0);
 
             // assemble ALTER TABLE statements
-            List<string> defaultConstraintsToDrop = new List<string>();
             foreach (AddedColumn column in columns)
             {
                 string commandText = string.Format(@"{0} ADD ", AlterTable(tableName));
@@ -73,12 +72,8 @@ namespace MigSharp.Providers
                 string defaultConstraintClause = string.Empty;
                 if (column.DefaultValue != null)
                 {
-                    string defaultConstraint = string.Format("[DF_{0}_{1}]", EscapeAsNamePart(tableName), EscapeAsNamePart(column.Name));
+                    string defaultConstraint = GetDefaultConstraintName(tableName, column.Name);
                     defaultConstraintClause = string.Format(" CONSTRAINT {0}  DEFAULT {1}", defaultConstraint, column.DefaultValue);
-                    if ((column.Options | AddColumnOptions.DropDefaultAfterCreation) != 0)
-                    {
-                        defaultConstraintsToDrop.Add(defaultConstraint);
-                    }
                 }
                 commandText += string.Format("{0} {1} {2}NULL{3}",
                     Escape(column.Name), 
@@ -90,13 +85,18 @@ namespace MigSharp.Providers
             }
 
             // add commands to drop default constraints
-            foreach (string defaultConstraint in defaultConstraintsToDrop)
+            foreach (AddedColumn column in columns.Where(c => (c.Options & AddColumnOptions.DropDefaultAfterCreation) != 0))
             {
-                foreach (string commandText in DropDefaultConstraint(tableName, defaultConstraint))
+                foreach (string commandText in DropDefaultConstraint(tableName, column.Name))
                 {
                     yield return commandText;
                 }
             }
+        }
+
+        private static string GetDefaultConstraintName(string tableName, string columnName)
+        {
+            return string.Format("[DF_{0}_{1}]", EscapeAsNamePart(tableName), EscapeAsNamePart(columnName));
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
@@ -109,9 +109,9 @@ namespace MigSharp.Providers
             yield return string.Format("EXEC dbo.sp_rename @objname=N'[dbo].{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", Escape(tableName), Escape(oldName), newName);
         }
 
-        public IEnumerable<string> DropDefaultConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropDefaultConstraint(string tableName, string columnName)
         {
-            yield return string.Format(string.Format("{0} DROP CONSTRAINT {1}", AlterTable(tableName), constraintName));
+            yield return string.Format("{0} DROP CONSTRAINT {1}", AlterTable(tableName), GetDefaultConstraintName(tableName, columnName));
         }
 
         private static string CreateTable(string tableName)
