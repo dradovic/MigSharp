@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 
 using MigSharp.Core.Commands;
 
@@ -9,12 +10,29 @@ namespace MigSharp.Core
         private readonly ICommand _command;
         private readonly ColumnCollection _columns;
 
-        public IExistingColumnCollection Columns { get { return _columns; } }
+        public IExistingColumnCollection Columns
+        {
+            get
+            {
+                if (_columns == null)
+                {
+                    // this should never be the case as the fluent interface should not expose the Columns property
+                    // for new tables
+                    throw new InvalidOperationException("Cannot access existing Columns of a newly created table.");
+                }
+                return _columns;
+            }
+        }
 
         internal Table(ICommand command)
         {
             _command = command;
-            _columns = new ColumnCollection(_command);
+
+            AlterTableCommand alterTableCommand = command as AlterTableCommand;
+            if (alterTableCommand != null)
+            {
+                _columns = new ColumnCollection(alterTableCommand);
+            }
         }
 
         public void Rename(string newName)

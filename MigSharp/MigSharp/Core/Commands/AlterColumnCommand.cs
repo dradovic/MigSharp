@@ -6,7 +6,7 @@
 
         public string ColumnName { get { return _columnName; } }
 
-        public AlterColumnCommand(ICommand parent, string columnName) : base(parent)
+        public AlterColumnCommand(AlterTableCommand parent, string columnName) : base(parent)
         {
             _columnName = columnName;
         }

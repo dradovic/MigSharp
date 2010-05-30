@@ -4,9 +4,9 @@ namespace MigSharp.Core
 {
     internal class ColumnCollection : AdHocCollection<IExistingColumn>, IExistingColumnCollection
     {
-        private readonly ICommand _command;
+        private readonly AlterTableCommand _command;
 
-        public ColumnCollection(ICommand command)
+        public ColumnCollection(AlterTableCommand command)
         {
             _command = command;
         }

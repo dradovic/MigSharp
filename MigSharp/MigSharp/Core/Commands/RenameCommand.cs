@@ -27,8 +27,7 @@ namespace MigSharp.Core.Commands
             }
             else
             {
-                parentAlterTableCommand = parentAlterColumnCommand.Parent as AlterTableCommand;
-                if (parentAlterTableCommand == null) throw new InvalidOperationException("The parent command of the AlterColumnCommand must be a AlterTableCommand."); // TODO: make sure this is true by design
+                parentAlterTableCommand = (AlterTableCommand)parentAlterColumnCommand.Parent;
                 return provider.RenameColumn(parentAlterTableCommand.TableName, parentAlterColumnCommand.ColumnName, _newName);
             }
         }
