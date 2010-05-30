@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 
 using Microsoft.SqlServer.Management.Smo;
 
@@ -13,7 +15,7 @@ namespace MigSharp.Smo
     {
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns)
         {
-            Table table = new Table(CreateDatabase(), tableName);
+            Table table = CreateTable(tableName);
             foreach (CreatedColumn createdColumn in columns)
             {
                 Column column = new Column(table, createdColumn.Name)
@@ -50,17 +52,37 @@ namespace MigSharp.Smo
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            throw new NotImplementedException();
+            Table table = CreateTable(oldName);
+            StringCollection query = GetRenameQuery(table, newName);
+            return query.Cast<string>().Where(c => c.StartsWith("EXEC"));
         }
 
-        public IEnumerable<string> RenameColumn(string oldName, string newName)
+        public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
         {
-            throw new NotImplementedException();
+            Table table = CreateTable(tableName);
+            Column column = new Column(table, oldName);
+            table.Columns.Add(column);
+            StringCollection query = GetRenameQuery(column, newName);
+            return query.Cast<string>().Where(c => c.StartsWith("EXEC"));            
+        }
+
+        private static StringCollection GetRenameQuery(SqlSmoObject obj, string newName)
+        {
+            MethodInfo scriptRename = obj.GetType().GetMethod("ScriptRename", BindingFlags.Instance | BindingFlags.NonPublic);
+            StringCollection query = new StringCollection();
+            ScriptingOptions options = new ScriptingOptions();
+            scriptRename.Invoke(obj, new object[] { query, options, newName });
+            return query;
         }
 
         public IEnumerable<string> DropDefaultConstraint(string tableName, string constraintName)
         {
             throw new NotImplementedException();
+        }
+
+        private static Table CreateTable(string tableName)
+        {
+            return new Table(CreateDatabase(), tableName);
         }
 
         private static Database CreateDatabase()

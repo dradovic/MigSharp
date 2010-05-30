@@ -27,7 +27,7 @@ namespace MigSharp.Core.Commands
             }
             else
             {
-                return provider.RenameColumn(parentAlterColumnCommand.ColumnName, _newName);
+                return provider.RenameColumn("xxx", parentAlterColumnCommand.ColumnName, _newName); // TODO: provide tableName
             }
         }
     }

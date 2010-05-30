@@ -19,7 +19,7 @@ namespace MigSharp.NUnit
             IProvider provider = new SqlServerProvider();
             CommandScripter scripter = new CommandScripter(provider);
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
-            CollectionAssert.AreEqual(new[] { "sp_rename N'Customers', N'Customer'" }, commandTexts);
+            CollectionAssert.AreEqual(new[] { "EXEC dbo.sp_rename @objname = N'[dbo].[Customers]', @newname = N'Customer', @objtype = N'OBJECT'" }, commandTexts);
         }
 
         [Test]
@@ -31,7 +31,7 @@ namespace MigSharp.NUnit
             IProvider provider = new SqlServerProvider();
             CommandScripter scripter = new CommandScripter(provider);
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
-            CollectionAssert.AreEqual(new[] { "sp_rename N'Val', N'ValAbsoluteIncome', 'COLUMN'" }, commandTexts);
+            CollectionAssert.AreEqual(new[] { "EXEC dbo.sp_rename @objname=N'[dbo].[S_AggregatorValues].[Val]', @newname=N'ValAbsoluteIncome', @objtype=N'COLUMN'" }, commandTexts);
         }
 
         [Test]
@@ -53,22 +53,24 @@ namespace MigSharp.NUnit
             List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
             CollectionAssert.AreEqual(new[]
             {
-                @"ALTER TABLE dbo.[S_Aggregator] ADD
-  [ValidFlag] SMALLINT NOT NULL CONSTRAINT DF_S_Aggregator_ValidFlag DEFAULT 0,
-  [Paths] INT NULL,
-  [PathGridpoints] INT NULL,
-  [PathTimeSeries] NVARCHAR(MAX) NULL",
-                @"ALTER TABLE dbo.[S_Aggregator] DROP CONSTRAINT DF_S_Aggregator_ValidFlag",
-                @"CREATE TABLE dbo.[S_EvaluatedPaths] (
-  [AnalysisKey] INT NOT NULL,
-  [ObjectKey] INT NOT NULL,
-  [RateCurveKey] INT NULL,
-  [Paths] NVARCHAR(MAX) NULL
-  CONSTRAINT PK_S_EvaluatedPaths PRIMARY KEY"/* NONCLUSTERED TODO: comment int*/+ @" (
-    [AnalysisKey] ASC,
-    [ObjectKey] ASC
-  ) ON [PRIMARY]
-) ON [PRIMARY]"
+                @"ALTER TABLE [dbo].[S_Aggregator] ADD
+" + "\t" + @"[ValidFlag] [smallint] NOT NULL CONSTRAINT DF_S_Aggregator_ValidFlag DEFAULT 0,
+" + "\t" + @"[Paths] [int] NULL,
+" + "\t" + @"[PathGridpoints] [int] NULL,
+" + "\t" + @"[PathTimeSeries] [nvarchar](max) NULL",
+                @"ALTER TABLE [dbo].[S_Aggregator] DROP CONSTRAINT DF_S_Aggregator_ValidFlag",
+                @"CREATE TABLE [dbo].[S_EvaluatedPaths](
+" + "\t" + @"[AnalysisKey] [int] NOT NULL,
+" + "\t" + @"[ObjectKey] [int] NOT NULL,
+" + "\t" + @"[RateCurveKey] [int] NULL,
+" + "\t" + @"[Paths] [nvarchar](max) NULL,
+ CONSTRAINT [PK_S_EvaluatedPaths] PRIMARY KEY " /* NONCLUSTERED TODO: comment int*/+ @"
+(
+" + "\t" + @"[AnalysisKey],
+" + "\t" + @"[ObjectKey]
+)WITH (IGNORE_DUP_KEY = OFF)
+)
+"
             },
                 commandTexts);
         }

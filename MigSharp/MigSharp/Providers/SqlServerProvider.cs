@@ -104,12 +104,12 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            yield return string.Format("sp_rename N'{0}', N'{1}'", oldName, newName);
+            yield return string.Format("EXEC dbo.sp_rename @objname = N'[dbo].{0}', @newname = N'{1}', @objtype = N'OBJECT'", Escape(oldName), newName);
         }
 
-        public IEnumerable<string> RenameColumn(string oldName, string newName)
+        public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
         {
-            yield return string.Format("sp_rename N'{0}', N'{1}', 'COLUMN'", oldName, newName);
+            yield return string.Format("EXEC dbo.sp_rename @objname=N'[dbo].{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", Escape(tableName), Escape(oldName), newName);
         }
 
         public IEnumerable<string> DropDefaultConstraint(string tableName, string constraintName)
