@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Data;
+using System.Linq;
 
 using MigSharp.Core.Commands;
 
 namespace MigSharp.Core
 {
-    internal class Table : IExistingTable, IAlteredTable, INewTable
+    internal class Table : IExistingTable, IExistingTableWithAddedColumn, INewTable
     {
         private readonly ICommand _command;
         private readonly ColumnCollection _columns;
@@ -40,25 +41,43 @@ namespace MigSharp.Core
             _command.Add(new RenameCommand(_command, newName));
         }
 
-        public IAlteredTable AddColumn(string name, DbType type)
+        public IExistingTableWithAddedColumn AddColumn(string name, DbType type)
         {
-            return AddColumn(name, type, null, AddColumnOptions.None);
-        }
-
-        public IAlteredTable AddColumn<T>(string name, DbType type, T defaultValue, AddColumnOptions options) where T : struct
-        {
-            return AddColumn(name, type, (object)defaultValue, options);
-        }
-
-        private IAlteredTable AddColumn(string name, DbType type, object defaultValue, AddColumnOptions options)
-        {
-            _command.Add(new AddColumnCommand(_command, name, type, false, defaultValue, options));
+            _command.Add(new AddColumnCommand(_command, name, type, false));
             return this;
         }
 
-        public IAlteredTable AddNullableColumn(string name, DbType type)
+        public IExistingTableWithAddedColumn AddNullableColumn(string name, DbType type)
         {
-            _command.Add(new AddColumnCommand(_command, name, type, true, null, AddColumnOptions.None));
+            _command.Add(new AddColumnCommand(_command, name, type, true));
+            return this;
+        }
+
+        public ITable WithDefault<T>(T value) where T : struct
+        {
+            return WithDefault(value, false);
+        }
+
+        public ITable WithDefault(string value)
+        {
+            return WithDefault(value, false);
+        }
+
+        public ITable WithTemporaryDefault<T>(T value) where T : struct
+        {
+            return WithDefault(value, true);
+        }
+
+        public ITable WithTemporaryDefault(string value)
+        {
+            return WithDefault(value, true);
+        }
+
+        private ITable WithDefault(object value, bool dropThereafter)
+        {
+            AddColumnCommand addColumnCommand = (AddColumnCommand)_command.Children.Last();
+            addColumnCommand.DefaultValue = value;
+            addColumnCommand.DropThereafter = dropThereafter;
             return this;
         }
 

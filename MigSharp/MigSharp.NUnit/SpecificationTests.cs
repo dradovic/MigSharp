@@ -39,7 +39,7 @@ namespace MigSharp.NUnit
         {
             Database db = new Database();
             db.Tables["S_Aggregator"]
-                .AddColumn("ValidFlag", DbType.Byte, 0, AddColumnOptions.DropDefaultAfterCreation)
+                .AddColumn("ValidFlag", DbType.Byte).WithTemporaryDefault(0)
                 .AddNullableColumn("Paths", DbType.Int32)
                 .AddNullableColumn("PathGridpoints", DbType.Int32)
                 .AddNullableColumn("PathTimeSeries", DbType.String);

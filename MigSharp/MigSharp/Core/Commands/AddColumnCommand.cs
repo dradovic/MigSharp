@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 
 namespace MigSharp.Core.Commands
 {
@@ -7,23 +7,21 @@ namespace MigSharp.Core.Commands
         private readonly string _name;
         private readonly DbType _type;
         private readonly bool _isNullable;
-        private readonly object _defaultValue;
-        private readonly AddColumnOptions _options;
+        private object _defaultValue;
+        private bool _dropThereafter;
 
         public string Name { get { return _name; } }
         public DbType Type { get { return _type; } }
         public bool IsNullable { get { return _isNullable; } }
-        public object DefaultValue { get { return _defaultValue; } }
-        public AddColumnOptions Options { get { return _options; } }
+        public object DefaultValue { get { return _defaultValue; } set { _defaultValue = value; } }
+        public bool DropThereafter { get { return _dropThereafter; } set { _dropThereafter = value; } }
 
-        public AddColumnCommand(ICommand parent, string name, DbType type, bool isNullable, object defaultValue, AddColumnOptions options)
+        public AddColumnCommand(ICommand parent, string name, DbType type, bool isNullable)
             : base(parent)
         {
             _name = name;
             _type = type;
             _isNullable = isNullable;
-            _defaultValue = defaultValue;
-            _options = options;
         }
     }
 }

@@ -85,7 +85,7 @@ namespace MigSharp.Providers
             }
 
             // add commands to drop default constraints
-            foreach (AddedColumn column in columns.Where(c => (c.Options & AddColumnOptions.DropDefaultAfterCreation) != 0))
+            foreach (AddedColumn column in columns.Where(c => c.DropThereafter))
             {
                 foreach (string commandText in DropDefaultConstraint(tableName, column.Name))
                 {

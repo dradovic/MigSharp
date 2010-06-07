@@ -2,13 +2,24 @@
 
 namespace MigSharp
 {
-    public interface IExistingTable
+    public interface ITable
+    {
+        IExistingTableWithAddedColumn AddColumn(string name, DbType type);
+        IExistingTableWithAddedColumn AddNullableColumn(string name, DbType type);
+    }
+
+    public interface IExistingTable : ITable
     {
         IExistingColumnCollection Columns { get; }
 
         void Rename(string newName);
-        IAlteredTable AddColumn(string name, DbType type);
-        IAlteredTable AddColumn<T>(string name, DbType type, T defaultValue, AddColumnOptions options) where T : struct;
-        IAlteredTable AddNullableColumn(string name, DbType type);
+    }
+
+    public interface IExistingTableWithAddedColumn : ITable
+    {
+        ITable WithDefault<T>(T value) where T : struct;
+        ITable WithDefault(string value);
+        ITable WithTemporaryDefault<T>(T value) where T : struct;
+        ITable WithTemporaryDefault(string value);
     }
 }
