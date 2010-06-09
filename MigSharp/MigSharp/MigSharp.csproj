@@ -32,6 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition, Version=2010.2.11.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\System.ComponentModel.Composition.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -47,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="Core\Commands\DropDefaultConstraintCommand.cs" />
+    <Compile Include="Versioning\DbVersion.cs" />
     <Compile Include="Core\IScriptableCommand.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
     <Compile Include="Core\Commands\AlterColumnCommand.cs" />
@@ -57,6 +62,7 @@
     <Compile Include="Core\ColumnCollection.cs" />
     <Compile Include="Core\Commands\MigrateCommand.cs" />
     <Compile Include="Core\ICommand.cs" />
+    <Compile Include="Core\Log.cs" />
     <Compile Include="IDatabase.cs" />
     <Compile Include="IExistingColumnCollection.cs" />
     <Compile Include="IExistingColumn.cs" />
@@ -66,6 +72,9 @@
     <Compile Include="Core\Database.cs" />
     <Compile Include="IMigration.cs" />
     <Compile Include="INewTable.cs" />
+    <Compile Include="Versioning\IDbVersion.cs" />
+    <Compile Include="Versioning\MigrationProcess.cs" />
+    <Compile Include="Migrator.cs" />
     <Compile Include="Providers\AddedColumn.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
