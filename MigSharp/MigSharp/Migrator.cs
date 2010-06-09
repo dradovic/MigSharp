@@ -24,9 +24,9 @@ namespace MigSharp
             List<Lazy<IMigration, IMigrationMetaData>> migrations = Collect(assembly);
             if (migrations.Count > 0)
             {
-                var process = new MigrationProcess(_connectionString, migrations);
+                var batch = new MigrationBatch(migrations);
                 var dbVersion = DbVersion.Create(_connectionString);
-                process.Do(dbVersion);
+                batch.Process(dbVersion, _connectionString);
             }
         }
 

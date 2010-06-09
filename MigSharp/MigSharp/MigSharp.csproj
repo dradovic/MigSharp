@@ -80,7 +80,7 @@
       <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
     </Compile>
     <Compile Include="Versioning\IDbVersion.cs" />
-    <Compile Include="Versioning\MigrationProcess.cs" />
+    <Compile Include="Versioning\MigrationBatch.cs" />
     <Compile Include="Migrator.cs" />
     <Compile Include="Providers\AddedColumn.cs" />
     <Compile Include="Providers\IProvider.cs" />
@@ -91,6 +91,7 @@
     <Compile Include="Core\Commands\RenameCommand.cs" />
     <Compile Include="Core\Table.cs" />
     <Compile Include="Core\TableCollection.cs" />
+    <Compile Include="Versioning\MigrationStep.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Versioning\DbVersionDataSet.xsc">

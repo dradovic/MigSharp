@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Data.Common;
 
 namespace MigSharp.Versioning
@@ -15,6 +16,7 @@ namespace MigSharp.Versioning
         public static DbVersion Create(string connectionString)
         {
             var dataSet = new DbVersionDataSet();
+            throw new NotImplementedException();
             return Create(dataSet);
         }
 
@@ -25,10 +27,10 @@ namespace MigSharp.Versioning
 
         public bool Includes(IMigrationMetaData metaData)
         {
-            return _dataSet.DbVersion.FindByTimestamp(metaData.Timestamp) != null;
+            return _dataSet.DbVersion.FindByTimestamp(metaData.Timestamp) != null; // TODO: include Module
         }
 
-        public void Update(DbConnection connection, IMigration migration)
+        public void Update(IDbConnection connection, IMigration migration)
         {
             throw new NotImplementedException();
         }
