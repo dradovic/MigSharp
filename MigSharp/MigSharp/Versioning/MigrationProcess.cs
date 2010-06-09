@@ -10,9 +10,9 @@ namespace MigSharp.Versioning
     internal class MigrationProcess
     {
         private readonly string _connectionString;
-        private readonly IEnumerable<IMigration> _migrations;
+        private readonly IEnumerable<Lazy<IMigration, IMigrationMetaData>> _migrations;
 
-        public MigrationProcess(string connectionString, IEnumerable<IMigration> migrations)
+        public MigrationProcess(string connectionString, IEnumerable<Lazy<IMigration, IMigrationMetaData>> migrations)
         {
             Debug.Assert(migrations.Count() > 0);
 
@@ -25,7 +25,11 @@ namespace MigSharp.Versioning
             using (DbConnection connection = InitializeConnection())
             {
                 Debug.Assert(connection.State == ConnectionState.Open);
-                foreach (IMigration migration in _migrations.Where(m => !dbVersion.Includes(m))) // TODO: order migrations
+                var applicableMigrations = from m in _migrations
+                                           where !dbVersion.Includes(m.Metadata)
+                                           orderby m.Metadata.Timestamp
+                                           select m.Value;
+                foreach (IMigration migration in applicableMigrations)
                 {
                     using (DbTransaction transaction = connection.BeginTransaction())
                     {

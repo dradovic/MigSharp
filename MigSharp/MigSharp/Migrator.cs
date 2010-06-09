@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Reflection;
@@ -17,10 +18,10 @@ namespace MigSharp
             _connectionString = connectionString;
         }
 
-        public void ExecuteAll(Assembly assembly)
+        public void UpgradeAll(Assembly assembly)
         {
-            Log.Info("Migrating all...");
-            List<IMigration> migrations = Collect(assembly);
+            Log.Info("Upgrading all...");
+            List<Lazy<IMigration, IMigrationMetaData>> migrations = Collect(assembly);
             if (migrations.Count > 0)
             {
                 var process = new MigrationProcess(_connectionString, migrations);
@@ -29,14 +30,14 @@ namespace MigSharp
             }
         }
 
-        private static List<IMigration> Collect(Assembly assembly)
+        private static List<Lazy<IMigration, IMigrationMetaData>> Collect(Assembly assembly)
         {
             Log.Info("Collecting all migrations...");
             var catalog = new AssemblyCatalog(assembly);
             var container = new CompositionContainer(catalog);
             var migrationImporter = new MigrationImporter();
             container.ComposeParts(migrationImporter);
-            var result = new List<IMigration>(migrationImporter.Migrations);
+            var result = new List<Lazy<IMigration, IMigrationMetaData>>(migrationImporter.Migrations);
             Log.Info("Found {0} migration(s)", result.Count);
             return result;
         }
@@ -45,7 +46,7 @@ namespace MigSharp
         {
             [ImportMany]
 // ReSharper disable UnusedAutoPropertyAccessor.Local
-            public IEnumerable<IMigration> Migrations { get; set; } // set by MEF
+            public IEnumerable<Lazy<IMigration, IMigrationMetaData>> Migrations { get; set; } // set by MEF
 // ReSharper restore UnusedAutoPropertyAccessor.Local
         }
     }

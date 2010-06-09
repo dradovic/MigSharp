@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 using System.Data;
 
 using MigSharp.Core;
@@ -9,7 +9,7 @@ namespace MigSharp.NUnit
 {
     internal static class TestCaseGenerator
     {
-        public static IEnumerable GetDatabaseCases()
+        public static IEnumerable<TestCaseData> GetDatabaseCases()
         {
             IDatabase db = new Database();
             db.CreateTable("Customers")

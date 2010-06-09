@@ -5,18 +5,27 @@ namespace MigSharp.Versioning
 {
     internal class DbVersion : IDbVersion
     {
-        private DbVersion()
+        private readonly DbVersionDataSet _dataSet;
+
+        private DbVersion(DbVersionDataSet dataSet)
         {
+            _dataSet = dataSet;
         }
 
         public static DbVersion Create(string connectionString)
         {
-            return new DbVersion();
+            var dataSet = new DbVersionDataSet();
+            return Create(dataSet);
         }
 
-        public bool Includes(IMigration migration)
+        internal static DbVersion Create(DbVersionDataSet dataSet)
         {
-            throw new NotImplementedException();
+            return new DbVersion(dataSet);
+        }
+
+        public bool Includes(IMigrationMetaData metaData)
+        {
+            return _dataSet.DbVersion.FindByTimestamp(metaData.Timestamp) != null;
         }
 
         public void Update(DbConnection connection, IMigration migration)

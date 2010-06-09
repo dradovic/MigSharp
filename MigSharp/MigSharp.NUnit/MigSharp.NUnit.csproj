@@ -59,6 +59,7 @@
     <Compile Include="Provider\SqlServerProviderVsSmoTests.cs" />
     <Compile Include="SpecificationTests.cs" />
     <Compile Include="TestCaseGenerator.cs" />
+    <Compile Include="Versioning\DbVersionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MigSharp.SmoProvider\MigSharp.Smo.csproj">
@@ -69,9 +70,6 @@
       <Project>{EAFA7470-A919-449C-9142-3D515DAB52AD}</Project>
       <Name>MigSharp</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Versioning\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

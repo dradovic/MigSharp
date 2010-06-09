@@ -4,7 +4,7 @@ namespace MigSharp.Versioning
 {
     internal interface IDbVersion
     {
-        bool Includes(IMigration migration);
+        bool Includes(IMigrationMetaData migration);
 
         /// <summary>
         /// Updates the version to include <paramref name="migration"/>.

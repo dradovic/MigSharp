@@ -51,6 +51,8 @@
   <ItemGroup>
     <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="Core\Commands\DropDefaultConstraintCommand.cs" />
+    <Compile Include="Versioning\IMigrationMetaData.cs" />
+    <Compile Include="MigrationExportAttribute.cs" />
     <Compile Include="Versioning\DbVersion.cs" />
     <Compile Include="Core\IScriptableCommand.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
@@ -72,6 +74,11 @@
     <Compile Include="Core\Database.cs" />
     <Compile Include="IMigration.cs" />
     <Compile Include="INewTable.cs" />
+    <Compile Include="Versioning\DbVersionDataSet.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="Versioning\IDbVersion.cs" />
     <Compile Include="Versioning\MigrationProcess.cs" />
     <Compile Include="Migrator.cs" />
@@ -84,6 +91,19 @@
     <Compile Include="Core\Commands\RenameCommand.cs" />
     <Compile Include="Core\Table.cs" />
     <Compile Include="Core\TableCollection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Versioning\DbVersionDataSet.xsc">
+      <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
+    </None>
+    <None Include="Versioning\DbVersionDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>DbVersionDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Versioning\DbVersionDataSet.xss">
+      <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
