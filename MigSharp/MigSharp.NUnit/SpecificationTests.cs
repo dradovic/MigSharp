@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace MigSharp.NUnit
 {
-    [TestFixture]
+    [TestFixture, Category("Smoke")]
     public class SpecificationTests
     {
         [Test]

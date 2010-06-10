@@ -9,7 +9,7 @@ using Rhino.Mocks;
 
 namespace MigSharp.NUnit.Versioning
 {
-    [TestFixture]
+    [TestFixture, Category("Smoke")]
     public class DbVersionTests
     {
         private static readonly DateTime ExistingTimestamp = new DateTime(2010, 06, 09, 11, 01, 34);

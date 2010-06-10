@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace MigSharp.NUnit.Provider
 {
-    [TestFixture]
+    [TestFixture, Category("Integration")]
     public class SqlServerProviderVsSmoTests
     {
         [Test, TestCaseSource(typeof(TestCaseGenerator), "GetDatabaseCases")]
