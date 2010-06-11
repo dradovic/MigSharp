@@ -1,7 +1,7 @@
 using System;
 using System.Data;
 
-namespace MigSharp.Versioning
+namespace MigSharp.Process
 {
     internal class DbVersion : IDbVersion
     {

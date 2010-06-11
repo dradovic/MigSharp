@@ -10,7 +10,7 @@
 
 #pragma warning disable 1591
 
-namespace MigSharp.Versioning {
+namespace MigSharp.Process {
     
     
     /// <summary>
@@ -261,7 +261,7 @@ namespace MigSharp.Versioning {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "2.0.0.0")]
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class DbVersionDataTable : global::System.Data.TypedTableBase<DbVersionRow> {
+        public partial class DbVersionDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
             
             private global::System.Data.DataColumn columnTimestamp;
             
@@ -364,6 +364,11 @@ namespace MigSharp.Versioning {
             public DbVersionRow FindByTimestamp(System.DateTime Timestamp) {
                 return ((DbVersionRow)(this.Rows.Find(new object[] {
                             Timestamp})));
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            public virtual global::System.Collections.IEnumerator GetEnumerator() {
+                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]

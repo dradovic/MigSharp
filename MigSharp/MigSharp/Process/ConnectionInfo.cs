@@ -1,4 +1,4 @@
-﻿namespace MigSharp.Versioning
+﻿namespace MigSharp.Process
 {
     internal class ConnectionInfo
     {

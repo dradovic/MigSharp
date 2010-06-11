@@ -1,6 +1,6 @@
 using System;
 
-namespace MigSharp.Versioning
+namespace MigSharp.Process
 {
     internal interface IMigrationMetaData
     {

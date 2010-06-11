@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace MigSharp.Versioning
+namespace MigSharp.Process
 {
     internal interface IDbVersion
     {

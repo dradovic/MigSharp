@@ -51,10 +51,10 @@
   <ItemGroup>
     <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="Core\Commands\DropDefaultConstraintCommand.cs" />
-    <Compile Include="Versioning\ConnectionInfo.cs" />
-    <Compile Include="Versioning\IMigrationMetaData.cs" />
+    <Compile Include="Process\ConnectionInfo.cs" />
+    <Compile Include="Process\IMigrationMetaData.cs" />
     <Compile Include="MigrationExportAttribute.cs" />
-    <Compile Include="Versioning\DbVersion.cs" />
+    <Compile Include="Process\DbVersion.cs" />
     <Compile Include="Core\IScriptableCommand.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
     <Compile Include="Core\Commands\AlterColumnCommand.cs" />
@@ -75,13 +75,15 @@
     <Compile Include="Core\Database.cs" />
     <Compile Include="IMigration.cs" />
     <Compile Include="INewTable.cs" />
-    <Compile Include="Versioning\DbVersionDataSet.Designer.cs">
+    <Compile Include="Process\DbVersionDataSet.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
     </Compile>
-    <Compile Include="Versioning\IDbVersion.cs" />
-    <Compile Include="Versioning\MigrationBatch.cs" />
+    <Compile Include="Process\IDbVersion.cs" />
+    <Compile Include="Providers\ProviderFactory.cs" />
+    <Compile Include="Providers\IProviderFactory.cs" />
+    <Compile Include="Process\MigrationBatch.cs" />
     <Compile Include="Migrator.cs" />
     <Compile Include="Providers\AddedColumn.cs" />
     <Compile Include="Providers\IProvider.cs" />
@@ -92,18 +94,18 @@
     <Compile Include="Core\Commands\RenameCommand.cs" />
     <Compile Include="Core\Table.cs" />
     <Compile Include="Core\TableCollection.cs" />
-    <Compile Include="Versioning\MigrationStep.cs" />
+    <Compile Include="Process\MigrationStep.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Versioning\DbVersionDataSet.xsc">
+    <None Include="Process\DbVersionDataSet.xsc">
       <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
     </None>
-    <None Include="Versioning\DbVersionDataSet.xsd">
+    <None Include="Process\DbVersionDataSet.xsd">
       <SubType>Designer</SubType>
       <Generator>MSDataSetGenerator</Generator>
       <LastGenOutput>DbVersionDataSet.Designer.cs</LastGenOutput>
     </None>
-    <None Include="Versioning\DbVersionDataSet.xss">
+    <None Include="Process\DbVersionDataSet.xss">
       <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
     </None>
   </ItemGroup>

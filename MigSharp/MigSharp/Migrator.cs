@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Data.Common;
 using System.Reflection;
 
 using MigSharp.Core;
-using MigSharp.Versioning;
+using MigSharp.Process;
+using MigSharp.Providers;
 
 namespace MigSharp
 {
@@ -13,6 +15,11 @@ namespace MigSharp
     {
         private readonly ConnectionInfo _connectionInfo;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="Migrator"/>.
+        /// </summary>
+        /// <param name="connectionString">Connection string to the database to be migrated.</param>
+        /// <param name="providerInvariantName">Invariant name of a provider. <seealso cref="DbProviderFactories.GetFactory(string)"/></param>
         public Migrator(string connectionString, string providerInvariantName)
         {
             _connectionInfo = new ConnectionInfo(connectionString, providerInvariantName);
@@ -24,9 +31,9 @@ namespace MigSharp
             List<Lazy<IMigration, IMigrationMetaData>> migrations = Collect(assembly);
             if (migrations.Count > 0)
             {
-                var batch = new MigrationBatch(migrations);
+                var batch = new MigrationBatch(migrations, _connectionInfo, new ProviderFactory());
                 var dbVersion = DbVersion.Create(_connectionInfo);
-                batch.Process(dbVersion, _connectionInfo);
+                batch.Process(dbVersion);
             }
         }
 
