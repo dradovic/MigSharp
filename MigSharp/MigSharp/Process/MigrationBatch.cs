@@ -25,9 +25,10 @@ namespace MigSharp.Process
                                        where !dbVersion.Includes(m.Metadata)
                                        orderby m.Metadata.Timestamp
                                        select m.Value;
+            IDbConnectionFactory connectionFactory = new DbConnectionFactory();
             foreach (IMigration migration in applicableMigrations)
             {
-                var step = new MigrationStep(migration, _connectionInfo, _providerFactory);
+                var step = new MigrationStep(migration, _connectionInfo, _providerFactory, connectionFactory);
                 step.Execute(dbVersion);
             }
         }

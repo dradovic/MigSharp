@@ -52,6 +52,8 @@
     <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="Core\Commands\DropDefaultConstraintCommand.cs" />
     <Compile Include="Process\ConnectionInfo.cs" />
+    <Compile Include="Process\DbConnectionFactory.cs" />
+    <Compile Include="Process\IDbConnectionFactory.cs" />
     <Compile Include="Process\IMigrationMetaData.cs" />
     <Compile Include="MigrationExportAttribute.cs" />
     <Compile Include="Process\DbVersion.cs" />

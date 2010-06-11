@@ -1,5 +1,4 @@
 using System.Data;
-using System.Data.Common;
 using System.Diagnostics;
 
 using MigSharp.Core;
@@ -12,24 +11,27 @@ namespace MigSharp.Process
         private readonly IMigration _migration;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProviderFactory _providerFactory;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public MigrationStep(IMigration migration, ConnectionInfo connectionInfo, IProviderFactory providerFactory)
+        public MigrationStep(IMigration migration, ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
         {
             _migration = migration;
             _connectionInfo = connectionInfo;
             _providerFactory = providerFactory;
+            _connectionFactory = connectionFactory;
         }
 
         public void Execute(IDbVersion dbVersion)
         {
-            using (IDbConnection connection = OpenConnection())
+            using (IDbConnection connection = _connectionFactory.OpenConnection(_connectionInfo))
             {
                 Debug.Assert(connection.State == ConnectionState.Open);
 
-                using (connection.BeginTransaction())
+                using (IDbTransaction transaction = connection.BeginTransaction())
                 {
                     Execute(connection);
                     dbVersion.Update(connection, _migration);
+                    transaction.Commit();
                 }
             }
         }
@@ -48,15 +50,6 @@ namespace MigSharp.Process
                 command.CommandText = commandText;
                 command.ExecuteNonQuery(); // TODO: add logging
             }
-        }
-
-        private IDbConnection OpenConnection()
-        {
-            DbProviderFactory factory = DbProviderFactories.GetFactory(_connectionInfo.ProviderInvariantName);
-            var connection = factory.CreateConnection();
-            connection.ConnectionString = _connectionInfo.ConnectionString;
-            connection.Open();
-            return connection;
         }
     }
 }
