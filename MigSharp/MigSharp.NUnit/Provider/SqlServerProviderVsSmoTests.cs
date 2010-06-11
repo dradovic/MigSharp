@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-using MigSharp.Core;
+﻿using MigSharp.Core;
 using MigSharp.Providers;
 using MigSharp.Smo;
 
@@ -23,13 +21,7 @@ namespace MigSharp.NUnit.Provider
         {
             CommandScripter sqlScripter = new CommandScripter(sqlProvider);
             CommandScripter smoScripter = new CommandScripter(smoProvider);
-            List<string> sqlCommandTexts = new List<string>(sqlScripter.GetCommandTexts(database));
-            List<string> smoCommandTexts = new List<string>(smoScripter.GetCommandTexts(database));
-            CollectionAssert.AreEqual(
-                smoCommandTexts,
-                sqlCommandTexts);
-            CollectionAssert.IsNotEmpty(sqlCommandTexts);
-            CollectionAssert.IsNotEmpty(smoCommandTexts);
+            ScriptComparer.AssertAreEqual(smoScripter.GetCommandTexts(database), sqlScripter.GetCommandTexts(database));
         }
     }
 }

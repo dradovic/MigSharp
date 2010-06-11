@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 
 using MigSharp.Core;
 using MigSharp.Providers;
@@ -18,8 +17,9 @@ namespace MigSharp.NUnit
             db.Tables["Customers"].Rename("Customer");
             IProvider provider = new SqlServerProvider();
             CommandScripter scripter = new CommandScripter(provider);
-            List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
-            CollectionAssert.AreEqual(new[] { "EXEC dbo.sp_rename @objname = N'[dbo].[Customers]', @newname = N'Customer', @objtype = N'OBJECT'" }, commandTexts);
+            ScriptComparer.AssertAreEqual(
+                new[] { "EXEC dbo.sp_rename @objname = N'[dbo].[Customers]', @newname = N'Customer', @objtype = N'OBJECT'" },
+                scripter.GetCommandTexts(db));
         }
 
         [Test]
@@ -30,8 +30,9 @@ namespace MigSharp.NUnit
                 .Columns["Val"].Rename("ValAbsoluteIncome");
             IProvider provider = new SqlServerProvider();
             CommandScripter scripter = new CommandScripter(provider);
-            List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
-            CollectionAssert.AreEqual(new[] { "EXEC dbo.sp_rename @objname=N'[dbo].[S_AggregatorValues].[Val]', @newname=N'ValAbsoluteIncome', @objtype=N'COLUMN'" }, commandTexts);
+            ScriptComparer.AssertAreEqual(
+                new[] { "EXEC dbo.sp_rename @objname=N'[dbo].[S_AggregatorValues].[Val]', @newname=N'ValAbsoluteIncome', @objtype=N'COLUMN'" },
+                scripter.GetCommandTexts(db));
         }
 
         [Test]
@@ -50,8 +51,7 @@ namespace MigSharp.NUnit
                 .WithNullableColumn("Paths", DbType.String);
             IProvider provider = new SqlServerProvider();
             CommandScripter scripter = new CommandScripter(provider);
-            List<string> commandTexts = new List<string>(scripter.GetCommandTexts(db));
-            CollectionAssert.AreEqual(new[]
+            ScriptComparer.AssertAreEqual(new[]
             {
                 @"ALTER TABLE [dbo].[S_Aggregator] ADD [ValidFlag] [smallint] NOT NULL CONSTRAINT [DF_S_Aggregator_ValidFlag]  DEFAULT 0",
                 @"ALTER TABLE [dbo].[S_Aggregator] ADD [Paths] [int] NULL",
@@ -71,7 +71,7 @@ namespace MigSharp.NUnit
 )
 "
             },
-                commandTexts);
+                scripter.GetCommandTexts(db));
         }
     }
 }
