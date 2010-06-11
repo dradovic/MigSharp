@@ -1,6 +1,5 @@
 using System;
 using System.Data;
-using System.Data.Common;
 
 namespace MigSharp.Versioning
 {
@@ -13,7 +12,7 @@ namespace MigSharp.Versioning
             _dataSet = dataSet;
         }
 
-        public static DbVersion Create(string connectionString)
+        public static DbVersion Create(ConnectionInfo connectionInfo)
         {
             var dataSet = new DbVersionDataSet();
             throw new NotImplementedException();

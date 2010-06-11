@@ -13,7 +13,7 @@ namespace MigSharp.Versioning
             _migrations = migrations;
         }
 
-        public void Process(IDbVersion dbVersion, string connectionString)
+        public void Process(IDbVersion dbVersion, ConnectionInfo connectionInfo)
         {
             var applicableMigrations = from m in _migrations
                                        where !dbVersion.Includes(m.Metadata)
@@ -22,7 +22,7 @@ namespace MigSharp.Versioning
             foreach (IMigration migration in applicableMigrations)
             {
                 var step = new MigrationStep(migration);
-                step.Execute(dbVersion, connectionString);
+                step.Execute(dbVersion, connectionInfo);
             }
         }
     }

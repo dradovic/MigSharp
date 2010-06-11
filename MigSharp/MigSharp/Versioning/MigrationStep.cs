@@ -13,9 +13,9 @@ namespace MigSharp.Versioning
             _migration = migration;
         }
 
-        public void Execute(IDbVersion dbVersion, string connectionString)
+        public void Execute(IDbVersion dbVersion, ConnectionInfo connectionInfo)
         {
-            using (IDbConnection connection = InitializeConnection(connectionString))
+            using (IDbConnection connection = InitializeConnection(connectionInfo))
             {
                 Debug.Assert(connection.State == ConnectionState.Open);
 
@@ -34,7 +34,7 @@ namespace MigSharp.Versioning
             throw new NotImplementedException();
         }
 
-        private IDbConnection InitializeConnection(string connectionString)
+        private IDbConnection InitializeConnection(ConnectionInfo connectionInfo)
         {
             throw new NotImplementedException();
         }

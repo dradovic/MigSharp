@@ -11,11 +11,11 @@ namespace MigSharp
 {
     public class Migrator
     {
-        private readonly string _connectionString;
+        private readonly ConnectionInfo _connectionInfo;
 
-        public Migrator(string connectionString)
+        public Migrator(string connectionString, string providerInvariantName)
         {
-            _connectionString = connectionString;
+            _connectionInfo = new ConnectionInfo(connectionString, providerInvariantName);
         }
 
         public void UpgradeAll(Assembly assembly)
@@ -25,8 +25,8 @@ namespace MigSharp
             if (migrations.Count > 0)
             {
                 var batch = new MigrationBatch(migrations);
-                var dbVersion = DbVersion.Create(_connectionString);
-                batch.Process(dbVersion, _connectionString);
+                var dbVersion = DbVersion.Create(_connectionInfo);
+                batch.Process(dbVersion, _connectionInfo);
             }
         }
 

@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="Core\Commands\DropDefaultConstraintCommand.cs" />
+    <Compile Include="Versioning\ConnectionInfo.cs" />
     <Compile Include="Versioning\IMigrationMetaData.cs" />
     <Compile Include="MigrationExportAttribute.cs" />
     <Compile Include="Versioning\DbVersion.cs" />
