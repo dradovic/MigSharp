@@ -9,12 +9,12 @@ using Rhino.Mocks;
 
 namespace MigSharp.NUnit.Process
 {
-    [TestFixture]
+    [TestFixture, Category("Smoke")]
     public class MigrationStepTests
     {
         private const string TableName = "New Table";
 
-        [Test, Category("Smoke")]
+        [Test]
         public void TestExecute()
         {
             const string providerInvariantName = "providerName";

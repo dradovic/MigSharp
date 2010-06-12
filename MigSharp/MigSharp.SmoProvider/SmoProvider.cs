@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -22,7 +22,7 @@ namespace MigSharp.Smo
             {
                 Column column = new Column(table, createdColumn.Name)
                 {
-                    DataType = Convert(createdColumn.Type),
+                    DataType = Convert(createdColumn.DbType),
                     Nullable = createdColumn.IsNullable,
                 };
                 table.Columns.Add(column);
@@ -50,7 +50,7 @@ namespace MigSharp.Smo
             {
                 Column column = new Column(table, addedColumn.Name)
                 {
-                    DataType = Convert(addedColumn.Type),
+                    DataType = Convert(addedColumn.DbType),
                     Nullable = addedColumn.IsNullable,
                 };
                 if (addedColumn.DefaultValue != null)

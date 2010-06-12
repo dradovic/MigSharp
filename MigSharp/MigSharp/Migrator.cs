@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using MigSharp.Core;
@@ -51,6 +52,7 @@ namespace MigSharp
 
         private class MigrationImporter
         {
+            [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             [ImportMany]
 // ReSharper disable UnusedAutoPropertyAccessor.Local
             public IEnumerable<Lazy<IMigration, IMigrationMetaData>> Migrations { get; set; } // set by MEF

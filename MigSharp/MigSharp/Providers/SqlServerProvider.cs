@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace MigSharp.Providers
@@ -27,7 +28,7 @@ namespace MigSharp.Providers
                 commandText += string.Format("{0}{1} {2} {3}NULL", 
                     Identation, 
                     Escape(column.Name),
-                    GetTypeSpecifier(column.Type),
+                    GetTypeSpecifier(column.DbType),
                     column.IsNullable ? string.Empty : "NOT ");
 
                 columnDelimiterIsNeeded = true;
@@ -77,7 +78,7 @@ namespace MigSharp.Providers
                 }
                 commandText += string.Format("{0} {1} {2}NULL{3}",
                     Escape(column.Name), 
-                    GetTypeSpecifier(column.Type), 
+                    GetTypeSpecifier(column.DbType), 
                     column.IsNullable ? string.Empty : "NOT ",
                     defaultConstraintClause);
 
@@ -96,7 +97,7 @@ namespace MigSharp.Providers
 
         private static string GetDefaultConstraintName(string tableName, string columnName)
         {
-            return string.Format("[DF_{0}_{1}]", EscapeAsNamePart(tableName), EscapeAsNamePart(columnName));
+            return string.Format(CultureInfo.InvariantCulture, "[DF_{0}_{1}]", EscapeAsNamePart(tableName), EscapeAsNamePart(columnName));
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
@@ -116,17 +117,17 @@ namespace MigSharp.Providers
 
         private static string CreateTable(string tableName)
         {
-            return string.Format("CREATE TABLE [dbo].{0}", Escape(tableName));
+            return string.Format(CultureInfo.InvariantCulture, "CREATE TABLE [dbo].{0}", Escape(tableName));
         }
 
         private static string AlterTable(string tableName)
         {
-            return string.Format("ALTER TABLE [dbo].{0}", Escape(tableName));
+            return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE [dbo].{0}", Escape(tableName));
         }
 
         private static string Escape(string name)
         {
-            return string.Format("[{0}]", name);
+            return string.Format(CultureInfo.InvariantCulture, "[{0}]", name);
         }
 
         private static string EscapeAsNamePart(string name)

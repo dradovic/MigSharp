@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace MigSharp.Providers
 {
@@ -12,7 +13,7 @@ namespace MigSharp.Providers
                 case "System.Data.SqlClient":
                     return new SqlServerProvider();
                 default:
-                    throw new NotSupportedException(string.Format("Cannot find a Provider for the DbProvider '{0}'", providerInvariantName)); // TODO: reformulate message text (Provider -> CommandTextProvider?)
+                    throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, "Cannot find a Provider for the DbProvider '{0}'", providerInvariantName)); // TODO: reformulate message text (Provider -> CommandTextProvider?)
             }
         }
     }

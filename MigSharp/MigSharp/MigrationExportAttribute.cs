@@ -5,7 +5,7 @@ namespace MigSharp
 {
     [MetadataAttribute]
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class MigrationExportAttribute : ExportAttribute
+    public sealed class MigrationExportAttribute : ExportAttribute
     {
         private readonly DateTime _timestamp;
         public DateTime Timestamp { get { return _timestamp; } }
