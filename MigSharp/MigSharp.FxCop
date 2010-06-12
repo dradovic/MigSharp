@@ -18,10 +18,24 @@
   <CustomDictionaries SearchFxCopDir="True" SearchUserProfile="True" SearchProjectDir="True" />
   <SearchGlobalAssemblyCache>False</SearchGlobalAssemblyCache>
   <DeadlockDetectionTimeout>120</DeadlockDetectionTimeout>
-  <IgnoreGeneratedCode>False</IgnoreGeneratedCode>
+  <IgnoreGeneratedCode>True</IgnoreGeneratedCode>
  </ProjectOptions>
  <Targets>
-  <Target Name="$(ProjectDir)/MigSharp/bin/Debug/MigSharp.dll" Analyze="True" AnalyzeAllChildren="True" />
+  <Target Name="$(ProjectDir)/MigSharp/bin/Debug/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
+   <Modules AnalyzeAllChildren="False">
+    <Module Name="migsharp.dll" Analyze="True" AnalyzeAllChildren="False">
+     <Namespaces AnalyzeAllChildren="False">
+      <Namespace Name="" Analyze="True" AnalyzeAllChildren="True" />
+      <Namespace Name="MigSharp" Analyze="True" AnalyzeAllChildren="True" />
+      <Namespace Name="MigSharp.Core" Analyze="True" AnalyzeAllChildren="True" />
+      <Namespace Name="MigSharp.Core.Commands" Analyze="True" AnalyzeAllChildren="True" />
+      <Namespace Name="MigSharp.Process" Analyze="True" AnalyzeAllChildren="True" />
+      <Namespace Name="MigSharp.Providers" Analyze="True" AnalyzeAllChildren="True" />
+     </Namespaces>
+     <Resources AnalyzeAllChildren="False" />
+    </Module>
+   </Modules>
+  </Target>
  </Targets>
  <Rules>
   <RuleFiles>
