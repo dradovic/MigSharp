@@ -10,7 +10,7 @@ namespace MigSharp.Process
     {
         private readonly IEnumerable<Lazy<IMigration, IMigrationMetaData>> _migrations;
         private readonly ConnectionInfo _connectionInfo;
-        private readonly IProviderFactory _providerFactory;
+        private readonly IProviderFactory _providerFactory; // TODO: extract as a service and get via service location
 
         public MigrationBatch(IEnumerable<Lazy<IMigration, IMigrationMetaData>> migrations, ConnectionInfo connectionInfo, IProviderFactory providerFactory)
         {
@@ -25,7 +25,7 @@ namespace MigSharp.Process
                                        where !dbVersion.Includes(m.Metadata)
                                        orderby m.Metadata.Timestamp
                                        select m.Value;
-            IDbConnectionFactory connectionFactory = new DbConnectionFactory();
+            IDbConnectionFactory connectionFactory = new DbConnectionFactory(); // TODO: extract as a service and get via service location
             foreach (IMigration migration in applicableMigrations)
             {
                 var step = new MigrationStep(migration, _connectionInfo, _providerFactory, connectionFactory);
