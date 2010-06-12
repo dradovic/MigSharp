@@ -21,7 +21,7 @@
   <IgnoreGeneratedCode>True</IgnoreGeneratedCode>
  </ProjectOptions>
  <Targets>
-  <Target Name="$(ProjectDir)/MigSharp/bin/Debug/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
+  <Target Name="$(ProjectDir)/MigSharp/bin/Release/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
    <Modules AnalyzeAllChildren="False">
     <Module Name="migsharp.dll" Analyze="True" AnalyzeAllChildren="False">
      <Namespaces AnalyzeAllChildren="False">
