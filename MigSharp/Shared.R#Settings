@@ -3,9 +3,6 @@
   <ResharperSettings>
     <CodeAnnotations />
     <CodeStyleSettings>
-      <ExternalPath IsNull="False">
-      </ExternalPath>
-      <Sharing>SOLUTION</Sharing>
       <CSharp>
         <FormatSettings>
           <ALIGN_MULTILINE_ARGUMENT>False</ALIGN_MULTILINE_ARGUMENT>

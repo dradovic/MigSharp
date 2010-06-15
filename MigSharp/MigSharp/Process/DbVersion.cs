@@ -1,11 +1,14 @@
 using System;
 using System.Data;
+using System.Diagnostics;
 
 namespace MigSharp.Process
 {
     internal class DbVersion : IDbVersion
     {
         private readonly DbVersionDataSet _dataSet;
+
+        internal static string TableName { get { return "DbVersion"; } }
 
         private DbVersion(DbVersionDataSet dataSet)
         {
@@ -15,6 +18,7 @@ namespace MigSharp.Process
         public static DbVersion Create(ConnectionInfo connectionInfo)
         {
             var dataSet = new DbVersionDataSet();
+            Debug.Assert(dataSet.DbVersion.TableName == TableName);
             throw new NotImplementedException();
             return Create(dataSet);
         }
@@ -26,7 +30,7 @@ namespace MigSharp.Process
 
         public bool Includes(IMigrationMetaData metaData)
         {
-            return _dataSet.DbVersion.FindByTimestamp(metaData.Timestamp) != null; // TODO: include Module
+            return _dataSet.DbVersion.FindByTimestamp(metaData.Timestamp()) != null; // TODO: include Module
         }
 
         public void Update(IDbConnection connection, IMigration migration)

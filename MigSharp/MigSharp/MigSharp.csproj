@@ -83,6 +83,7 @@
       <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
     </Compile>
     <Compile Include="Process\IDbVersion.cs" />
+    <Compile Include="Process\MetaDataExtensions.cs" />
     <Compile Include="Providers\ProviderFactory.cs" />
     <Compile Include="Providers\IProviderFactory.cs" />
     <Compile Include="Process\MigrationBatch.cs" />
@@ -112,14 +113,12 @@
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
   <Target Name="AfterBuild">
     <CreateItem Include="@(ReferencePath)" Condition="'%(CopyLocal)'=='true'">
-      <Output TaskParameter="Include" ItemName="IlmergeAssemblies"/>
+      <Output TaskParameter="Include" ItemName="IlmergeAssemblies" />
     </CreateItem>
-    <Exec Command="&quot;ILmerge.exe&quot; /out:@(MainAssembly) &quot;@(IntermediateAssembly)&quot; @(IlmergeAssemblies->'&quot;%(FullPath)&quot;', ' ')"/>
+    <Exec Command="&quot;ILmerge.exe&quot; /out:@(MainAssembly) &quot;@(IntermediateAssembly)&quot; @(IlmergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
     <!--Delete Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')"/-->
   </Target>
-
-  <Target Name="_CopyFilesMarkedCopyLocal"/>
+  <Target Name="_CopyFilesMarkedCopyLocal" />
 </Project>

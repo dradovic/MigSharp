@@ -23,7 +23,7 @@ namespace MigSharp.Process
         {
             var applicableMigrations = from m in _migrations
                                        where !dbVersion.Includes(m.Metadata)
-                                       orderby m.Metadata.Timestamp
+                                       orderby m.Metadata.Timestamp()
                                        select m.Value;
             IDbConnectionFactory connectionFactory = new DbConnectionFactory(); // TODO: extract as a service and get via service location
             foreach (IMigration migration in applicableMigrations)

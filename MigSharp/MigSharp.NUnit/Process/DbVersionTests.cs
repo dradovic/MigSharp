@@ -44,7 +44,12 @@ namespace MigSharp.NUnit.Versioning
         private static IMigrationMetaData GetMigrationMetaData(DateTime timeStamp)
         {
             IMigrationMetaData existingMigration = MockRepository.GenerateStub<IMigrationMetaData>();
-            existingMigration.Expect(m => m.Timestamp).Return(timeStamp);
+            existingMigration.Expect(m => m.Year).Return(timeStamp.Year);
+            existingMigration.Expect(m => m.Month).Return(timeStamp.Month);
+            existingMigration.Expect(m => m.Day).Return(timeStamp.Day);
+            existingMigration.Expect(m => m.Hour).Return(timeStamp.Hour);
+            existingMigration.Expect(m => m.Minute).Return(timeStamp.Minute);
+            existingMigration.Expect(m => m.Second).Return(timeStamp.Second);
             return existingMigration;
         }
 

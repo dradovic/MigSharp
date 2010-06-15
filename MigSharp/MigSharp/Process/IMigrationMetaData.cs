@@ -1,9 +1,12 @@
-using System;
-
 namespace MigSharp.Process
 {
-    internal interface IMigrationMetaData
+    public interface IMigrationMetaData
     {
-        DateTime Timestamp { get; }
+        int Year { get; }
+        int Month { get; }
+        int Day { get; }
+        int Hour { get; }
+        int Minute { get; }
+        int Second { get; }
     }
 }

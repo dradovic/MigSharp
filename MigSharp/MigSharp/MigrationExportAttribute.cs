@@ -7,16 +7,33 @@ namespace MigSharp
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public sealed class MigrationExportAttribute : ExportAttribute
     {
-        private readonly DateTime _timestamp;
-        public DateTime Timestamp { get { return _timestamp; } }
+        private readonly int _year;
+        private readonly int _month;
+        private readonly int _day;
+        private readonly int _hour;
+        private readonly int _minute;
+        private readonly int _second;
+
+        public int Year { get { return _year; } }
+        public int Month { get { return _month; } }
+        public int Day { get { return _day; } }
+        public int Hour { get { return _hour; } }
+        public int Minute { get { return _minute; } }
+        public int Second { get { return _second; } }
 
         public string Name { get; set; }
 
         public string Module { get; set; }
 
-        public MigrationExportAttribute(DateTime timestamp) : base(typeof(IMigration))
+        public MigrationExportAttribute(int year, int month, int day, int hour, int minute, int second)
+            : base(typeof(IMigration))
         {
-            _timestamp = timestamp;
+            _year = year;
+            _month = month;
+            _day = day;
+            _hour = hour;
+            _minute = minute;
+            _second = second;
         }
     }
 }
