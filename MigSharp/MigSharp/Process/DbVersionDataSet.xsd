@@ -9,15 +9,15 @@
       </DataSource>
     </xs:appinfo>
   </xs:annotation>
-  <xs:element name="DbVersionDataSet" msdata:IsDataSet="true" msdata:Locale="" msprop:Generator_DataSetName="DbVersionDataSet" msprop:Generator_UserDSName="DbVersionDataSet" msprop:EnableTableAdapterManager="true">
+  <xs:element name="DbVersionDataSet" msdata:IsDataSet="true" msdata:Locale="" msprop:Generator_UserDSName="DbVersionDataSet" msprop:Generator_DataSetName="DbVersionDataSet" msprop:EnableTableAdapterManager="true">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element name="DbVersion" msdata:Locale="" msprop:Generator_UserTableName="DbVersion" msprop:Generator_RowDeletedName="DbVersionRowDeleted" msprop:Generator_TableClassName="DbVersionDataTable" msprop:Generator_RowChangedName="DbVersionRowChanged" msprop:Generator_RowClassName="DbVersionRow" msprop:Generator_RowChangingName="DbVersionRowChanging" msprop:Generator_RowEvArgName="DbVersionRowChangeEvent" msprop:Generator_RowEvHandlerName="DbVersionRowChangeEventHandler" msprop:Generator_TablePropName="DbVersion" msprop:Generator_TableVarName="tableDbVersion" msprop:Generator_RowDeletingName="DbVersionRowDeleting">
+        <xs:element name="DbVersion" msdata:Locale="" msprop:Generator_UserTableName="DbVersion" msprop:Generator_RowDeletedName="DbVersionRowDeleted" msprop:Generator_RowChangedName="DbVersionRowChanged" msprop:Generator_RowClassName="DbVersionRow" msprop:Generator_RowChangingName="DbVersionRowChanging" msprop:Generator_RowEvArgName="DbVersionRowChangeEvent" msprop:Generator_RowEvHandlerName="DbVersionRowChangeEventHandler" msprop:Generator_TableClassName="DbVersionDataTable" msprop:Generator_TableVarName="tableDbVersion" msprop:Generator_RowDeletingName="DbVersionRowDeleting" msprop:Generator_TablePropName="DbVersion">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="Timestamp" msprop:Generator_UserColumnName="Timestamp" msprop:Generator_ColumnPropNameInRow="Timestamp" msprop:Generator_ColumnVarNameInTable="columnTimestamp" msprop:Generator_ColumnPropNameInTable="TimestampColumn" type="xs:dateTime" />
-              <xs:element name="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInTable="NameColumn" type="xs:string" minOccurs="0" />
-              <xs:element name="Module" msprop:Generator_UserColumnName="Module" msprop:Generator_ColumnPropNameInRow="Module" msprop:Generator_ColumnVarNameInTable="columnModule" msprop:Generator_ColumnPropNameInTable="ModuleColumn" type="xs:string" minOccurs="0" />
+              <xs:element name="Timestamp" msprop:Generator_UserColumnName="Timestamp" msprop:Generator_ColumnVarNameInTable="columnTimestamp" msprop:Generator_ColumnPropNameInRow="Timestamp" msprop:Generator_ColumnPropNameInTable="TimestampColumn" type="xs:dateTime" />
+              <xs:element name="Tag" msprop:Generator_UserColumnName="Tag" msprop:Generator_ColumnVarNameInTable="columnTag" msprop:Generator_ColumnPropNameInRow="Tag" msprop:Generator_ColumnPropNameInTable="TagColumn" type="xs:string" minOccurs="0" />
+              <xs:element name="Module" msprop:Generator_UserColumnName="Module" msprop:Generator_ColumnVarNameInTable="columnModule" msprop:Generator_ColumnPropNameInRow="Module" msprop:Generator_ColumnPropNameInTable="ModuleColumn" type="xs:string" />
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -26,6 +26,7 @@
     <xs:unique name="Constraint1" msdata:PrimaryKey="true">
       <xs:selector xpath=".//mstns:DbVersion" />
       <xs:field xpath="mstns:Timestamp" />
+      <xs:field xpath="mstns:Module" />
     </xs:unique>
   </xs:element>
 </xs:schema>

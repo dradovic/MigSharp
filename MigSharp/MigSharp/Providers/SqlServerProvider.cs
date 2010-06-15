@@ -152,7 +152,7 @@ namespace MigSharp.Providers
                 case DbType.Date:
                     break;
                 case DbType.DateTime:
-                    break;
+                    return "[datetime]";
                 case DbType.Decimal:
                     break;
                 case DbType.Double:

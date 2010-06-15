@@ -29,14 +29,14 @@ namespace MigSharp.Process
 
                 using (IDbTransaction transaction = connection.BeginTransaction())
                 {
-                    Execute(connection);
+                    Execute(connection, transaction);
                     dbVersion.Update(connection, _migration);
                     transaction.Commit();
                 }
             }
         }
 
-        private void Execute(IDbConnection connection)
+        private void Execute(IDbConnection connection, IDbTransaction transaction)
         {
             Debug.Assert(connection.State == ConnectionState.Open);
 
@@ -47,6 +47,8 @@ namespace MigSharp.Process
             foreach (string commandText in scripter.GetCommandTexts(database))
             {
                 IDbCommand command = connection.CreateCommand();
+                command.CommandTimeout = 0; // do not timeout; the client is responsible for not causing lock-outs
+                command.Transaction = transaction;
                 command.CommandText = commandText;
                 command.ExecuteNonQuery(); // TODO: add logging
             }

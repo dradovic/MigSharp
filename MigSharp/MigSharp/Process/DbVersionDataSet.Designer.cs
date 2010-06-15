@@ -261,11 +261,11 @@ namespace MigSharp.Process {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "2.0.0.0")]
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class DbVersionDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class DbVersionDataTable : global::System.Data.TypedTableBase<DbVersionRow> {
             
             private global::System.Data.DataColumn columnTimestamp;
             
-            private global::System.Data.DataColumn columnName;
+            private global::System.Data.DataColumn columnTag;
             
             private global::System.Data.DataColumn columnModule;
             
@@ -307,9 +307,9 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public global::System.Data.DataColumn NameColumn {
+            public global::System.Data.DataColumn TagColumn {
                 get {
-                    return this.columnName;
+                    return this.columnTag;
                 }
             }
             
@@ -349,11 +349,11 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public DbVersionRow AddDbVersionRow(System.DateTime Timestamp, string Name, string Module) {
+            public DbVersionRow AddDbVersionRow(System.DateTime Timestamp, string Tag, string Module) {
                 DbVersionRow rowDbVersionRow = ((DbVersionRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         Timestamp,
-                        Name,
+                        Tag,
                         Module};
                 rowDbVersionRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowDbVersionRow);
@@ -361,14 +361,10 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public DbVersionRow FindByTimestamp(System.DateTime Timestamp) {
+            public DbVersionRow FindByTimestampModule(System.DateTime Timestamp, string Module) {
                 return ((DbVersionRow)(this.Rows.Find(new object[] {
-                            Timestamp})));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
+                            Timestamp,
+                            Module})));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -386,7 +382,7 @@ namespace MigSharp.Process {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             internal void InitVars() {
                 this.columnTimestamp = base.Columns["Timestamp"];
-                this.columnName = base.Columns["Name"];
+                this.columnTag = base.Columns["Tag"];
                 this.columnModule = base.Columns["Module"];
             }
             
@@ -394,14 +390,15 @@ namespace MigSharp.Process {
             private void InitClass() {
                 this.columnTimestamp = new global::System.Data.DataColumn("Timestamp", typeof(global::System.DateTime), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnTimestamp);
-                this.columnName = new global::System.Data.DataColumn("Name", typeof(string), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnName);
+                this.columnTag = new global::System.Data.DataColumn("Tag", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnTag);
                 this.columnModule = new global::System.Data.DataColumn("Module", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnModule);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
-                                this.columnTimestamp}, true));
+                                this.columnTimestamp,
+                                this.columnModule}, true));
                 this.columnTimestamp.AllowDBNull = false;
-                this.columnTimestamp.Unique = true;
+                this.columnModule.AllowDBNull = false;
                 this.Locale = new global::System.Globalization.CultureInfo("");
             }
             
@@ -545,29 +542,24 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public string Name {
+            public string Tag {
                 get {
                     try {
-                        return ((string)(this[this.tableDbVersion.NameColumn]));
+                        return ((string)(this[this.tableDbVersion.TagColumn]));
                     }
                     catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'Name\' in table \'DbVersion\' is DBNull.", e);
+                        throw new global::System.Data.StrongTypingException("The value for column \'Tag\' in table \'DbVersion\' is DBNull.", e);
                     }
                 }
                 set {
-                    this[this.tableDbVersion.NameColumn] = value;
+                    this[this.tableDbVersion.TagColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             public string Module {
                 get {
-                    try {
-                        return ((string)(this[this.tableDbVersion.ModuleColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'Module\' in table \'DbVersion\' is DBNull.", e);
-                    }
+                    return ((string)(this[this.tableDbVersion.ModuleColumn]));
                 }
                 set {
                     this[this.tableDbVersion.ModuleColumn] = value;
@@ -575,23 +567,13 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public bool IsNameNull() {
-                return this.IsNull(this.tableDbVersion.NameColumn);
+            public bool IsTagNull() {
+                return this.IsNull(this.tableDbVersion.TagColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public void SetNameNull() {
-                this[this.tableDbVersion.NameColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public bool IsModuleNull() {
-                return this.IsNull(this.tableDbVersion.ModuleColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public void SetModuleNull() {
-                this[this.tableDbVersion.ModuleColumn] = global::System.Convert.DBNull;
+            public void SetTagNull() {
+                this[this.tableDbVersion.TagColumn] = global::System.Convert.DBNull;
             }
         }
         
