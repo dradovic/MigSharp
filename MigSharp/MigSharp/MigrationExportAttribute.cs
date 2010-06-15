@@ -23,7 +23,8 @@ namespace MigSharp
 
         public string Name { get; set; }
 
-        public string Module { get; set; }
+        private string _module = string.Empty;
+        public string Module { get { return _module; } set { _module = string.IsNullOrEmpty(value) ? string.Empty : value; } }
 
         public MigrationExportAttribute(int year, int month, int day, int hour, int minute, int second)
             : base(typeof(IMigration))

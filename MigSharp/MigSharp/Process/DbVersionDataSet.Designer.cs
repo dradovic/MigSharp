@@ -399,6 +399,7 @@ namespace MigSharp.Process {
                                 this.columnModule}, true));
                 this.columnTimestamp.AllowDBNull = false;
                 this.columnModule.AllowDBNull = false;
+                this.columnModule.DefaultValue = ((string)(""));
                 this.Locale = new global::System.Globalization.CultureInfo("");
             }
             

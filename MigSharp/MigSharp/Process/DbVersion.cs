@@ -50,7 +50,7 @@ namespace MigSharp.Process
             {
                 db.CreateTable(TableName)
                     .WithPrimaryKeyColumn("Timestamp", DbType.DateTime)
-                    .WithPrimaryKeyColumn("Module", DbType.String) // TODO: must be nullable
+                    .WithPrimaryKeyColumn("Module", DbType.String)
                     .WithNullableColumn("Tag", DbType.String);
                 // TODO: .IfNotExists();
             }

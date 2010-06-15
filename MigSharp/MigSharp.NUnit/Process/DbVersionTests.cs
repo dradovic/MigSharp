@@ -56,7 +56,7 @@ namespace MigSharp.NUnit.Versioning
         private static DbVersion CreateDbVersion()
         {
             var ds = new DbVersionDataSet();
-            ds.DbVersion.AddDbVersionRow(ExistingTimestamp, null, null);
+            ds.DbVersion.AddDbVersionRow(ExistingTimestamp, null, string.Empty);
             return DbVersion.Create(ds);
         }
     }
