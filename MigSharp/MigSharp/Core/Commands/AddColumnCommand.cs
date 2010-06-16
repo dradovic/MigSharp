@@ -7,14 +7,14 @@ namespace MigSharp.Core.Commands
         private readonly string _name;
         private readonly DbType _type;
         private readonly bool _isNullable;
-        private object _defaultValue;
-        private bool _dropThereafter;
 
         public string Name { get { return _name; } }
         public DbType Type { get { return _type; } }
         public bool IsNullable { get { return _isNullable; } }
-        public object DefaultValue { get { return _defaultValue; } set { _defaultValue = value; } }
-        public bool DropThereafter { get { return _dropThereafter; } set { _dropThereafter = value; } }
+
+        public object DefaultValue { get; set; }
+        public bool DropThereafter { get; set; }
+        public int Length { get; set; }
 
         public AddColumnCommand(ICommand parent, string name, DbType type, bool isNullable)
             : base(parent)

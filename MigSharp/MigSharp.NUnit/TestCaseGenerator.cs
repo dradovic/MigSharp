@@ -15,14 +15,16 @@ namespace MigSharp.NUnit
             db.CreateTable("Customers")
                 .WithPrimaryKeyColumn("ObjectKey", DbType.Int32)
                 .WithPrimaryKeyColumn("AnalysisKey", DbType.Int32)
-                .WithNullableColumn("Name", DbType.String);
+                .WithNullableColumn("Name", DbType.String)
+                .WithNullableColumn("Street", DbType.StringFixedLength).OfLength(250);
             yield return new TestCaseData(db).SetDescription("CreateTable");
 
             db = new Database();
             db.Tables["Customers"]
                 .AddColumn("NewNonNullableColumn", DbType.Int32)
                 .AddColumn("NewNonNullableColumnWithTempDflt7", DbType.Int32).WithTemporaryDefault(7)
-                .AddNullableColumn("NewNullableColumn", DbType.Int32);
+                .AddNullableColumn("NewNullableColumn", DbType.Int32)
+                .AddColumn("NewNonNullableColumnWithFixedLength", DbType.Int32).OfLength(250);
             yield return new TestCaseData(db).SetDescription("AddColumns");
 
             db = new Database();

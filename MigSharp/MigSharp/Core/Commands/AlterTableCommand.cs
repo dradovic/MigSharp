@@ -23,7 +23,7 @@ namespace MigSharp.Core.Commands
             if (addColumnCommands.Count() > 0)
             {
                 foreach (string commandText in provider.AddColumns(TableName,
-                    addColumnCommands.Select(c => new AddedColumn(c.Name, c.Type, c.IsNullable, c.DefaultValue, c.DropThereafter))))
+                    addColumnCommands.Select(c => new AddedColumn(c.Name, c.Type, c.IsNullable, c.DefaultValue, c.DropThereafter, c.Length))))
                 {
                     yield return commandText;
                 }

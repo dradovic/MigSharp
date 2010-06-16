@@ -6,5 +6,6 @@ namespace MigSharp
     {
         INewTable WithPrimaryKeyColumn(string columnName, DbType type);
         INewTable WithNullableColumn(string columnName, DbType type);
+        INewTable OfLength(int length);
     }
 }

@@ -21,7 +21,7 @@ namespace MigSharp.Core.Commands
             if (createColumnCommands.Count() > 0)
             {
                 foreach (string commandText in provider.CreateTable(_tableName,
-                    createColumnCommands.Select(c => new CreatedColumn(c.ColumnName, c.Type, c.IsNullable, c.IsPrimaryKey))))
+                    createColumnCommands.Select(c => new CreatedColumn(c.ColumnName, c.Type, c.IsNullable, c.IsPrimaryKey, c.Length))))
                 {
                     yield return commandText;
                 }

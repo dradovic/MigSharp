@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 
 namespace MigSharp
 {
@@ -17,6 +17,7 @@ namespace MigSharp
 
     public interface IExistingTableWithAddedColumn : ITable
     {
+        ITable OfLength(int length);
         ITable WithDefault<T>(T value) where T : struct;
         ITable WithDefault(string value);
         ITable WithTemporaryDefault<T>(T value) where T : struct;

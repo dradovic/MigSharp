@@ -36,7 +36,7 @@ namespace MigSharp.Core
             }
         }
 
-        public void Rename(string newName)
+        void IExistingTable.Rename(string newName)
         {
             _command.Add(new RenameCommand(_command, newName));
         }
@@ -53,43 +53,59 @@ namespace MigSharp.Core
             return this;
         }
 
-        public ITable WithDefault<T>(T value) where T : struct
+        ITable IExistingTableWithAddedColumn.OfLength(int length)
+        {
+            var command = (AddColumnCommand)_command.Children.Last();
+            command.Length = length;
+            return this;
+        }
+
+        ITable IExistingTableWithAddedColumn.WithDefault<T>(T value)
         {
             return WithDefault(value, false);
         }
 
-        public ITable WithDefault(string value)
+        ITable IExistingTableWithAddedColumn.WithDefault(string value)
         {
             return WithDefault(value, false);
         }
 
-        public ITable WithTemporaryDefault<T>(T value) where T : struct
+        ITable IExistingTableWithAddedColumn.WithTemporaryDefault<T>(T value)
         {
             return WithDefault(value, true);
         }
 
-        public ITable WithTemporaryDefault(string value)
+        ITable IExistingTableWithAddedColumn.WithTemporaryDefault(string value)
         {
             return WithDefault(value, true);
         }
 
         private ITable WithDefault(object value, bool dropThereafter)
         {
-            AddColumnCommand addColumnCommand = (AddColumnCommand)_command.Children.Last();
-            addColumnCommand.DefaultValue = value;
-            addColumnCommand.DropThereafter = dropThereafter;
+            var command = (AddColumnCommand)_command.Children.Last();
+            command.DefaultValue = value;
+            command.DropThereafter = dropThereafter;
             return this;
         }
 
-        public INewTable WithPrimaryKeyColumn(string columnName, DbType type)
+        INewTable INewTable.WithPrimaryKeyColumn(string columnName, DbType type)
         {
+            if (type == DbType.String) throw new ArgumentException(string.Format("Not all providers support '{0}' for primary key columns.", type)); // TODO: extract this to a generic validation where providers are asked what they support and what not
+
             _command.Add(new CreateColumnCommand(_command, columnName, type, false, true));
             return this;
         }
 
-        public INewTable WithNullableColumn(string columnName, DbType type)
+        INewTable INewTable.WithNullableColumn(string columnName, DbType type)
         {
             _command.Add(new CreateColumnCommand(_command, columnName, type, true, false));
+            return this;
+        }
+
+        INewTable INewTable.OfLength(int length)
+        {
+            var command = (CreateColumnCommand)_command.Children.Last();
+            command.Length = length;
             return this;
         }
     }

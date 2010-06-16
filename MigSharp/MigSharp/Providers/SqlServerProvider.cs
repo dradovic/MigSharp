@@ -28,7 +28,7 @@ namespace MigSharp.Providers
                 commandText += string.Format("{0}{1} {2} {3}NULL", 
                     Identation, 
                     Escape(column.Name),
-                    GetTypeSpecifier(column.DbType),
+                    GetTypeSpecifier(column.DbType, column.Length),
                     column.IsNullable ? string.Empty : "NOT ");
 
                 columnDelimiterIsNeeded = true;
@@ -78,7 +78,7 @@ namespace MigSharp.Providers
                 }
                 commandText += string.Format("{0} {1} {2}NULL{3}",
                     Escape(column.Name), 
-                    GetTypeSpecifier(column.DbType), 
+                    GetTypeSpecifier(column.DbType, column.Length), 
                     column.IsNullable ? string.Empty : "NOT ",
                     defaultConstraintClause);
 
@@ -135,7 +135,7 @@ namespace MigSharp.Providers
             return name; // TODO: provide a real implementation
         }
 
-        private static string GetTypeSpecifier(DbType type)
+        private static string GetTypeSpecifier(DbType type, int length)
         {
             switch (type)
             {
@@ -186,7 +186,7 @@ namespace MigSharp.Providers
                 case DbType.AnsiStringFixedLength:
                     break;
                 case DbType.StringFixedLength:
-                    break;
+                    return string.Format(CultureInfo.InvariantCulture, "[nvarchar]({0})", length);
                 case DbType.Xml:
                     break;
                 case DbType.DateTime2:

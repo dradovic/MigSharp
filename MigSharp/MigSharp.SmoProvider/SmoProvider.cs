@@ -22,7 +22,7 @@ namespace MigSharp.Smo
             {
                 Column column = new Column(table, createdColumn.Name)
                 {
-                    DataType = Convert(createdColumn.DbType),
+                    DataType = Convert(createdColumn.DbType, createdColumn.Length),
                     Nullable = createdColumn.IsNullable,
                 };
                 table.Columns.Add(column);
@@ -50,7 +50,7 @@ namespace MigSharp.Smo
             {
                 Column column = new Column(table, addedColumn.Name)
                 {
-                    DataType = Convert(addedColumn.DbType),
+                    DataType = Convert(addedColumn.DbType, addedColumn.Length),
                     Nullable = addedColumn.IsNullable,
                 };
                 if (addedColumn.DefaultValue != null)
@@ -121,7 +121,7 @@ namespace MigSharp.Smo
             return _server.ConnectionContext.CapturedSql.Text.Cast<string>().Where(c => !c.StartsWith("USE "));
         }
 
-        private static DataType Convert(DbType dbType)
+        private static DataType Convert(DbType dbType, int length)
         {
             switch (dbType)
             {
@@ -172,7 +172,7 @@ namespace MigSharp.Smo
                 case DbType.AnsiStringFixedLength:
                     break;
                 case DbType.StringFixedLength:
-                    break;
+                    return DataType.NVarChar(length);
                 case DbType.Xml:
                     break;
                 case DbType.DateTime2:
