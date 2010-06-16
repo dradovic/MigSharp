@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 
 using MigSharp.Process;
 using MigSharp.Providers;
@@ -20,6 +21,8 @@ namespace MigSharp.NUnit.Process
             const string providerInvariantName = "providerName";
             const string firstCommandText = "1st command";
             const string secondCommandText = "2nd command";
+
+            TestMigrationMetaData metaData = new TestMigrationMetaData();
 
             TestMigration migration = new TestMigration();
             IProvider provider = MockRepository.GenerateMock<IProvider>();
@@ -47,10 +50,10 @@ namespace MigSharp.NUnit.Process
             connection.Expect(c => c.Dispose());
             IDbConnectionFactory connectionFactory = MockRepository.GenerateStub<IDbConnectionFactory>();
             connectionFactory.Expect(c => c.OpenConnection(null)).IgnoreArguments().Return(connection);
-            MigrationStep step = new MigrationStep(migration, new ConnectionInfo("", providerInvariantName), providerFactory, connectionFactory);
+            MigrationStep step = new MigrationStep(migration, metaData, new ConnectionInfo("", providerInvariantName), providerFactory, connectionFactory);
 
             IDbVersion dbVersion = MockRepository.GenerateMock<IDbVersion>();
-            dbVersion.Expect(v => v.Update(connection, migration));
+            dbVersion.Expect(v => v.Update(connection, metaData));
             step.Execute(dbVersion);
 
             connection.VerifyAllExpectations();
@@ -68,6 +71,18 @@ namespace MigSharp.NUnit.Process
                 db.CreateTable(TableName)
                     .WithPrimaryKeyColumn("Id", DbType.Int32);
             }
+        }
+
+        private class TestMigrationMetaData : IMigrationMetaData
+        {
+            public int Year { get { throw new NotSupportedException(); } }
+            public int Month { get { throw new NotSupportedException(); } }
+            public int Day { get { throw new NotSupportedException(); } }
+            public int Hour { get { throw new NotSupportedException(); } }
+            public int Minute { get { throw new NotSupportedException(); } }
+            public int Second { get { throw new NotSupportedException(); } }
+            public string Tag { get { throw new NotSupportedException(); } }
+            public string Module { get { throw new NotSupportedException(); } }
         }
     }
 }

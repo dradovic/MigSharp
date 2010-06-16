@@ -8,5 +8,7 @@ namespace MigSharp.Process
         int Hour { get; }
         int Minute { get; }
         int Second { get; }
+        string Tag { get; }
+        string Module { get; }
     }
 }

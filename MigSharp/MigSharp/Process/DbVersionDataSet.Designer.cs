@@ -400,6 +400,7 @@ namespace MigSharp.Process {
                 this.columnTimestamp.AllowDBNull = false;
                 this.columnModule.AllowDBNull = false;
                 this.columnModule.DefaultValue = ((string)(""));
+                this.columnModule.MaxLength = 250;
                 this.Locale = new global::System.Globalization.CultureInfo("");
             }
             

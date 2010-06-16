@@ -9,13 +9,15 @@ namespace MigSharp.Process
     internal class MigrationStep
     {
         private readonly IMigration _migration;
+        private readonly IMigrationMetaData _metaData;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProviderFactory _providerFactory;
         private readonly IDbConnectionFactory _connectionFactory;
 
-        public MigrationStep(IMigration migration, ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
+        public MigrationStep(IMigration migration, IMigrationMetaData metaData, ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
         {
             _migration = migration;
+            _metaData = metaData;
             _connectionInfo = connectionInfo;
             _providerFactory = providerFactory;
             _connectionFactory = connectionFactory;
@@ -30,7 +32,7 @@ namespace MigSharp.Process
                 using (IDbTransaction transaction = connection.BeginTransaction())
                 {
                     Execute(connection, transaction);
-                    dbVersion.Update(connection, _migration);
+                    dbVersion.Update(connection, _metaData);
                     transaction.Commit();
                 }
             }

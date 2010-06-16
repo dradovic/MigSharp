@@ -22,7 +22,7 @@ namespace MigSharp.Process
             var dataSet = new DbVersionDataSet();
             Debug.Assert(dataSet.DbVersion.TableName == TableName);
             var dbVersion = new DbVersion(dataSet);
-            var step = new MigrationStep(new BootstrapMigration(), connectionInfo, providerFactory, connectionFactory);
+            var step = new MigrationStep(new BootstrapMigration(), new BootstrapMetaData(), connectionInfo, providerFactory, connectionFactory);
             step.Execute(dbVersion);
             return dbVersion;
         }
@@ -37,11 +37,11 @@ namespace MigSharp.Process
             return _dataSet.DbVersion.FindByTimestampModule(metaData.Timestamp(), string.Empty) != null; // TODO: include Module instead of string.Empty
         }
 
-        public void Update(IDbConnection connection, IMigration migration)
+        public void Update(IDbConnection connection, IMigrationMetaData metaData)
         {
-            if (migration is BootstrapMigration) return;
+            if (metaData is BootstrapMetaData) return;
 
-            throw new NotImplementedException();
+            _dataSet.DbVersion.AddDbVersionRow(metaData.Timestamp(), metaData.Tag, metaData.Module);
         }
 
         private class BootstrapMigration : IMigration
@@ -54,6 +54,18 @@ namespace MigSharp.Process
                     .WithNullableColumn("Tag", DbType.String);
                 // TODO: .IfNotExists();
             }
+        }
+
+        private class BootstrapMetaData : IMigrationMetaData
+        {
+            public int Year { get { throw new NotSupportedException(); } }
+            public int Month { get { throw new NotSupportedException(); } }
+            public int Day { get { throw new NotSupportedException(); } }
+            public int Hour { get { throw new NotSupportedException(); } }
+            public int Minute { get { throw new NotSupportedException(); } }
+            public int Second { get { throw new NotSupportedException(); } }
+            public string Tag { get { throw new NotSupportedException(); } }
+            public string Module { get { throw new NotSupportedException(); } }
         }
     }
 }

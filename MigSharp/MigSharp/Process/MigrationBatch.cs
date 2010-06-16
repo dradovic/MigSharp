@@ -26,10 +26,10 @@ namespace MigSharp.Process
             var applicableMigrations = from m in _migrations
                                        where !dbVersion.Includes(m.Metadata)
                                        orderby m.Metadata.Timestamp()
-                                       select m.Value;
-            foreach (IMigration migration in applicableMigrations)
+                                       select new { m.Value, m.Metadata };
+            foreach (var m in applicableMigrations)
             {
-                var step = new MigrationStep(migration, _connectionInfo, _providerFactory, _connectionFactory);
+                var step = new MigrationStep(m.Value, m.Metadata, _connectionInfo, _providerFactory, _connectionFactory);
                 step.Execute(dbVersion);
             }
         }
