@@ -35,7 +35,7 @@ namespace MigSharp.Process
             using (IDbConnection connection = connectionFactory.OpenConnection(connectionInfo))
             {
                 DbDataAdapter adapter = CreateAdapter(factory, connection, dataSet);
-                //adapter.Fill(table); // TODO: fill the dataset
+                adapter.Fill(dataSet.DbVersion); 
             }
             var dbVersion = new DbVersion(dataSet, factory);
             return dbVersion;
