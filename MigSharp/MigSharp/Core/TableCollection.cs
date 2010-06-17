@@ -15,7 +15,7 @@ namespace MigSharp.Core
         {
             AlterTableCommand alterTableCommand = new AlterTableCommand(_migrateCommand, name);
             _migrateCommand.Add(alterTableCommand);
-            return new Table(alterTableCommand);
+            return new ExistingTable(alterTableCommand);
         }
     }
 }

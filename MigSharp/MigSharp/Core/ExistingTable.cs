@@ -6,9 +6,9 @@ using MigSharp.Core.Commands;
 
 namespace MigSharp.Core
 {
-    internal class Table : IExistingTable, IExistingTableWithAddedColumn, INewTable
+    internal class ExistingTable : IExistingTable, IExistingTableWithAddedColumn
     {
-        private readonly ICommand _command;
+        private readonly AlterTableCommand _command;
         private readonly ColumnCollection _columns;
 
         public IExistingColumnCollection Columns
@@ -25,15 +25,10 @@ namespace MigSharp.Core
             }
         }
 
-        internal Table(ICommand command)
+        internal ExistingTable(AlterTableCommand command)
         {
             _command = command;
-
-            AlterTableCommand alterTableCommand = command as AlterTableCommand;
-            if (alterTableCommand != null)
-            {
-                _columns = new ColumnCollection(alterTableCommand);
-            }
+            _columns = new ColumnCollection(command);
         }
 
         void IExistingTable.Rename(string newName)
@@ -53,59 +48,38 @@ namespace MigSharp.Core
             return this;
         }
 
-        ITable IExistingTableWithAddedColumn.OfLength(int length)
+        IExistingTableBase IExistingTableWithAddedColumn.OfLength(int length)
         {
             var command = (AddColumnCommand)_command.Children.Last();
             command.Length = length;
             return this;
         }
 
-        ITable IExistingTableWithAddedColumn.WithDefault<T>(T value)
+        IExistingTableBase IExistingTableWithAddedColumn.WithDefault<T>(T value)
         {
             return WithDefault(value, false);
         }
 
-        ITable IExistingTableWithAddedColumn.WithDefault(string value)
+        IExistingTableBase IExistingTableWithAddedColumn.WithDefault(string value)
         {
             return WithDefault(value, false);
         }
 
-        ITable IExistingTableWithAddedColumn.WithTemporaryDefault<T>(T value)
+        IExistingTableBase IExistingTableWithAddedColumn.WithTemporaryDefault<T>(T value)
         {
             return WithDefault(value, true);
         }
 
-        ITable IExistingTableWithAddedColumn.WithTemporaryDefault(string value)
+        IExistingTableBase IExistingTableWithAddedColumn.WithTemporaryDefault(string value)
         {
             return WithDefault(value, true);
         }
 
-        private ITable WithDefault(object value, bool dropThereafter)
+        private IExistingTableBase WithDefault(object value, bool dropThereafter)
         {
             var command = (AddColumnCommand)_command.Children.Last();
             command.DefaultValue = value;
             command.DropThereafter = dropThereafter;
-            return this;
-        }
-
-        INewTable INewTable.WithPrimaryKeyColumn(string columnName, DbType type)
-        {
-            if (type == DbType.String) throw new ArgumentException(string.Format("Not all providers support '{0}' for primary key columns.", type)); // TODO: extract this to a generic validation where providers are asked what they support and what not
-
-            _command.Add(new CreateColumnCommand(_command, columnName, type, false, true));
-            return this;
-        }
-
-        INewTable INewTable.WithNullableColumn(string columnName, DbType type)
-        {
-            _command.Add(new CreateColumnCommand(_command, columnName, type, true, false));
-            return this;
-        }
-
-        INewTable INewTable.OfLength(int length)
-        {
-            var command = (CreateColumnCommand)_command.Children.Last();
-            command.Length = length;
             return this;
         }
     }

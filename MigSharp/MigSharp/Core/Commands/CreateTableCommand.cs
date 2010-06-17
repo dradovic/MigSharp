@@ -9,6 +9,8 @@ namespace MigSharp.Core.Commands
     {
         private readonly string _tableName;
 
+        //public bool IfNotExists { get; set; }
+
         public CreateTableCommand(ICommand parent, string tableName)
             : base(parent)
         {

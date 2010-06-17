@@ -1,4 +1,4 @@
-﻿using MigSharp.Core.Commands;
+using MigSharp.Core.Commands;
 
 namespace MigSharp.Core
 {
@@ -15,11 +15,11 @@ namespace MigSharp.Core
             _tables = new TableCollection(_root);
         }
 
-        public INewTable CreateTable(string tableName)
+        public ICreatedTable CreateTable(string tableName)
         {
             var createTableCommand = new CreateTableCommand(_root, tableName);
             _root.Add(createTableCommand);
-            var table = new Table(createTableCommand);
+            var table = new CreatedTable(createTableCommand);
             return table;
         }
     }

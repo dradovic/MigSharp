@@ -1,8 +1,8 @@
-﻿namespace MigSharp
+namespace MigSharp
 {
     public interface IDatabase
     {
         IExistingTableCollection Tables { get; }
-        INewTable CreateTable(string tableName);
+        ICreatedTable CreateTable(string tableName);
     }
 }

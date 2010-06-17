@@ -86,11 +86,10 @@ namespace MigSharp.Process
         {
             public void Up(IDatabase db)
             {
-                db.CreateTable(TableName)
+                db.CreateTable(TableName).IfNotExists()
                     .WithPrimaryKeyColumn("Timestamp", DbType.DateTime)
                     .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(MigrationExportAttribute.MaximumModuleLength)
                     .WithNullableColumn("Tag", DbType.String);
-                // TODO: .IfNotExists();
             }
         }
 
