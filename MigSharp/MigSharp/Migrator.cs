@@ -5,6 +5,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 using MigSharp.Core;
@@ -46,9 +47,18 @@ namespace MigSharp
             {
                 var providerFactory = new ProviderFactory();
                 var connectionFactory = new DbConnectionFactory();
-                var batch = new MigrationBatch(migrations, timestamp, _connectionInfo, providerFactory, connectionFactory);
                 var dbVersion = DbVersion.Create(_connectionInfo, providerFactory, connectionFactory);
-                batch.Process(dbVersion);
+                var applicableMigrations = from m in migrations
+                                           where m.Metadata.Timestamp() <= timestamp && !dbVersion.Includes(m.Metadata)
+                                           orderby m.Metadata.Timestamp()
+                                           select m;
+                int count = applicableMigrations.Count();
+                Log.Info("Out of which {0} migration(s) are applicable", count);
+                if (count > 0)
+                {
+                    var batch = new MigrationBatch(applicableMigrations, _connectionInfo, providerFactory, connectionFactory);
+                    batch.Execute(dbVersion);
+                }
             }
         }
 

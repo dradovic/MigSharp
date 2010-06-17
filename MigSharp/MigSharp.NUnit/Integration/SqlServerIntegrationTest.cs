@@ -35,16 +35,9 @@ namespace MigSharp.NUnit.Integration
         }
 
         [Test]
-        public void Test()
+        public void TestMigration1()
         {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder
-            {
-                DataSource = Server,
-                InitialCatalog = TestDbName,
-                IntegratedSecurity = true,
-            };
-            
-            Migrator migrator = new Migrator(builder.ConnectionString, "System.Data.SqlClient");
+            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), GetTimestamp(typeof(Migration1)));
             
             // assert DbVersion table was created
@@ -66,15 +59,47 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(1, dbVersionContent.Tables["Table"].Rows.Count, "The versioning table is missing entries.");
         }
 
+        [Test]
+        public void TestMigration1SuccededByMigration2()
+        {
+            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), GetTimestamp(typeof(Migration1)));
+
+            migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            migrator.UpgradeAll(Assembly.GetExecutingAssembly());
+
+            // assert Order table was created
+            Table orderTable = _database.Tables[Migration2.OrderTableName];
+            Assert.IsNotNull(orderTable, string.Format("The '{0}' table was not created.", Migration1.CustomerTableName));
+            Assert.AreEqual(1, orderTable.Columns.Count);
+            Assert.AreEqual(Migration1.ColumnNames[0], orderTable.Columns[0].Name);
+
+            // assert DbVersion table has necessary entries
+            DataSet dbVersionContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName));
+            Assert.AreEqual(2, dbVersionContent.Tables["Table"].Rows.Count, "The versioning table is missing entries.");
+        }
+
         private static DateTime GetTimestamp(Type migration)
         {
             MigrationExportAttribute[] attributes = (MigrationExportAttribute[])migration.GetCustomAttributes(typeof(MigrationExportAttribute), false);
             return new DateTime(attributes[0].Year, attributes[0].Month, attributes[0].Day, attributes[0].Hour, attributes[0].Minute, attributes[0].Second);
         }
 
+        private static string GetConnectionString()
+        {
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder
+            {
+                DataSource = Server,
+                InitialCatalog = TestDbName,
+                IntegratedSecurity = true,
+            };
+            return builder.ConnectionString;
+        }
+
         [TearDown]
         public void TearDown()
         {
+            SqlConnection.ClearAllPools();
             //_database.Drop(); // TODO: comment in
         }
     }
