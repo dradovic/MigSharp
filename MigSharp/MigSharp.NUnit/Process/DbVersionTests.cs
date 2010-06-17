@@ -84,8 +84,8 @@ namespace MigSharp.NUnit.Process
         private static DbVersion CreateDbVersion()
         {
             var ds = new DbVersionDataSet();
-            ds.DbVersion.AddDbVersionRow(ExistingTimestampForDefaultModule, null, string.Empty);
-            ds.DbVersion.AddDbVersionRow(ExistingTimestampForTestModule, null, TestModule); // TODO: reorder arguments
+            ds.DbVersion.AddDbVersionRow(ExistingTimestampForDefaultModule, string.Empty, null);
+            ds.DbVersion.AddDbVersionRow(ExistingTimestampForTestModule, TestModule, null);
             return DbVersion.Create(ds);
         }
     }

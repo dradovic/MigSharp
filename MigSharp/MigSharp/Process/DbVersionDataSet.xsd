@@ -16,7 +16,6 @@
           <xs:complexType>
             <xs:sequence>
               <xs:element name="Timestamp" msprop:Generator_UserColumnName="Timestamp" msprop:Generator_ColumnPropNameInRow="Timestamp" msprop:Generator_ColumnVarNameInTable="columnTimestamp" msprop:Generator_ColumnPropNameInTable="TimestampColumn" type="xs:dateTime" />
-              <xs:element name="Tag" msprop:Generator_UserColumnName="Tag" msprop:Generator_ColumnPropNameInRow="Tag" msprop:Generator_ColumnVarNameInTable="columnTag" msprop:Generator_ColumnPropNameInTable="TagColumn" type="xs:string" minOccurs="0" />
               <xs:element name="Module" msprop:Generator_UserColumnName="Module" msprop:Generator_ColumnPropNameInRow="Module" msprop:Generator_ColumnVarNameInTable="columnModule" msprop:Generator_ColumnPropNameInTable="ModuleColumn" default="">
                 <xs:simpleType>
                   <xs:restriction base="xs:string">
@@ -24,6 +23,7 @@
                   </xs:restriction>
                 </xs:simpleType>
               </xs:element>
+              <xs:element name="Tag" msprop:Generator_UserColumnName="Tag" msprop:Generator_ColumnPropNameInRow="Tag" msprop:Generator_ColumnVarNameInTable="columnTag" msprop:Generator_ColumnPropNameInTable="TagColumn" type="xs:string" minOccurs="0" />
             </xs:sequence>
           </xs:complexType>
         </xs:element>

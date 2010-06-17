@@ -265,9 +265,9 @@ namespace MigSharp.Process {
             
             private global::System.Data.DataColumn columnTimestamp;
             
-            private global::System.Data.DataColumn columnTag;
-            
             private global::System.Data.DataColumn columnModule;
+            
+            private global::System.Data.DataColumn columnTag;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             public DbVersionDataTable() {
@@ -307,16 +307,16 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public global::System.Data.DataColumn TagColumn {
+            public global::System.Data.DataColumn ModuleColumn {
                 get {
-                    return this.columnTag;
+                    return this.columnModule;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public global::System.Data.DataColumn ModuleColumn {
+            public global::System.Data.DataColumn TagColumn {
                 get {
-                    return this.columnModule;
+                    return this.columnTag;
                 }
             }
             
@@ -349,12 +349,12 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public DbVersionRow AddDbVersionRow(System.DateTime Timestamp, string Tag, string Module) {
+            public DbVersionRow AddDbVersionRow(System.DateTime Timestamp, string Module, string Tag) {
                 DbVersionRow rowDbVersionRow = ((DbVersionRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         Timestamp,
-                        Tag,
-                        Module};
+                        Module,
+                        Tag};
                 rowDbVersionRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowDbVersionRow);
                 return rowDbVersionRow;
@@ -382,18 +382,18 @@ namespace MigSharp.Process {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             internal void InitVars() {
                 this.columnTimestamp = base.Columns["Timestamp"];
-                this.columnTag = base.Columns["Tag"];
                 this.columnModule = base.Columns["Module"];
+                this.columnTag = base.Columns["Tag"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private void InitClass() {
                 this.columnTimestamp = new global::System.Data.DataColumn("Timestamp", typeof(global::System.DateTime), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnTimestamp);
-                this.columnTag = new global::System.Data.DataColumn("Tag", typeof(string), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnTag);
                 this.columnModule = new global::System.Data.DataColumn("Module", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnModule);
+                this.columnTag = new global::System.Data.DataColumn("Tag", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnTag);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
                                 this.columnTimestamp,
                                 this.columnModule}, true));
@@ -544,6 +544,16 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            public string Module {
+                get {
+                    return ((string)(this[this.tableDbVersion.ModuleColumn]));
+                }
+                set {
+                    this[this.tableDbVersion.ModuleColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             public string Tag {
                 get {
                     try {
@@ -555,16 +565,6 @@ namespace MigSharp.Process {
                 }
                 set {
                     this[this.tableDbVersion.TagColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public string Module {
-                get {
-                    return ((string)(this[this.tableDbVersion.ModuleColumn]));
-                }
-                set {
-                    this[this.tableDbVersion.ModuleColumn] = value;
                 }
             }
             

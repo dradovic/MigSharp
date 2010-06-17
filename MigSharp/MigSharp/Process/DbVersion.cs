@@ -75,7 +75,7 @@ namespace MigSharp.Process
 
             DateTime start = DateTime.Now;
 
-            _dataSet.DbVersion.AddDbVersionRow(metaData.Timestamp(), metaData.Tag, metaData.Module);
+            _dataSet.DbVersion.AddDbVersionRow(metaData.Timestamp(), metaData.Module, metaData.Tag);
 
             DbDataAdapter adapter = CreateAdapter(_factory, connection, _dataSet);
             adapter.SelectCommand.Transaction = (DbTransaction)transaction;
