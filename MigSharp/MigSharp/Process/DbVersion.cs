@@ -84,7 +84,7 @@ namespace MigSharp.Process
             adapter.InsertCommand = builder.GetInsertCommand();
             //adapter.UpdateCommand = builder.GetUpdateCommand();
             //adapter.DeleteCommand = builder.GetDeleteCommand();
-            Log.Info(LogCategory.Performance, "Adapter creation took {0}ms", (DateTime.Now - start).TotalMilliseconds); // TODO: remove this info after stress test
+            Log.Info(LogCategory.Performance, "Adapter creation took {0}ms", (DateTime.Now - start).TotalMilliseconds);
 
             adapter.Update(_dataSet.DbVersion); // write new row to database
             Log.Info(LogCategory.Performance, "Version update took {0}ms", (DateTime.Now - start).TotalMilliseconds);

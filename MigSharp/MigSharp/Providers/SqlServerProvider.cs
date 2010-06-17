@@ -43,10 +43,10 @@ namespace MigSharp.Providers
 
             if (primaryKeyColumns.Count > 0)
             {
-                // TODO: make clustering configurable
+                // FEATURE: support clustering
                 commandText += string.Format(",{0} CONSTRAINT [PK_{1}] PRIMARY KEY {2}",
                     Environment.NewLine,
-                    EscapeAsNamePart(tableName), 
+                    tableName, 
                     Environment.NewLine);
                 commandText += string.Format("({0}", Environment.NewLine);
 
@@ -55,7 +55,7 @@ namespace MigSharp.Providers
                 {
                     if (columnDelimiterIsNeeded) commandText += string.Format(",{0}", Environment.NewLine);
 
-                    // TODO: make sort order configurable
+                    // FEATURE: make sort order configurable
                     commandText += string.Format("{0}{1}", Identation, Escape(column));
 
                     columnDelimiterIsNeeded = true;
@@ -108,7 +108,7 @@ namespace MigSharp.Providers
 
         private static string GetDefaultConstraintName(string tableName, string columnName)
         {
-            return string.Format(CultureInfo.InvariantCulture, "[DF_{0}_{1}]", EscapeAsNamePart(tableName), EscapeAsNamePart(columnName));
+            return string.Format(CultureInfo.InvariantCulture, "[DF_{0}_{1}]", tableName, columnName);
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
@@ -139,11 +139,6 @@ namespace MigSharp.Providers
         private static string Escape(string name)
         {
             return string.Format(CultureInfo.InvariantCulture, "[{0}]", name);
-        }
-
-        private static string EscapeAsNamePart(string name)
-        {
-            return name; // TODO: provide a real implementation
         }
 
         private static string GetTypeSpecifier(DbType type, int length)

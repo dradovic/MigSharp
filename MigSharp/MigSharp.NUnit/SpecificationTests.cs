@@ -40,7 +40,7 @@ namespace MigSharp.NUnit
         {
             Database db = new Database();
             db.Tables["S_Aggregator"]
-                .AddColumn("ValidFlag", DbType.Byte).WithTemporaryDefault(0)
+                .AddColumn("Valid Flag", DbType.Byte).WithTemporaryDefault(0)
                 .AddNullableColumn("Paths", DbType.Int32)
                 .AddNullableColumn("PathGridpoints", DbType.Int32)
                 .AddNullableColumn("PathTimeSeries", DbType.String);
@@ -53,11 +53,11 @@ namespace MigSharp.NUnit
             CommandScripter scripter = new CommandScripter(provider);
             ScriptComparer.AssertAreEqual(new[]
             {
-                @"ALTER TABLE [dbo].[S_Aggregator] ADD [ValidFlag] [smallint] NOT NULL CONSTRAINT [DF_S_Aggregator_ValidFlag]  DEFAULT 0",
+                @"ALTER TABLE [dbo].[S_Aggregator] ADD [Valid Flag] [smallint] NOT NULL CONSTRAINT [DF_S_Aggregator_Valid Flag]  DEFAULT 0",
                 @"ALTER TABLE [dbo].[S_Aggregator] ADD [Paths] [int] NULL",
                 @"ALTER TABLE [dbo].[S_Aggregator] ADD [PathGridpoints] [int] NULL",
                 @"ALTER TABLE [dbo].[S_Aggregator] ADD [PathTimeSeries] [nvarchar](max) NULL",
-                @"ALTER TABLE [dbo].[S_Aggregator] DROP CONSTRAINT [DF_S_Aggregator_ValidFlag]",
+                @"ALTER TABLE [dbo].[S_Aggregator] DROP CONSTRAINT [DF_S_Aggregator_Valid Flag]",
                 @"CREATE TABLE [dbo].[S_EvaluatedPaths](
 " + "\t" + @"[AnalysisKey] [int] NOT NULL,
 " + "\t" + @"[ObjectKey] [int] NOT NULL,
