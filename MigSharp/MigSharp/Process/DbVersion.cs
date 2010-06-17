@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 
 using MigSharp.Providers;
@@ -9,27 +10,54 @@ namespace MigSharp.Process
     internal class DbVersion : IDbVersion
     {
         private readonly DbVersionDataSet _dataSet;
+        private readonly DbProviderFactory _factory;
 
         internal static string TableName { get { return "DbVersion"; } }
 
-        private DbVersion(DbVersionDataSet dataSet)
+        private DbVersion(DbVersionDataSet dataSet, DbProviderFactory factory)
         {
+            Debug.Assert(dataSet.DbVersion.TableName == TableName);
+            Debug.Assert(dataSet.DbVersion.ModuleColumn.MaxLength == MigrationExportAttribute.MaximumModuleLength);
+
             _dataSet = dataSet;
+            _factory = factory;
         }
 
         public static DbVersion Create(ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
         {
-            var dataSet = new DbVersionDataSet();
-            Debug.Assert(dataSet.DbVersion.TableName == TableName);
-            var dbVersion = new DbVersion(dataSet);
+            // execute boostrap migration step to ensure that the DbVersion table exists
             var step = new MigrationStep(new BootstrapMigration(), new BootstrapMetaData(), connectionInfo, providerFactory, connectionFactory);
-            step.Execute(dbVersion);
+            step.Execute(null);
+
+            // create and fill DataSet
+            var dataSet = new DbVersionDataSet();
+            DbProviderFactory factory = connectionFactory.GetDbProviderFactory(connectionInfo);
+            using (IDbConnection connection = connectionFactory.OpenConnection(connectionInfo))
+            {
+                DbDataAdapter adapter = CreateAdapter(factory, connection, dataSet);
+                //adapter.Fill(table); // TODO: fill the dataset
+            }
+            var dbVersion = new DbVersion(dataSet, factory);
             return dbVersion;
+        }
+
+        private static DbDataAdapter CreateAdapter(DbProviderFactory factory, IDbConnection connection, DbVersionDataSet dataSet)
+        {
+            DbCommand selectCommand = factory.CreateCommand();
+            selectCommand.Connection = (DbConnection)connection;
+            selectCommand.CommandText = string.Format("SELECT {0}, {1}, {2} FROM {3}",
+                dataSet.DbVersion.TimestampColumn.ColumnName,
+                dataSet.DbVersion.ModuleColumn.ColumnName,
+                dataSet.DbVersion.TagColumn.ColumnName,
+                dataSet.DbVersion.TableName);
+            DbDataAdapter adapter = factory.CreateDataAdapter();
+            adapter.SelectCommand = selectCommand;
+            return adapter;
         }
 
         internal static DbVersion Create(DbVersionDataSet dataSet)
         {
-            return new DbVersion(dataSet);
+            return new DbVersion(dataSet, null); // TODO: provide factory
         }
 
         public bool Includes(IMigrationMetaData metaData)
@@ -37,11 +65,21 @@ namespace MigSharp.Process
             return _dataSet.DbVersion.FindByTimestampModule(metaData.Timestamp(), string.Empty) != null; // TODO: include Module instead of string.Empty
         }
 
-        public void Update(IDbConnection connection, IMigrationMetaData metaData)
+        public void Update(IMigrationMetaData metaData, IDbConnection connection, IDbTransaction transaction)
         {
-            if (metaData is BootstrapMetaData) return;
+            Debug.Assert(!(metaData is BootstrapMetaData));
 
             _dataSet.DbVersion.AddDbVersionRow(metaData.Timestamp(), metaData.Tag, metaData.Module);
+
+            DbDataAdapter adapter = CreateAdapter(_factory, connection, _dataSet); // TODO: cache adapter
+            adapter.SelectCommand.Transaction = (DbTransaction)transaction;
+            DbCommandBuilder builder = _factory.CreateCommandBuilder();
+            builder.DataAdapter = adapter;
+            adapter.InsertCommand = builder.GetInsertCommand();
+            //adapter.UpdateCommand = builder.GetUpdateCommand();
+            //adapter.DeleteCommand = builder.GetDeleteCommand();
+
+            adapter.Update(_dataSet.DbVersion); // write new row to database
         }
 
         private class BootstrapMigration : IMigration
@@ -50,7 +88,7 @@ namespace MigSharp.Process
             {
                 db.CreateTable(TableName)
                     .WithPrimaryKeyColumn("Timestamp", DbType.DateTime)
-                    .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(250)
+                    .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(MigrationExportAttribute.MaximumModuleLength)
                     .WithNullableColumn("Tag", DbType.String);
                 // TODO: .IfNotExists();
             }

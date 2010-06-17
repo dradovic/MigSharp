@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Integration\Migration1.cs" />
+    <Compile Include="Integration\Migration2.cs" />
     <Compile Include="Integration\SqlServerIntegrationTest.cs" />
     <Compile Include="Process\MigrationStepTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -44,6 +44,7 @@ namespace MigSharp.NUnit.Integration
             };
             
             Migrator migrator = new Migrator(builder.ConnectionString, "System.Data.SqlClient");
+            //MigrationExportAttribute[] attributes = (MigrationExportAttribute[])typeof(Migration1).GetCustomAttributes(typeof(MigrationExportAttribute), false);
             migrator.UpgradeAll(Assembly.GetExecutingAssembly());
             
             // assert DbVersion table was created
@@ -62,7 +63,7 @@ namespace MigSharp.NUnit.Integration
 
             // assert DbVersion table has necessary entries
             DataSet dbVersionContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName));
-            Assert.AreEqual(1, dbVersionContent.Tables["Table"].Rows.Count);
+            Assert.AreEqual(1, dbVersionContent.Tables["Table"].Rows.Count, "The versioning table is missing entries.");
         }
 
         [TearDown]

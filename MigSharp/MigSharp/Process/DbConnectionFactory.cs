@@ -7,11 +7,16 @@ namespace MigSharp.Process
     {
         public IDbConnection OpenConnection(ConnectionInfo connectionInfo)
         {
-            DbProviderFactory factory = DbProviderFactories.GetFactory(connectionInfo.ProviderInvariantName);
+            DbProviderFactory factory = GetDbProviderFactory(connectionInfo);
             var connection = factory.CreateConnection();
             connection.ConnectionString = connectionInfo.ConnectionString;
             connection.Open();
             return connection;
+        }
+
+        public DbProviderFactory GetDbProviderFactory(ConnectionInfo connectionInfo)
+        {
+            return DbProviderFactories.GetFactory(connectionInfo.ProviderInvariantName);
         }
     }
 }

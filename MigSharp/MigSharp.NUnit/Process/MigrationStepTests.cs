@@ -53,7 +53,7 @@ namespace MigSharp.NUnit.Process
             MigrationStep step = new MigrationStep(migration, metaData, new ConnectionInfo("", providerInvariantName), providerFactory, connectionFactory);
 
             IDbVersion dbVersion = MockRepository.GenerateMock<IDbVersion>();
-            dbVersion.Expect(v => v.Update(connection, metaData));
+            dbVersion.Expect(v => v.Update(metaData, connection, transaction));
             step.Execute(dbVersion);
 
             connection.VerifyAllExpectations();

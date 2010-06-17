@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 using Rhino.Mocks;
 
-namespace MigSharp.NUnit.Versioning
+namespace MigSharp.NUnit.Process
 {
     [TestFixture, Category("Smoke")]
     public class DbVersionTests

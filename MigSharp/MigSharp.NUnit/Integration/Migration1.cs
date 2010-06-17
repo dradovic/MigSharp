@@ -11,14 +11,10 @@ namespace MigSharp.NUnit.Integration
             "Id",
         };
 
-        #region Implementation of IMigration
-
         public void Up(IDatabase db)
         {
             db.CreateTable(CustomerTableName)
                 .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32);
         }
-
-        #endregion
     }
 }

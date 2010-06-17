@@ -23,6 +23,10 @@ namespace MigSharp.Process
             _connectionFactory = connectionFactory;
         }
 
+        /// <summary>
+        /// Executes the migration step and updates the versioning information in one transaction.
+        /// </summary>
+        /// <param name="dbVersion">Might be null in the case of a bootstrap step.</param>
         public void Execute(IDbVersion dbVersion)
         {
             using (IDbConnection connection = _connectionFactory.OpenConnection(_connectionInfo))
@@ -32,7 +36,10 @@ namespace MigSharp.Process
                 using (IDbTransaction transaction = connection.BeginTransaction())
                 {
                     Execute(connection, transaction);
-                    dbVersion.Update(connection, _metaData);
+                    if (dbVersion != null)
+                    {
+                        dbVersion.Update(_metaData, connection, transaction);
+                    }
                     transaction.Commit();
                 }
             }
