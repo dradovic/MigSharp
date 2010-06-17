@@ -6,7 +6,7 @@ namespace MigSharp
 {
     [MetadataAttribute]
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class MigrationExportAttribute : ExportAttribute // TODO: rename to ExportMigrationAttribute
+    public sealed class MigrationExportAttribute : ExportAttribute
     {
         public const int MaximumModuleLength = 250;
 

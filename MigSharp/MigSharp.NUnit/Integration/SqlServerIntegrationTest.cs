@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 
@@ -44,8 +45,7 @@ namespace MigSharp.NUnit.Integration
             };
             
             Migrator migrator = new Migrator(builder.ConnectionString, "System.Data.SqlClient");
-            //MigrationExportAttribute[] attributes = (MigrationExportAttribute[])typeof(Migration1).GetCustomAttributes(typeof(MigrationExportAttribute), false);
-            migrator.UpgradeAll(Assembly.GetExecutingAssembly());
+            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), GetTimestamp(typeof(Migration1)));
             
             // assert DbVersion table was created
             Table dbVersionTable = _database.Tables[DbVersion.TableName];
@@ -64,6 +64,12 @@ namespace MigSharp.NUnit.Integration
             // assert DbVersion table has necessary entries
             DataSet dbVersionContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName));
             Assert.AreEqual(1, dbVersionContent.Tables["Table"].Rows.Count, "The versioning table is missing entries.");
+        }
+
+        private static DateTime GetTimestamp(Type migration)
+        {
+            MigrationExportAttribute[] attributes = (MigrationExportAttribute[])migration.GetCustomAttributes(typeof(MigrationExportAttribute), false);
+            return new DateTime(attributes[0].Year, attributes[0].Month, attributes[0].Day, attributes[0].Hour, attributes[0].Minute, attributes[0].Second);
         }
 
         [TearDown]

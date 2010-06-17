@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 
 using MigSharp.Core;
@@ -29,18 +30,29 @@ namespace MigSharp
         public void UpgradeAll(Assembly assembly)
         {
             Log.Info("Upgrading all...");
-            List<Lazy<IMigration, IMigrationMetaData>> migrations = Collect(assembly);
+            Updgrade(assembly, DateTime.MaxValue);
+        }
+
+        public void UpgradeUntil(Assembly assembly, DateTime timestamp)
+        {
+            Log.Info(string.Format(CultureInfo.CurrentCulture, "Upgrading until {0}...", timestamp));
+            Updgrade(assembly, timestamp);
+        }
+
+        private void Updgrade(Assembly assembly, DateTime timestamp)
+        {
+            List<Lazy<IMigration, IMigrationMetaData>> migrations = CollectMigrations(assembly);
             if (migrations.Count > 0)
             {
                 var providerFactory = new ProviderFactory();
                 var connectionFactory = new DbConnectionFactory();
-                var batch = new MigrationBatch(migrations, _connectionInfo, providerFactory, connectionFactory);
+                var batch = new MigrationBatch(migrations, timestamp, _connectionInfo, providerFactory, connectionFactory);
                 var dbVersion = DbVersion.Create(_connectionInfo, providerFactory, connectionFactory);
                 batch.Process(dbVersion);
             }
         }
 
-        private static List<Lazy<IMigration, IMigrationMetaData>> Collect(Assembly assembly)
+        private static List<Lazy<IMigration, IMigrationMetaData>> CollectMigrations(Assembly assembly)
         {
             Log.Info("Collecting all migrations...");
             var catalog = new AssemblyCatalog(assembly);
