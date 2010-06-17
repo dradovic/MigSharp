@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data;
+using System.Data.SqlClient;
 using System.Reflection;
 
 using Microsoft.SqlServer.Management.Smo;
@@ -41,9 +42,27 @@ namespace MigSharp.NUnit.Integration
                 InitialCatalog = TestDbName,
                 IntegratedSecurity = true,
             };
+            
             Migrator migrator = new Migrator(builder.ConnectionString, "System.Data.SqlClient");
             migrator.UpgradeAll(Assembly.GetExecutingAssembly());
-            Assert.IsNotNull(_database.Tables[DbVersion.TableName], string.Format("The '{0}' table was not created.", DbVersion.TableName));
+            
+            // assert DbVersion table was created
+            Table dbVersionTable = _database.Tables[DbVersion.TableName];
+            Assert.IsNotNull(dbVersionTable, string.Format("The '{0}' table was not created.", DbVersion.TableName));
+            Assert.AreEqual(3, dbVersionTable.Columns.Count);
+            Assert.AreEqual("Timestamp", dbVersionTable.Columns[0].Name);
+            Assert.AreEqual("Module", dbVersionTable.Columns[1].Name);
+            Assert.AreEqual("Tag", dbVersionTable.Columns[2].Name);
+
+            // assert Customer table was created
+            Table customerTable = _database.Tables[Migration1.CustomerTableName];
+            Assert.IsNotNull(customerTable, string.Format("The '{0}' table was not created.", Migration1.CustomerTableName));
+            Assert.AreEqual(1, customerTable.Columns.Count);
+            Assert.AreEqual(Migration1.ColumnNames[0], customerTable.Columns[0].Name);
+
+            // assert DbVersion table has necessary entries
+            DataSet dbVersionContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName));
+            Assert.AreEqual(1, dbVersionContent.Tables["Table"].Rows.Count);
         }
 
         [TearDown]

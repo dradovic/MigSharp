@@ -21,10 +21,10 @@ namespace MigSharp
         public int Minute { get { return _minute; } }
         public int Second { get { return _second; } }
 
-        public string Name { get; set; }
-
         private string _module = string.Empty;
         public string Module { get { return _module; } set { _module = string.IsNullOrEmpty(value) ? string.Empty : value; } }
+
+        public string Tag { get; set; }
 
         public MigrationExportAttribute(int year, int month, int day, int hour, int minute, int second)
             : base(typeof(IMigration))
