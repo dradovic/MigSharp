@@ -14,7 +14,7 @@ namespace MigSharp.Providers
 // ReSharper disable UnusedAutoPropertyAccessor.Local
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany]
-        private IEnumerable<Lazy<IProvider, IProviderMetaData>> Providers { get; set; } // set by MEF
+        private IEnumerable<Lazy<IProvider, IProviderMetadata>> Providers { get; set; } // set by MEF
 // ReSharper restore UnusedAutoPropertyAccessor.Local
 
         public ProviderFactory()
@@ -24,14 +24,14 @@ namespace MigSharp.Providers
             container.ComposeParts(this);
         }
 
-        public IProvider GetProvider(string providerInvariantName, out IProviderMetaData metaData)
+        public IProvider GetProvider(string providerInvariantName, out IProviderMetadata metadata)
         {
-            Lazy<IProvider, IProviderMetaData> exportedProvider = Providers.Where(p => p.Metadata.InvariantName == providerInvariantName).SingleOrDefault();
+            Lazy<IProvider, IProviderMetadata> exportedProvider = Providers.Where(p => p.Metadata.InvariantName == providerInvariantName).SingleOrDefault();
             if (exportedProvider == null)
             {
                 throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' is not supported.", providerInvariantName));
             }
-            metaData = exportedProvider.Metadata;
+            metadata = exportedProvider.Metadata;
             return exportedProvider.Value;
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 using MigSharp.Core;
 using MigSharp.Providers;
@@ -8,13 +9,13 @@ namespace MigSharp.Process
 {
     internal class MigrationBatch
     {
-        private readonly IEnumerable<Lazy<IMigration, IMigrationMetaData>> _migrations;
+        private readonly IEnumerable<Lazy<IMigration, IMigrationMetadata>> _migrations;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProviderFactory _providerFactory;
         private readonly IDbConnectionFactory _connectionFactory;
 
         public MigrationBatch(
-            IEnumerable<Lazy<IMigration, IMigrationMetaData>> migrations, 
+            IEnumerable<Lazy<IMigration, IMigrationMetadata>> migrations, 
             ConnectionInfo connectionInfo, 
             IProviderFactory providerFactory, 
             IDbConnectionFactory connectionFactory)
@@ -36,8 +37,8 @@ namespace MigSharp.Process
 
                 Log.Info(LogCategory.Performance, "Migration to {0}{1}{2} took {3}s",
                     m.Metadata.Timestamp(),
-                    !string.IsNullOrEmpty(m.Metadata.Module) ? string.Format(" [{0}]", m.Metadata.Module) : string.Empty,
-                    !string.IsNullOrEmpty(m.Metadata.Tag) ? string.Format(" '{0}'", m.Metadata.Tag) : string.Empty,
+                    !string.IsNullOrEmpty(m.Metadata.ModuleName) ? string.Format(CultureInfo.CurrentCulture, " [{0}]", m.Metadata.ModuleName) : string.Empty,
+                    !string.IsNullOrEmpty(m.Metadata.Tag) ? string.Format(CultureInfo.CurrentCulture, " '{0}'", m.Metadata.Tag) : string.Empty,
                     (DateTime.Now - start).TotalSeconds);
             }
         }

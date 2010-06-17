@@ -1,6 +1,6 @@
 namespace MigSharp.Providers
 {
-    public interface IProviderMetaData
+    public interface IProviderMetadata
     {
         string InvariantName { get; }
     }

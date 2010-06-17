@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Globalization;
 
 using MigSharp.Core;
 using MigSharp.Providers;
@@ -18,7 +19,7 @@ namespace MigSharp.Process
         private DbVersion(DbVersionDataSet dataSet, DbProviderFactory factory)
         {
             Debug.Assert(dataSet.DbVersion.TableName == TableName);
-            Debug.Assert(dataSet.DbVersion.ModuleColumn.MaxLength == MigrationExportAttribute.MaximumModuleLength);
+            Debug.Assert(dataSet.DbVersion.ModuleColumn.MaxLength == MigrationExportAttribute.MaximumModuleNameLength);
 
             _dataSet = dataSet;
             _factory = factory;
@@ -27,7 +28,7 @@ namespace MigSharp.Process
         public static DbVersion Create(ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
         {
             // execute boostrap migration step to ensure that the DbVersion table exists
-            var step = new MigrationStep(new BootstrapMigration(), new BootstrapMetaData(), connectionInfo, providerFactory, connectionFactory);
+            var step = new MigrationStep(new BootstrapMigration(), new BootstrapMetadata(), connectionInfo, providerFactory, connectionFactory);
             step.Execute(null);
 
             // create and fill DataSet
@@ -46,7 +47,7 @@ namespace MigSharp.Process
         {
             DbCommand selectCommand = factory.CreateCommand();
             selectCommand.Connection = (DbConnection)connection;
-            selectCommand.CommandText = string.Format("SELECT {0}, {1}, {2} FROM {3}",
+            selectCommand.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT {0}, {1}, {2} FROM {3}",
                 dataSet.DbVersion.TimestampColumn.ColumnName,
                 dataSet.DbVersion.ModuleColumn.ColumnName,
                 dataSet.DbVersion.TagColumn.ColumnName,
@@ -64,18 +65,18 @@ namespace MigSharp.Process
             return new DbVersion(dataSet, null);
         }
 
-        public bool Includes(IMigrationMetaData metaData)
+        public bool Includes(IMigrationMetadata metadata)
         {
-            return _dataSet.DbVersion.FindByTimestampModule(metaData.Timestamp(), metaData.Module) != null;
+            return _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp(), metadata.ModuleName) != null;
         }
 
-        public void Update(IMigrationMetaData metaData, IDbConnection connection, IDbTransaction transaction)
+        public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction)
         {
-            Debug.Assert(!(metaData is BootstrapMetaData));
+            Debug.Assert(!(metadata is BootstrapMetadata));
 
             DateTime start = DateTime.Now;
 
-            _dataSet.DbVersion.AddDbVersionRow(metaData.Timestamp(), metaData.Module, metaData.Tag);
+            _dataSet.DbVersion.AddDbVersionRow(metadata.Timestamp(), metadata.ModuleName, metadata.Tag);
 
             DbDataAdapter adapter = CreateAdapter(_factory, connection, _dataSet);
             adapter.SelectCommand.Transaction = (DbTransaction)transaction;
@@ -96,12 +97,12 @@ namespace MigSharp.Process
             {
                 db.CreateTable(TableName).IfNotExists()
                     .WithPrimaryKeyColumn("Timestamp", DbType.DateTime)
-                    .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(MigrationExportAttribute.MaximumModuleLength)
+                    .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(MigrationExportAttribute.MaximumModuleNameLength)
                     .WithNullableColumn("Tag", DbType.String);
             }
         }
 
-        private class BootstrapMetaData : IMigrationMetaData
+        private class BootstrapMetadata : IMigrationMetadata
         {
             public int Year { get { throw new NotSupportedException(); } }
             public int Month { get { throw new NotSupportedException(); } }
@@ -110,7 +111,7 @@ namespace MigSharp.Process
             public int Minute { get { throw new NotSupportedException(); } }
             public int Second { get { throw new NotSupportedException(); } }
             public string Tag { get { throw new NotSupportedException(); } }
-            public string Module { get { throw new NotSupportedException(); } }
+            public string ModuleName { get { throw new NotSupportedException(); } }
         }
     }
 }

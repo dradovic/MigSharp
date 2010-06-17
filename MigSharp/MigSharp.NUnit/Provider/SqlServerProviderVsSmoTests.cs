@@ -22,7 +22,7 @@ namespace MigSharp.NUnit.Provider
 
         private static void AssertAreEqual(IProvider sqlProvider, IProvider smoProvider, Database database)
         {
-            var metaData = MockRepository.GenerateStub<IProviderMetaData>();
+            var metaData = MockRepository.GenerateStub<IProviderMetadata>();
             var sqlScripter = new CommandScripter(sqlProvider, metaData);
             var smoScripter = new CommandScripter(smoProvider, metaData);
             ScriptComparer.AssertAreEqual(smoScripter.GetCommandTexts(database), sqlScripter.GetCommandTexts(database));

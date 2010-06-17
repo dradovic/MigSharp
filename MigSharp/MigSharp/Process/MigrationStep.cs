@@ -11,15 +11,15 @@ namespace MigSharp.Process
     internal class MigrationStep
     {
         private readonly IMigration _migration;
-        private readonly IMigrationMetaData _metaData;
+        private readonly IMigrationMetadata _metadata;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProviderFactory _providerFactory;
         private readonly IDbConnectionFactory _connectionFactory;
 
-        public MigrationStep(IMigration migration, IMigrationMetaData metaData, ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
+        public MigrationStep(IMigration migration, IMigrationMetadata metadata, ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
         {
             _migration = migration;
-            _metaData = metaData;
+            _metadata = metadata;
             _connectionInfo = connectionInfo;
             _providerFactory = providerFactory;
             _connectionFactory = connectionFactory;
@@ -40,7 +40,7 @@ namespace MigSharp.Process
                     Execute(connection, transaction);
                     if (dbVersion != null)
                     {
-                        dbVersion.Update(_metaData, connection, transaction);
+                        dbVersion.Update(_metadata, connection, transaction);
                     }
                     transaction.Commit();
                 }
@@ -53,9 +53,9 @@ namespace MigSharp.Process
 
             Database database = new Database();
             _migration.Up(database);
-            IProviderMetaData metaData;
-            IProvider provider = _providerFactory.GetProvider(_connectionInfo.ProviderInvariantName, out metaData);
-            CommandScripter scripter = new CommandScripter(provider, metaData);
+            IProviderMetadata metadata;
+            IProvider provider = _providerFactory.GetProvider(_connectionInfo.ProviderInvariantName, out metadata);
+            CommandScripter scripter = new CommandScripter(provider, metadata);
             foreach (string commandText in scripter.GetCommandTexts(database))
             {
                 Log.Info(LogCategory.Sql, commandText); // TODO: this should be only logged in a verbose mode

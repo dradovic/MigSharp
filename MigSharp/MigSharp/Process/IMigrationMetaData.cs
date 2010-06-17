@@ -1,6 +1,6 @@
 namespace MigSharp.Process
 {
-    public interface IMigrationMetaData
+    public interface IMigrationMetadata
     {
         int Year { get; }
         int Month { get; }
@@ -9,6 +9,6 @@ namespace MigSharp.Process
         int Minute { get; }
         int Second { get; }
         string Tag { get; }
-        string Module { get; }
+        string ModuleName { get; }
     }
 }

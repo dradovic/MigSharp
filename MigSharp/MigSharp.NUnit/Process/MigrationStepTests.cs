@@ -22,14 +22,14 @@ namespace MigSharp.NUnit.Process
             const string firstCommandText = "1st command";
             const string secondCommandText = "2nd command";
 
-            TestMigrationMetaData metaData = new TestMigrationMetaData();
+            TestMigrationMetadata metadata = new TestMigrationMetadata();
 
             TestMigration migration = new TestMigration();
             IProvider provider = MockRepository.GenerateMock<IProvider>();
             provider.Expect(p => p.CreateTable(TableName, null, false)).IgnoreArguments().Return(new[] { firstCommandText, secondCommandText });
             IProviderFactory providerFactory = MockRepository.GenerateStub<IProviderFactory>();
-            IProviderMetaData providerMetaData;
-            providerFactory.Expect(f => f.GetProvider(providerInvariantName, out providerMetaData)).Return(provider);
+            IProviderMetadata providerMetadata;
+            providerFactory.Expect(f => f.GetProvider(providerInvariantName, out providerMetadata)).Return(provider);
 
             IDbTransaction transaction = MockRepository.GenerateMock<IDbTransaction>();
             transaction.Expect(t => t.Commit());
@@ -51,10 +51,10 @@ namespace MigSharp.NUnit.Process
             connection.Expect(c => c.Dispose());
             IDbConnectionFactory connectionFactory = MockRepository.GenerateStub<IDbConnectionFactory>();
             connectionFactory.Expect(c => c.OpenConnection(null)).IgnoreArguments().Return(connection);
-            MigrationStep step = new MigrationStep(migration, metaData, new ConnectionInfo("", providerInvariantName), providerFactory, connectionFactory);
+            MigrationStep step = new MigrationStep(migration, metadata, new ConnectionInfo("", providerInvariantName), providerFactory, connectionFactory);
 
             IDbVersion dbVersion = MockRepository.GenerateMock<IDbVersion>();
-            dbVersion.Expect(v => v.Update(metaData, connection, transaction));
+            dbVersion.Expect(v => v.Update(metadata, connection, transaction));
             step.Execute(dbVersion);
 
             connection.VerifyAllExpectations();
@@ -74,7 +74,7 @@ namespace MigSharp.NUnit.Process
             }
         }
 
-        private class TestMigrationMetaData : IMigrationMetaData
+        private class TestMigrationMetadata : IMigrationMetadata
         {
             public int Year { get { throw new NotSupportedException(); } }
             public int Month { get { throw new NotSupportedException(); } }
@@ -83,7 +83,7 @@ namespace MigSharp.NUnit.Process
             public int Minute { get { throw new NotSupportedException(); } }
             public int Second { get { throw new NotSupportedException(); } }
             public string Tag { get { throw new NotSupportedException(); } }
-            public string Module { get { throw new NotSupportedException(); } }
+            public string ModuleName { get { throw new NotSupportedException(); } }
         }
     }
 }

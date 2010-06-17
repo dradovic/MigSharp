@@ -8,7 +8,7 @@ namespace MigSharp
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public sealed class MigrationExportAttribute : ExportAttribute
     {
-        public const int MaximumModuleLength = 250;
+        public const int MaximumModuleNameLength = 250;
 
         private readonly int _year;
         private readonly int _month;
@@ -24,12 +24,16 @@ namespace MigSharp
         public int Minute { get { return _minute; } }
         public int Second { get { return _second; } }
 
-        private string _module = string.Empty;
-        public string Module { get { return _module; } set
+        private string _moduleName = string.Empty;
+        public string ModuleName
         {
-            if (value != null && value.Length > MaximumModuleLength) throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "The provided module name exceeds the maximum length of {0}.", MaximumModuleLength));
-            _module = string.IsNullOrEmpty(value) ? string.Empty : value;
-        } }
+            get { return _moduleName; }
+            set
+            {
+                if (value != null && value.Length > MaximumModuleNameLength) throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "The provided module name exceeds the maximum length of {0}.", MaximumModuleNameLength));
+                _moduleName = string.IsNullOrEmpty(value) ? string.Empty : value;
+            }
+        }
 
         public string Tag { get; set; }
 

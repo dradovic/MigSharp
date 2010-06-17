@@ -20,64 +20,64 @@ namespace MigSharp.NUnit.Process
         public bool TestIncludes(object metaData)
         {
             DbVersion dbVersion = CreateDbVersion();
-            return dbVersion.Includes((IMigrationMetaData)metaData);
+            return dbVersion.Includes((IMigrationMetadata)metaData);
         }
 
 // ReSharper disable UnusedMember.Local
         private static IEnumerable<TestCaseData> GetCasesForIncludes()
 // ReSharper restore UnusedMember.Local
         {
-            IMigrationMetaData migration = GetMigrationMetaData(ExistingTimestampForDefaultModule, string.Empty);
+            IMigrationMetadata migration = GetMigrationMetadata(ExistingTimestampForDefaultModule, string.Empty);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be true for existing timestamps")
                 .Returns(true);
 
-            migration = GetMigrationMetaData(ExistingTimestampForDefaultModule.AddDays(1), string.Empty);
+            migration = GetMigrationMetadata(ExistingTimestampForDefaultModule.AddDays(1), string.Empty);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be false for future missing timestamps")
                 .Returns(false);
 
-            migration = GetMigrationMetaData(ExistingTimestampForDefaultModule.AddDays(-1), string.Empty);
+            migration = GetMigrationMetadata(ExistingTimestampForDefaultModule.AddDays(-1), string.Empty);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be false for past missing timestamps")
                 .Returns(false);
 
-            migration = GetMigrationMetaData(ExistingTimestampForTestModule, TestModule);
+            migration = GetMigrationMetadata(ExistingTimestampForTestModule, TestModule);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be true for existing timestamps (Test Module)")
                 .Returns(true);
 
-            migration = GetMigrationMetaData(ExistingTimestampForTestModule.AddDays(1), TestModule);
+            migration = GetMigrationMetadata(ExistingTimestampForTestModule.AddDays(1), TestModule);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be false for future missing timestamps (Test Module)")
                 .Returns(false);
 
-            migration = GetMigrationMetaData(ExistingTimestampForTestModule.AddDays(-1), TestModule);
+            migration = GetMigrationMetadata(ExistingTimestampForTestModule.AddDays(-1), TestModule);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be false for past missing timestamps (Test Module)")
                 .Returns(false);
 
-            migration = GetMigrationMetaData(ExistingTimestampForTestModule, string.Empty);
+            migration = GetMigrationMetadata(ExistingTimestampForTestModule, string.Empty);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be false for existing timestamps of another module")
                 .Returns(false);
 
-            migration = GetMigrationMetaData(ExistingTimestampForDefaultModule, TestModule);
+            migration = GetMigrationMetadata(ExistingTimestampForDefaultModule, TestModule);
             yield return new TestCaseData(migration)
                 .SetDescription("Includes should be false for existing timestamps of another module")
                 .Returns(false);
         }
 
-        private static IMigrationMetaData GetMigrationMetaData(DateTime timeStamp, string module)
+        private static IMigrationMetadata GetMigrationMetadata(DateTime timeStamp, string module)
         {
-            IMigrationMetaData existingMigration = MockRepository.GenerateStub<IMigrationMetaData>();
+            IMigrationMetadata existingMigration = MockRepository.GenerateStub<IMigrationMetadata>();
             existingMigration.Expect(m => m.Year).Return(timeStamp.Year);
             existingMigration.Expect(m => m.Month).Return(timeStamp.Month);
             existingMigration.Expect(m => m.Day).Return(timeStamp.Day);
             existingMigration.Expect(m => m.Hour).Return(timeStamp.Hour);
             existingMigration.Expect(m => m.Minute).Return(timeStamp.Minute);
             existingMigration.Expect(m => m.Second).Return(timeStamp.Second);
-            existingMigration.Expect(m => m.Module).Return(module);
+            existingMigration.Expect(m => m.ModuleName).Return(module);
             return existingMigration;
         }
 

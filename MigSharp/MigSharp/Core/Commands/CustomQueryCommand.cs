@@ -15,9 +15,9 @@ namespace MigSharp.Core.Commands
             _query = query;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData)
+        public IEnumerable<string> Script(IProvider provider, IProviderMetadata metadata)
         {
-            if (!string.IsNullOrEmpty(IfUsing) && metaData.InvariantName != IfUsing) yield break;
+            if (!string.IsNullOrEmpty(IfUsing) && metadata.InvariantName != IfUsing) yield break;
 
             yield return _query;
         }

@@ -17,7 +17,7 @@ namespace MigSharp.Core.Commands
             _tableName = tableName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData)
+        public IEnumerable<string> Script(IProvider provider, IProviderMetadata metadata)
         {
             IEnumerable<CreateColumnCommand> createColumnCommands = Children.OfType<CreateColumnCommand>();
             if (createColumnCommands.Count() > 0)

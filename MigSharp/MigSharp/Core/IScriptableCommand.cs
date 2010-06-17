@@ -6,6 +6,6 @@ namespace MigSharp.Core
 {
     internal interface IScriptableCommand : ICommand
     {
-        IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData);
+        IEnumerable<string> Script(IProvider provider, IProviderMetadata metadata);
     }
 }

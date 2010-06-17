@@ -43,7 +43,7 @@ namespace MigSharp
         private void Updgrade(Assembly assembly, DateTime timestamp)
         {
             DateTime start = DateTime.Now;
-            List<Lazy<IMigration, IMigrationMetaData>> migrations = CollectMigrations(assembly);
+            List<Lazy<IMigration, IMigrationMetadata>> migrations = CollectMigrations(assembly);
             Log.Info(LogCategory.Performance, "Collecting migrations took {0}ms", (DateTime.Now - start).TotalMilliseconds);
 
             if (migrations.Count > 0)
@@ -66,14 +66,14 @@ namespace MigSharp
             Log.Info(LogCategory.Performance, "All migration(s) took {0}s", (DateTime.Now - start).TotalSeconds);
         }
 
-        private static List<Lazy<IMigration, IMigrationMetaData>> CollectMigrations(Assembly assembly)
+        private static List<Lazy<IMigration, IMigrationMetadata>> CollectMigrations(Assembly assembly)
         {
             Log.Info("Collecting all migrations...");
             var catalog = new AssemblyCatalog(assembly);
             var container = new CompositionContainer(catalog);
             var migrationImporter = new MigrationImporter();
             container.ComposeParts(migrationImporter);
-            var result = new List<Lazy<IMigration, IMigrationMetaData>>(migrationImporter.Migrations);
+            var result = new List<Lazy<IMigration, IMigrationMetadata>>(migrationImporter.Migrations);
             Log.Info("Found {0} migration(s) in total", result.Count);
             return result;
         }
@@ -83,7 +83,7 @@ namespace MigSharp
 // ReSharper disable UnusedAutoPropertyAccessor.Local
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             [ImportMany]
-            public IEnumerable<Lazy<IMigration, IMigrationMetaData>> Migrations { get; set; } // set by MEF
+            public IEnumerable<Lazy<IMigration, IMigrationMetadata>> Migrations { get; set; } // set by MEF
 // ReSharper restore UnusedAutoPropertyAccessor.Local
         }
     }

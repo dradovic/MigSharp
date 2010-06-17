@@ -12,7 +12,7 @@ namespace MigSharp.Core.Commands
         {
         }
 
-        public IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData)
+        public IEnumerable<string> Script(IProvider provider, IProviderMetadata metadata)
         {
             return provider.DropDefaultConstraint(Parent.Parent.TableName, Parent.ColumnName);
         }

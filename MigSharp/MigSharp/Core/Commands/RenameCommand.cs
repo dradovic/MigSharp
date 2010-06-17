@@ -15,7 +15,7 @@ namespace MigSharp.Core.Commands
             _newName = newName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData)
+        public IEnumerable<string> Script(IProvider provider, IProviderMetadata metadata)
         {
             AlterTableCommand parentAlterTableCommand = Parent as AlterTableCommand;
             AlterColumnCommand parentAlterColumnCommand = Parent as AlterColumnCommand;

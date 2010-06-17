@@ -4,6 +4,6 @@ namespace MigSharp.Providers
 {
     internal interface IProviderFactory
     {
-        IProvider GetProvider(string providerInvariantName, out IProviderMetaData metaData);
+        IProvider GetProvider(string providerInvariantName, out IProviderMetadata metadata);
     }
 }

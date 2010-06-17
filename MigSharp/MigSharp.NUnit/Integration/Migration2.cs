@@ -1,8 +1,8 @@
-﻿using System.Data;
+using System.Data;
 
 namespace MigSharp.NUnit.Integration
 {
-    [MigrationExport(2010, 6, 17, 12, 50, 21, Module = Module, Tag = Tag)]
+    [MigrationExport(2010, 6, 17, 12, 50, 21, ModuleName = Module, Tag = Tag)]
     internal class Migration2 : IMigration
     {
         public const string Module = "Migration 2";
