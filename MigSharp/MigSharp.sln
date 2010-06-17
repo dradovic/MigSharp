@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.NUnit", "MigSharp.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.Smo", "MigSharp.SmoProvider\MigSharp.Smo.csproj", "{E89185F6-58CF-4FCC-A7C1-0BFB51D46F47}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA4A057D-7277-4869-BA9E-6764C7736EC1}"
+	ProjectSection(SolutionItems) = preProject
+		How to release.txt = How to release.txt
+		TODO.txt = TODO.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

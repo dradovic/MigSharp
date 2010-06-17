@@ -63,7 +63,7 @@ namespace MigSharp.NUnit
 " + "\t" + @"[ObjectKey] [int] NOT NULL,
 " + "\t" + @"[RateCurveKey] [int] NULL,
 " + "\t" + @"[Paths] [nvarchar](max) NULL,
- CONSTRAINT [PK_S_EvaluatedPaths] PRIMARY KEY " /* NONCLUSTERED TODO: comment in*/+ @"
+ CONSTRAINT [PK_S_EvaluatedPaths] PRIMARY KEY " /* NONCLUSTERED FEATURE: support clustering */+ @"
 (
 " + "\t" + @"[AnalysisKey],
 " + "\t" + @"[ObjectKey]

@@ -72,7 +72,7 @@ namespace MigSharp.NUnit.Integration
             Table orderTable = _database.Tables[Migration2.OrderTableName];
             Assert.IsNotNull(orderTable, string.Format("The '{0}' table was not created.", Migration1.CustomerTableName));
             Assert.AreEqual(1, orderTable.Columns.Count);
-            Assert.AreEqual(Migration1.ColumnNames[0], orderTable.Columns[0].Name);
+            Assert.AreEqual(Migration2.ColumnNames[0], orderTable.Columns[0].Name);
 
             // assert DbVersion table has necessary entries
             DataSet dbVersionContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName));

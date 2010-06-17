@@ -17,7 +17,7 @@ namespace MigSharp.Core
 
         ICreatedTableWithAddedColumn ICreatedTableBase.WithPrimaryKeyColumn(string columnName, DbType type)
         {
-            if (type == DbType.String) throw new ArgumentException(string.Format("Not all providers support '{0}' for primary key columns.", type)); // TODO: extract this to a generic validation where providers are asked what they support and what not
+            if (type == DbType.String) throw new ArgumentException(string.Format("Not all providers support '{0}' for primary key columns.", type)); // FEATURE: extract this to a generic validation where providers are asked what they support and what not
 
             _command.Add(new CreateColumnCommand(_command, columnName, type, false, true));
             return this;

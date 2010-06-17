@@ -5,10 +5,10 @@ namespace MigSharp.NUnit.Integration
     [MigrationExport(2010, 6, 17, 12, 50, 21)]
     internal class Migration2 : IMigration
     {
-        public const string OrderTableName = "Order";
+        public const string OrderTableName = "Order Space";
         public static string[] ColumnNames = new[]
         {
-            "Id",
+            "Id Space",
         };
 
         public void Up(IDatabase db)

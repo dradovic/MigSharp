@@ -31,7 +31,7 @@ namespace MigSharp.Smo
             List<CreatedColumn> primaryKeyColumns = new List<CreatedColumn>(columns.Where(c => c.IsPrimaryKey));
             if (primaryKeyColumns.Count > 0)
             {
-                Index pkIndex = new Index(table, "PK_" + tableName); // TODO: figure out the default name of the PK constraint
+                Index pkIndex = new Index(table, "PK_" + tableName);
                 pkIndex.IndexKeyType = IndexKeyType.DriPrimaryKey;
                 foreach (CreatedColumn primaryKeyColumn in primaryKeyColumns)
                 {

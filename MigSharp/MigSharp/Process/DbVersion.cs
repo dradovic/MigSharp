@@ -56,14 +56,17 @@ namespace MigSharp.Process
             return adapter;
         }
 
+        /// <summary>
+        /// Used for unit testing.
+        /// </summary>
         internal static DbVersion Create(DbVersionDataSet dataSet)
         {
-            return new DbVersion(dataSet, null); // TODO: provide factory
+            return new DbVersion(dataSet, null);
         }
 
         public bool Includes(IMigrationMetaData metaData)
         {
-            return _dataSet.DbVersion.FindByTimestampModule(metaData.Timestamp(), string.Empty) != null; // TODO: include Module instead of string.Empty
+            return _dataSet.DbVersion.FindByTimestampModule(metaData.Timestamp(), metaData.Module) != null;
         }
 
         public void Update(IMigrationMetaData metaData, IDbConnection connection, IDbTransaction transaction)
