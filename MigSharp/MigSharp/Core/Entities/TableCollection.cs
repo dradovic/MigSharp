@@ -1,6 +1,6 @@
-﻿using MigSharp.Core.Commands;
+using MigSharp.Core.Commands;
 
-namespace MigSharp.Core
+namespace MigSharp.Core.Entities
 {
     internal class TableCollection : AdHocCollection<IExistingTable>, IExistingTableCollection
     {

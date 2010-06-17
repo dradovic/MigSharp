@@ -11,6 +11,8 @@ namespace MigSharp.Providers
     {
         private const string Identation = "\t";
 
+        public string InvariantName { get { return "System.Data.SqlClient"; } }
+
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, bool onlyIfNotExists)
         {
             string commandText = string.Empty;

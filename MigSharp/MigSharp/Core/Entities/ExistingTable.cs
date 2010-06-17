@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq;
 
 using MigSharp.Core.Commands;
 
-namespace MigSharp.Core
+namespace MigSharp.Core.Entities
 {
     internal class ExistingTable : IExistingTable, IExistingTableWithAddedColumn
     {

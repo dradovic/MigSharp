@@ -1,4 +1,5 @@
-﻿using MigSharp.Core;
+using MigSharp.Core;
+using MigSharp.Core.Entities;
 using MigSharp.Providers;
 using MigSharp.Smo;
 

@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Data;
 
 using MigSharp.Core;
+using MigSharp.Core.Entities;
 
 using NUnit.Framework;
 

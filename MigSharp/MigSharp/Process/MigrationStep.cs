@@ -2,6 +2,7 @@ using System.Data;
 using System.Diagnostics;
 
 using MigSharp.Core;
+using MigSharp.Core.Entities;
 using MigSharp.Providers;
 
 namespace MigSharp.Process
@@ -55,11 +56,13 @@ namespace MigSharp.Process
             CommandScripter scripter = new CommandScripter(provider);
             foreach (string commandText in scripter.GetCommandTexts(database))
             {
+                Log.Info(LogCategory.Sql, commandText); // TODO: this should be only logged in a verbose mode
+
                 IDbCommand command = connection.CreateCommand();
                 command.CommandTimeout = 0; // do not timeout; the client is responsible for not causing lock-outs
                 command.Transaction = transaction;
                 command.CommandText = commandText;
-                command.ExecuteNonQuery(); // TODO: add logging
+                command.ExecuteNonQuery();
             }
         }
     }

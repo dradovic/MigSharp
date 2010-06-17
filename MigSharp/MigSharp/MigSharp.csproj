@@ -50,10 +50,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Commands\Command.cs" />
+    <Compile Include="Core\Commands\CustomQueryCommand.cs" />
     <Compile Include="Core\Commands\DropDefaultConstraintCommand.cs" />
-    <Compile Include="Core\CreatedTable.cs" />
+    <Compile Include="Core\Entities\CreatedTable.cs" />
+    <Compile Include="Core\Entities\CustomQuery.cs" />
     <Compile Include="ICreatedTableBase.cs" />
     <Compile Include="ICreatedTableWithAddedColumn.cs" />
+    <Compile Include="ICustomQuery.cs" />
     <Compile Include="IExistingTableWithAddedColumn.cs" />
     <Compile Include="IExistingTableBase.cs" />
     <Compile Include="Process\ConnectionInfo.cs" />
@@ -65,11 +68,11 @@
     <Compile Include="Core\IScriptableCommand.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
     <Compile Include="Core\Commands\AlterColumnCommand.cs" />
-    <Compile Include="Core\Column.cs" />
+    <Compile Include="Core\Entities\Column.cs" />
     <Compile Include="Core\Commands\AlterTableCommand.cs" />
     <Compile Include="Core\Commands\CreateColumnCommand.cs" />
     <Compile Include="Core\Commands\CreateTableCommand.cs" />
-    <Compile Include="Core\ColumnCollection.cs" />
+    <Compile Include="Core\Entities\ColumnCollection.cs" />
     <Compile Include="Core\Commands\MigrateCommand.cs" />
     <Compile Include="Core\ICommand.cs" />
     <Compile Include="Core\Log.cs" />
@@ -78,8 +81,8 @@
     <Compile Include="IExistingColumn.cs" />
     <Compile Include="IExistingTable.cs" />
     <Compile Include="IExistingTableCollection.cs" />
-    <Compile Include="Core\AdHocCollection.cs" />
-    <Compile Include="Core\Database.cs" />
+    <Compile Include="Core\Entities\AdHocCollection.cs" />
+    <Compile Include="Core\Entities\Database.cs" />
     <Compile Include="IMigration.cs" />
     <Compile Include="ICreatedTable.cs" />
     <Compile Include="Process\DbVersionDataSet.Designer.cs">
@@ -100,8 +103,8 @@
     <Compile Include="Core\CommandScripter.cs" />
     <Compile Include="Providers\CreatedColumn.cs" />
     <Compile Include="Core\Commands\RenameCommand.cs" />
-    <Compile Include="Core\ExistingTable.cs" />
-    <Compile Include="Core\TableCollection.cs" />
+    <Compile Include="Core\Entities\ExistingTable.cs" />
+    <Compile Include="Core\Entities\TableCollection.cs" />
     <Compile Include="Process\MigrationStep.cs" />
   </ItemGroup>
   <ItemGroup>

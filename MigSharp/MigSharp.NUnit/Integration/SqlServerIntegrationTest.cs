@@ -38,7 +38,8 @@ namespace MigSharp.NUnit.Integration
         public void TestMigration1()
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), GetTimestamp(typeof(Migration1)));
+            DateTime timestamp1 = GetTimestamp(typeof(Migration1));
+            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), timestamp1);
             
             // assert DbVersion table was created
             Table dbVersionTable = _database.Tables[DbVersion.TableName];
@@ -55,28 +56,39 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(Migration1.ColumnNames[0], customerTable.Columns[0].Name);
 
             // assert DbVersion table has necessary entries
-            DataSet dbVersionContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName));
-            Assert.AreEqual(1, dbVersionContent.Tables["Table"].Rows.Count, "The versioning table is missing entries.");
+            DataTable dbVersion = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName)).Tables["Table"];
+            Assert.AreEqual(1, dbVersion.Rows.Count, "The versioning table is missing entries.");
+            Assert.AreEqual(timestamp1, dbVersion.Rows[0][0], "The timestamp of Migration1 is wrong.");
+            Assert.AreEqual(string.Empty, dbVersion.Rows[0][1], "The module of Migration1 is wrong.");
+            Assert.AreEqual(DBNull.Value, dbVersion.Rows[0][2], "The tag of Migration1 is wrong.");
         }
 
         [Test]
         public void TestMigration1SuccededByMigration2()
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), GetTimestamp(typeof(Migration1)));
+            DateTime timestamp1 = GetTimestamp(typeof(Migration1));
+            DateTime timestamp2 = GetTimestamp(typeof(Migration2));
+            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), timestamp1);
 
             migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             migrator.UpgradeAll(Assembly.GetExecutingAssembly());
 
-            // assert Order table was created
+            // assert Order table was created and contains all entries
             Table orderTable = _database.Tables[Migration2.OrderTableName];
-            Assert.IsNotNull(orderTable, string.Format("The '{0}' table was not created.", Migration1.CustomerTableName));
+            Assert.IsNotNull(orderTable, string.Format("The '{0}' table was not created.", Migration2.OrderTableName));
             Assert.AreEqual(1, orderTable.Columns.Count);
             Assert.AreEqual(Migration2.ColumnNames[0], orderTable.Columns[0].Name);
+            DataTable orderContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", Migration2.OrderTableName)).Tables["Table"];
+            Assert.AreEqual(1, orderContent.Rows.Count, "The order table does not contain all expected entries.");
+            Assert.AreEqual(Migration2.FirstId, orderContent.Rows[0][Migration2.ColumnNames[0]]);
 
             // assert DbVersion table has necessary entries
-            DataSet dbVersionContent = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName));
-            Assert.AreEqual(2, dbVersionContent.Tables["Table"].Rows.Count, "The versioning table is missing entries.");
+            DataTable dbVersion = _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", DbVersion.TableName)).Tables["Table"];
+            Assert.AreEqual(2, dbVersion.Rows.Count, "The versioning table is missing entries.");
+            Assert.AreEqual(timestamp2, dbVersion.Rows[1][0], "The timestamp of Migration2 is wrong.");
+            Assert.AreEqual(Migration2.Module, dbVersion.Rows[1][1], "The module of Migration2 is wrong.");
+            Assert.AreEqual(Migration2.Tag, dbVersion.Rows[1][2], "The tag of Migration2 is wrong.");
         }
 
         private static DateTime GetTimestamp(Type migration)

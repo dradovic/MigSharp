@@ -16,6 +16,8 @@ namespace MigSharp.Smo
     {
         private readonly Server _server = new Server();
 
+        public string InvariantName { get { return "System.Data.SqlClient.ForBackTestingOnly"; } }
+
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, bool onlyIfNotExists)
         {
             Table table = GetTable(tableName);

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MigSharp.Core
+namespace MigSharp.Core.Entities
 {
     internal abstract class AdHocCollection<T>
     {

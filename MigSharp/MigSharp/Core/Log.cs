@@ -6,6 +6,7 @@ namespace MigSharp.Core
     internal enum LogCategory
     {
         General,
+        Sql,
         Performance,
     }
 

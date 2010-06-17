@@ -1,6 +1,6 @@
 using MigSharp.Core.Commands;
 
-namespace MigSharp.Core
+namespace MigSharp.Core.Entities
 {
     internal class Database : IDatabase
     {
@@ -19,8 +19,14 @@ namespace MigSharp.Core
         {
             var createTableCommand = new CreateTableCommand(_root, tableName);
             _root.Add(createTableCommand);
-            var table = new CreatedTable(createTableCommand);
-            return table;
+            return new CreatedTable(createTableCommand);
+        }
+
+        public ICustomQuery Execute(string query)
+        {
+            var customQueryCommand = new CustomQueryCommand(_root, query);
+            _root.Add(customQueryCommand);
+            return new CustomQuery(customQueryCommand);
         }
     }
 }

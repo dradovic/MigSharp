@@ -1,6 +1,7 @@
-﻿using System.Data;
+using System.Data;
 
 using MigSharp.Core;
+using MigSharp.Core.Entities;
 using MigSharp.Providers;
 
 using NUnit.Framework;

@@ -1,9 +1,14 @@
 ﻿using System.Collections.Generic;
 
+using MigSharp.Core.Entities;
 using MigSharp.Providers;
 
 namespace MigSharp.Core
 {
+    /// <summary>
+    /// Visits all commands executed against a <see cref="IDatabase"/> and scripts them out in SQL
+    /// using a specific <see cref="IProvider"/>.
+    /// </summary>
     internal class CommandScripter
     {
         private readonly IProvider _provider;
@@ -14,16 +19,13 @@ namespace MigSharp.Core
         }
 
         /// <summary>
-        /// Translates the changes recorded on the <paramref name = "database" /> to a SQL script.
+        /// Translates the recorded commands on the <paramref name = "database" /> to a SQL script.
         /// </summary>
         public IEnumerable<string> GetCommandTexts(Database database)
         {
             return Visit(database.Root);
         }
 
-        /// <summary>
-        /// Recursively visits all command nodes and scripts them out against the _provider.
-        /// </summary>
         private IEnumerable<string> Visit(ICommand command)
         {
             IScriptableCommand scriptableCommand = command as IScriptableCommand;

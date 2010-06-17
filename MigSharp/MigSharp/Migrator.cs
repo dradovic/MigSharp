@@ -63,7 +63,7 @@ namespace MigSharp
                     batch.Execute(dbVersion);
                 }
             }
-            Log.Info(LogCategory.Performance, "Migrations took {0}s", (DateTime.Now - start).TotalSeconds);
+            Log.Info(LogCategory.Performance, "All migration(s) took {0}s", (DateTime.Now - start).TotalSeconds);
         }
 
         private static List<Lazy<IMigration, IMigrationMetaData>> CollectMigrations(Assembly assembly)
