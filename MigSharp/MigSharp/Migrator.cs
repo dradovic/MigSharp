@@ -42,7 +42,10 @@ namespace MigSharp
 
         private void Updgrade(Assembly assembly, DateTime timestamp)
         {
+            DateTime start = DateTime.Now;
             List<Lazy<IMigration, IMigrationMetaData>> migrations = CollectMigrations(assembly);
+            Log.Info(LogCategory.Performance, "Collecting migrations took {0}ms", (DateTime.Now - start).TotalMilliseconds);
+
             if (migrations.Count > 0)
             {
                 var providerFactory = new ProviderFactory();
@@ -53,13 +56,14 @@ namespace MigSharp
                                            orderby m.Metadata.Timestamp()
                                            select m;
                 int count = applicableMigrations.Count();
-                Log.Info("Out of which {0} migration(s) are applicable", count);
+                Log.Info("Found {0} applicable migration(s)", count);
                 if (count > 0)
                 {
                     var batch = new MigrationBatch(applicableMigrations, _connectionInfo, providerFactory, connectionFactory);
                     batch.Execute(dbVersion);
                 }
             }
+            Log.Info(LogCategory.Performance, "Migrations took {0}s", (DateTime.Now - start).TotalSeconds);
         }
 
         private static List<Lazy<IMigration, IMigrationMetaData>> CollectMigrations(Assembly assembly)
@@ -70,7 +74,7 @@ namespace MigSharp
             var migrationImporter = new MigrationImporter();
             container.ComposeParts(migrationImporter);
             var result = new List<Lazy<IMigration, IMigrationMetaData>>(migrationImporter.Migrations);
-            Log.Info("Found {0} migration(s)", result.Count);
+            Log.Info("Found {0} migration(s) in total", result.Count);
             return result;
         }
 

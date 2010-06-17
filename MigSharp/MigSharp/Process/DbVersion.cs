@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 
+using MigSharp.Core;
 using MigSharp.Providers;
 
 namespace MigSharp.Process
@@ -69,17 +70,21 @@ namespace MigSharp.Process
         {
             Debug.Assert(!(metaData is BootstrapMetaData));
 
+            DateTime start = DateTime.Now;
+
             _dataSet.DbVersion.AddDbVersionRow(metaData.Timestamp(), metaData.Tag, metaData.Module);
 
-            DbDataAdapter adapter = CreateAdapter(_factory, connection, _dataSet); // TODO: cache adapter
+            DbDataAdapter adapter = CreateAdapter(_factory, connection, _dataSet);
             adapter.SelectCommand.Transaction = (DbTransaction)transaction;
             DbCommandBuilder builder = _factory.CreateCommandBuilder();
             builder.DataAdapter = adapter;
             adapter.InsertCommand = builder.GetInsertCommand();
             //adapter.UpdateCommand = builder.GetUpdateCommand();
             //adapter.DeleteCommand = builder.GetDeleteCommand();
+            Log.Info(LogCategory.Performance, "Adapter creation took {0}ms", (DateTime.Now - start).TotalMilliseconds); // TODO: remove this info after stress test
 
             adapter.Update(_dataSet.DbVersion); // write new row to database
+            Log.Info(LogCategory.Performance, "Version update took {0}ms", (DateTime.Now - start).TotalMilliseconds);
         }
 
         private class BootstrapMigration : IMigration
