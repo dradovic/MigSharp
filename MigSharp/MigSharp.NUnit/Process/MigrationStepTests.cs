@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 
 using MigSharp.Process;
@@ -26,7 +26,7 @@ namespace MigSharp.NUnit.Process
 
             TestMigration migration = new TestMigration();
             IProvider provider = MockRepository.GenerateMock<IProvider>();
-            provider.Expect(p => p.CreateTable(TableName, null)).IgnoreArguments().Return(new[] { firstCommandText, secondCommandText });
+            provider.Expect(p => p.CreateTable(TableName, null, false)).IgnoreArguments().Return(new[] { firstCommandText, secondCommandText });
             IProviderFactory providerFactory = MockRepository.GenerateStub<IProviderFactory>();
             providerFactory.Expect(f => f.GetProvider(providerInvariantName)).Return(provider);
 

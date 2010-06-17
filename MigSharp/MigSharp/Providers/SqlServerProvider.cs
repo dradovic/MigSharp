@@ -11,10 +11,17 @@ namespace MigSharp.Providers
     {
         private const string Identation = "\t";
 
-        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns)
+        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, bool onlyIfNotExists)
         {
+            string commandText = string.Empty;
+            if (onlyIfNotExists)
+            {
+                commandText += string.Format("IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].{0}') AND type in (N'U')){1}BEGIN{1}", 
+                    Escape(tableName), 
+                    Environment.NewLine);
+            }
             List<string> primaryKeyColumns = new List<string>();
-            string commandText = string.Format(@"{0}({1}", CreateTable(tableName), Environment.NewLine);
+            commandText += string.Format(@"{0}({1}", CreateTable(tableName), Environment.NewLine);
             bool columnDelimiterIsNeeded = false;
             foreach (CreatedColumn column in columns)
             {
@@ -58,6 +65,10 @@ namespace MigSharp.Providers
 
             commandText += Environment.NewLine;
             commandText += string.Format("){0}", Environment.NewLine);
+            if (onlyIfNotExists)
+            {
+                commandText += "END";
+            }
             yield return commandText;
         }
 

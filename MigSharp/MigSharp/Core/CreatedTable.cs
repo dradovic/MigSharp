@@ -38,9 +38,8 @@ namespace MigSharp.Core
 
         ICreatedTableBase ICreatedTable.IfNotExists()
         {
-            throw new NotImplementedException();
-            //_command.IfNotExists = true;
-            //return this;
+            _command.IfNotExists = true;
+            return this;
         }
     }
 }

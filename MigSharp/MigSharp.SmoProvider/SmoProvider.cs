@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace MigSharp.Smo
     {
         private readonly Server _server = new Server();
 
-        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns)
+        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, bool onlyIfNotExists)
         {
             Table table = GetTable(tableName);
             foreach (CreatedColumn createdColumn in columns)
@@ -39,7 +40,10 @@ namespace MigSharp.Smo
                 table.Indexes.Add(pkIndex);
             }
             table.Create();
-            return ScriptChanges();
+            ScriptingOptions options = new ScriptingOptions();
+            options.IncludeIfNotExists = onlyIfNotExists;
+            options.Indexes = true;
+            return TransformScript(table.Script(options));
         }
 
         public IEnumerable<string> AddColumns(string tableName, IEnumerable<AddedColumn> columns)
@@ -117,8 +121,13 @@ namespace MigSharp.Smo
 
         private IEnumerable<string> ScriptChanges()
         {
-            Trace.WriteLine(_server.ConnectionContext.CapturedSql.Text.Cast<string>().Aggregate((s1, s2) => s1 + Environment.NewLine + s2));
-            return _server.ConnectionContext.CapturedSql.Text.Cast<string>().Where(c => !c.StartsWith("USE "));
+            return TransformScript(_server.ConnectionContext.CapturedSql.Text);
+        }
+
+        private static IEnumerable<string> TransformScript(StringCollection script)
+        {
+            Trace.WriteLine(script.Cast<string>().Aggregate((s1, s2) => s1 + Environment.NewLine + s2));
+            return script.Cast<string>().Where(c => !c.StartsWith("USE "));            
         }
 
         private static DataType Convert(DbType dbType, int length)

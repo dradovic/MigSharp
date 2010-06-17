@@ -9,7 +9,7 @@ namespace MigSharp.Core.Commands
     {
         private readonly string _tableName;
 
-        //public bool IfNotExists { get; set; }
+        public bool IfNotExists { get; set; }
 
         public CreateTableCommand(ICommand parent, string tableName)
             : base(parent)
@@ -23,7 +23,7 @@ namespace MigSharp.Core.Commands
             if (createColumnCommands.Count() > 0)
             {
                 foreach (string commandText in provider.CreateTable(_tableName,
-                    createColumnCommands.Select(c => new CreatedColumn(c.ColumnName, c.Type, c.IsNullable, c.IsPrimaryKey, c.Length))))
+                    createColumnCommands.Select(c => new CreatedColumn(c.ColumnName, c.Type, c.IsNullable, c.IsPrimaryKey, c.Length)), IfNotExists))
                 {
                     yield return commandText;
                 }
