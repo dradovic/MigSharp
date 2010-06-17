@@ -80,9 +80,9 @@ namespace MigSharp
 
         private class MigrationImporter
         {
+// ReSharper disable UnusedAutoPropertyAccessor.Local
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             [ImportMany]
-// ReSharper disable UnusedAutoPropertyAccessor.Local
             public IEnumerable<Lazy<IMigration, IMigrationMetaData>> Migrations { get; set; } // set by MEF
 // ReSharper restore UnusedAutoPropertyAccessor.Local
         }

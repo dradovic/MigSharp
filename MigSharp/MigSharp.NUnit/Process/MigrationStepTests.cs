@@ -28,7 +28,8 @@ namespace MigSharp.NUnit.Process
             IProvider provider = MockRepository.GenerateMock<IProvider>();
             provider.Expect(p => p.CreateTable(TableName, null, false)).IgnoreArguments().Return(new[] { firstCommandText, secondCommandText });
             IProviderFactory providerFactory = MockRepository.GenerateStub<IProviderFactory>();
-            providerFactory.Expect(f => f.GetProvider(providerInvariantName)).Return(provider);
+            IProviderMetaData providerMetaData;
+            providerFactory.Expect(f => f.GetProvider(providerInvariantName, out providerMetaData)).Return(provider);
 
             IDbTransaction transaction = MockRepository.GenerateMock<IDbTransaction>();
             transaction.Expect(t => t.Commit());

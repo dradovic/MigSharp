@@ -7,11 +7,10 @@ using System.Linq;
 
 namespace MigSharp.Providers
 {
+    [ProviderExport("System.Data.SqlClient")]
     internal class SqlServerProvider : IProvider
     {
         private const string Identation = "\t";
-
-        public string InvariantName { get { return "System.Data.SqlClient"; } }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, bool onlyIfNotExists)
         {

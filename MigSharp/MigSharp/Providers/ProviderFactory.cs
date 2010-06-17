@@ -1,20 +1,38 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 
 namespace MigSharp.Providers
 {
     internal class ProviderFactory : IProviderFactory
     {
-        public IProvider GetProvider(string providerInvariantName)
+// ReSharper disable UnusedAutoPropertyAccessor.Local
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [ImportMany]
+        private IEnumerable<Lazy<IProvider, IProviderMetaData>> Providers { get; set; } // set by MEF
+// ReSharper restore UnusedAutoPropertyAccessor.Local
+
+        public ProviderFactory()
         {
-            // TODO: use MEF (or another DI container) to get rid of this switch
-            switch (providerInvariantName)
+            var catalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
+            var container = new CompositionContainer(catalog);
+            container.ComposeParts(this);
+        }
+
+        public IProvider GetProvider(string providerInvariantName, out IProviderMetaData metaData)
+        {
+            Lazy<IProvider, IProviderMetaData> exportedProvider = Providers.Where(p => p.Metadata.InvariantName == providerInvariantName).SingleOrDefault();
+            if (exportedProvider == null)
             {
-                case "System.Data.SqlClient":
-                    return new SqlServerProvider();
-                default:
-                    throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, "Cannot find a Provider for the DbProvider '{0}'", providerInvariantName)); // TODO: reformulate message text (Provider -> CommandTextProvider?)
+                throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, "Provider '{0}' is not supported.", providerInvariantName));
             }
+            metaData = exportedProvider.Metadata;
+            return exportedProvider.Value;
         }
     }
 }

@@ -6,6 +6,8 @@ using MigSharp.Providers;
 
 using NUnit.Framework;
 
+using Rhino.Mocks;
+
 namespace MigSharp.NUnit
 {
     [TestFixture, Category("Smoke")]
@@ -17,7 +19,7 @@ namespace MigSharp.NUnit
             Database db = new Database();
             db.Tables["Customers"].Rename("Customer");
             IProvider provider = new SqlServerProvider();
-            CommandScripter scripter = new CommandScripter(provider);
+            CommandScripter scripter = new CommandScripter(provider, MockRepository.GenerateStub<IProviderMetaData>());
             ScriptComparer.AssertAreEqual(
                 new[] { "EXEC dbo.sp_rename @objname = N'[dbo].[Customers]', @newname = N'Customer', @objtype = N'OBJECT'" },
                 scripter.GetCommandTexts(db));
@@ -30,7 +32,7 @@ namespace MigSharp.NUnit
             db.Tables["S_AggregatorValues"]
                 .Columns["Val"].Rename("ValAbsoluteIncome");
             IProvider provider = new SqlServerProvider();
-            CommandScripter scripter = new CommandScripter(provider);
+            CommandScripter scripter = new CommandScripter(provider, MockRepository.GenerateStub<IProviderMetaData>());
             ScriptComparer.AssertAreEqual(
                 new[] { "EXEC dbo.sp_rename @objname=N'[dbo].[S_AggregatorValues].[Val]', @newname=N'ValAbsoluteIncome', @objtype=N'COLUMN'" },
                 scripter.GetCommandTexts(db));
@@ -51,7 +53,7 @@ namespace MigSharp.NUnit
                 .WithNullableColumn("RateCurveKey", DbType.Int32)
                 .WithNullableColumn("Paths", DbType.String);
             IProvider provider = new SqlServerProvider();
-            CommandScripter scripter = new CommandScripter(provider);
+            CommandScripter scripter = new CommandScripter(provider, MockRepository.GenerateStub<IProviderMetaData>());
             ScriptComparer.AssertAreEqual(new[]
             {
                 @"ALTER TABLE [dbo].[S_Aggregator] ADD [Valid Flag] [smallint] NOT NULL CONSTRAINT [DF_S_Aggregator_Valid Flag]  DEFAULT 0",

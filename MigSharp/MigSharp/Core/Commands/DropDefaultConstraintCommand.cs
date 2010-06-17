@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using MigSharp.Providers;
 
@@ -12,7 +12,7 @@ namespace MigSharp.Core.Commands
         {
         }
 
-        public IEnumerable<string> Script(IProvider provider)
+        public IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData)
         {
             return provider.DropDefaultConstraint(Parent.Parent.TableName, Parent.ColumnName);
         }

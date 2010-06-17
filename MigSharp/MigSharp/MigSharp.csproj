@@ -92,6 +92,8 @@
     </Compile>
     <Compile Include="Process\IDbVersion.cs" />
     <Compile Include="Process\MetaDataExtensions.cs" />
+    <Compile Include="Providers\IProviderMetaData.cs" />
+    <Compile Include="Providers\ProviderExportAttribute.cs" />
     <Compile Include="Providers\ProviderFactory.cs" />
     <Compile Include="Providers\IProviderFactory.cs" />
     <Compile Include="Process\MigrationBatch.cs" />

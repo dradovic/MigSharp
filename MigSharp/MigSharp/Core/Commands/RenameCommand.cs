@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using MigSharp.Providers;
@@ -15,7 +15,7 @@ namespace MigSharp.Core.Commands
             _newName = newName;
         }
 
-        public IEnumerable<string> Script(IProvider provider)
+        public IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData)
         {
             AlterTableCommand parentAlterTableCommand = Parent as AlterTableCommand;
             AlterColumnCommand parentAlterColumnCommand = Parent as AlterColumnCommand;

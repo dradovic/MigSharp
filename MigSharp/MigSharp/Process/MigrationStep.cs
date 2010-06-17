@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using System.Diagnostics;
 
@@ -52,8 +53,9 @@ namespace MigSharp.Process
 
             Database database = new Database();
             _migration.Up(database);
-            IProvider provider = _providerFactory.GetProvider(_connectionInfo.ProviderInvariantName);
-            CommandScripter scripter = new CommandScripter(provider);
+            IProviderMetaData metaData;
+            IProvider provider = _providerFactory.GetProvider(_connectionInfo.ProviderInvariantName, out metaData);
+            CommandScripter scripter = new CommandScripter(provider, metaData);
             foreach (string commandText in scripter.GetCommandTexts(database))
             {
                 Log.Info(LogCategory.Sql, commandText); // TODO: this should be only logged in a verbose mode

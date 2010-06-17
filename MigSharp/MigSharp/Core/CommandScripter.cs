@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using MigSharp.Core.Entities;
 using MigSharp.Providers;
@@ -12,10 +13,12 @@ namespace MigSharp.Core
     internal class CommandScripter
     {
         private readonly IProvider _provider;
+        private readonly IProviderMetaData _metaData;
 
-        public CommandScripter(IProvider provider)
+        public CommandScripter(IProvider provider, IProviderMetaData metaData)
         {
             _provider = provider;
+            _metaData = metaData;
         }
 
         /// <summary>
@@ -31,7 +34,7 @@ namespace MigSharp.Core
             IScriptableCommand scriptableCommand = command as IScriptableCommand;
             if (scriptableCommand != null)
             {
-                foreach (string commandText in scriptableCommand.Script(_provider))
+                foreach (string commandText in scriptableCommand.Script(_provider, _metaData))
                 {
                     yield return commandText;
                 }

@@ -5,6 +5,8 @@ using MigSharp.Smo;
 
 using NUnit.Framework;
 
+using Rhino.Mocks;
+
 namespace MigSharp.NUnit.Provider
 {
     [TestFixture, Category("SqlServer")]
@@ -20,8 +22,9 @@ namespace MigSharp.NUnit.Provider
 
         private static void AssertAreEqual(IProvider sqlProvider, IProvider smoProvider, Database database)
         {
-            CommandScripter sqlScripter = new CommandScripter(sqlProvider);
-            CommandScripter smoScripter = new CommandScripter(smoProvider);
+            var metaData = MockRepository.GenerateStub<IProviderMetaData>();
+            var sqlScripter = new CommandScripter(sqlProvider, metaData);
+            var smoScripter = new CommandScripter(smoProvider, metaData);
             ScriptComparer.AssertAreEqual(smoScripter.GetCommandTexts(database), sqlScripter.GetCommandTexts(database));
         }
     }

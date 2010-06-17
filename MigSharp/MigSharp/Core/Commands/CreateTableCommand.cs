@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 using MigSharp.Providers;
@@ -17,7 +17,7 @@ namespace MigSharp.Core.Commands
             _tableName = tableName;
         }
 
-        public IEnumerable<string> Script(IProvider provider)
+        public IEnumerable<string> Script(IProvider provider, IProviderMetaData metaData)
         {
             IEnumerable<CreateColumnCommand> createColumnCommands = Children.OfType<CreateColumnCommand>();
             if (createColumnCommands.Count() > 0)
