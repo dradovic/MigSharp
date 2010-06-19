@@ -1,0 +1,11 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <UsingTask TaskName="MSBuild.Community.Tasks.NUnit" AssemblyFile="build\msbuild-tasks\MSBuild.Community.Tasks.dll"/>
+
+	<ItemGroup>
+      <TestAssembly Include="MigSharp.NUnit\bin\Release\MigSharp.NUnit.dll" />
+  </ItemGroup>
+
+  <Target Name="UnitTests">
+    <NUnit Platform="x86" NUnitVersion="NUnit-2.5.5" Assemblies="@(TestAssembly)" IncludeCategory="$(TestCategory)" />	  
+  </Target>
+</Project>
