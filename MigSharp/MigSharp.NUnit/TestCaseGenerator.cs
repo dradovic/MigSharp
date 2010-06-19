@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.Data;
 
-using MigSharp.Core;
 using MigSharp.Core.Entities;
 
 using NUnit.Framework;
 
 namespace MigSharp.NUnit
 {
-    internal static class TestCaseGenerator
+    public static class TestCaseGenerator
     {
         public static IEnumerable<TestCaseData> GetDatabaseCases()
         {

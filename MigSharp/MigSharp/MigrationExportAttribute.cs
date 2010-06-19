@@ -37,6 +37,9 @@ namespace MigSharp
 
         public string Tag { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the attribute.
+        /// </summary>
         public MigrationExportAttribute(int year, int month, int day, int hour, int minute, int second)
             : base(typeof(IMigration))
         {
