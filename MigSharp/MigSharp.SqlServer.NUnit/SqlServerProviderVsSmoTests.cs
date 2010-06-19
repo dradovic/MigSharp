@@ -1,13 +1,13 @@
 using MigSharp.Core;
 using MigSharp.Core.Entities;
+using MigSharp.NUnit;
 using MigSharp.Providers;
-using MigSharp.Smo;
 
 using NUnit.Framework;
 
 using Rhino.Mocks;
 
-namespace MigSharp.NUnit.Provider
+namespace MigSharp.SqlServer.NUnit
 {
     [TestFixture, Category("SqlServer")]
     public class SqlServerProviderVsSmoTests

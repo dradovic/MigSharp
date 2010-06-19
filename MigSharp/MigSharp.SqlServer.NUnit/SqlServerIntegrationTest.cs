@@ -5,11 +5,12 @@ using System.Reflection;
 
 using Microsoft.SqlServer.Management.Smo;
 
+using MigSharp.NUnit.Integration;
 using MigSharp.Process;
 
 using NUnit.Framework;
 
-namespace MigSharp.NUnit.Integration
+namespace MigSharp.SqlServer.NUnit
 {
     [TestFixture, Category("SqlServer")]
     public class SqlServerIntegrationTest
@@ -39,7 +40,7 @@ namespace MigSharp.NUnit.Integration
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             DateTime timestamp1 = GetTimestamp(typeof(Migration1));
-            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), timestamp1);
+            migrator.UpgradeUntil(typeof(Migration1).Assembly, timestamp1);
             
             // assert DbVersion table was created
             Table dbVersionTable = _database.Tables[DbVersion.TableName];
@@ -69,10 +70,11 @@ namespace MigSharp.NUnit.Integration
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             DateTime timestamp1 = GetTimestamp(typeof(Migration1));
             DateTime timestamp2 = GetTimestamp(typeof(Migration2));
-            migrator.UpgradeUntil(Assembly.GetExecutingAssembly(), timestamp1);
+            Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
+            migrator.UpgradeUntil(assemblyContainingMigrations, timestamp1);
 
             migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            migrator.UpgradeAll(Assembly.GetExecutingAssembly());
+            migrator.UpgradeAll(assemblyContainingMigrations);
 
             // assert Order table was created and contains all entries
             Table orderTable = _database.Tables[Migration2.OrderTableName];

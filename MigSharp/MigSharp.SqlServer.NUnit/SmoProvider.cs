@@ -10,7 +10,7 @@ using Microsoft.SqlServer.Management.Smo;
 
 using MigSharp.Providers;
 
-namespace MigSharp.Smo
+namespace MigSharp.SqlServer.NUnit
 {
     public class SmoProvider : IProvider
     {

@@ -2,7 +2,7 @@
   <UsingTask TaskName="MSBuild.Community.Tasks.NUnit" AssemblyFile="build\msbuild-tasks\MSBuild.Community.Tasks.dll"/>
 
 	<ItemGroup>
-      <TestAssembly Include="MigSharp.NUnit\bin\Release\MigSharp.NUnit.dll" />
+      <TestAssembly Include="MigSharp.SqlServer.NUnit\bin\Release\MigSharp.SqlServer.NUnit.dll" />
   </ItemGroup>
 
   <Target Name="UnitTests">
