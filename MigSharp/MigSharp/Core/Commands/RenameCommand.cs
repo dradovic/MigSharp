@@ -19,7 +19,7 @@ namespace MigSharp.Core.Commands
         {
             AlterTableCommand parentAlterTableCommand = Parent as AlterTableCommand;
             AlterColumnCommand parentAlterColumnCommand = Parent as AlterColumnCommand;
-            if (parentAlterTableCommand == null && parentAlterColumnCommand == null) throw new InvalidOperationException("The parent command of a RenameCommand must either be a alterColumnCommand or a alterTableCommand.");
+            if (parentAlterTableCommand == null && parentAlterColumnCommand == null) throw new InvalidOperationException("The parent command of a RenameCommand must either be an AlterColumnCommand or an AlterTableCommand.");
 
             if ((parentAlterTableCommand) != null)
             {

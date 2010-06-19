@@ -36,6 +36,11 @@ namespace MigSharp.Core.Entities
             _command.Add(new RenameCommand(_command, newName));
         }
 
+        public void Drop()
+        {
+            _command.Add(new DropCommand(_command));
+        }
+
         public IExistingTableWithAddedColumn AddColumn(string name, DbType type)
         {
             _command.Add(new AddColumnCommand(_command, name, type, false));

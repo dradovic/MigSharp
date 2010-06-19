@@ -48,6 +48,21 @@ namespace MigSharp.SqlServer.NUnit
             return TransformScript(table.Script(options));
         }
 
+        public IEnumerable<string> DropTable(string tableName)
+        {
+            Table table = GetTable(tableName);
+            //Column column = new Column(table, "Dummy")
+            //{
+            //    DataType = DataType.Int
+            //};
+            //table.Columns.Add(column);
+            //_server.ConnectionContext.CapturedSql.Clear();
+            table.Drop();
+            return ScriptChanges();
+            //ScriptingOptions options = new ScriptingOptions();
+            //return TransformScript(table.Script(options));
+        }
+
         public IEnumerable<string> AddColumns(string tableName, IEnumerable<AddedColumn> columns)
         {
             Table table = GetTable(tableName);
@@ -91,6 +106,15 @@ namespace MigSharp.SqlServer.NUnit
             return ScriptChanges();
         }
 
+        public IEnumerable<string> DropColumn(string tableName, string columnName)
+        {
+            Table table = GetTable(tableName);
+            Column column = new Column(table, columnName);
+            table.Columns.Add(column);
+            column.Drop();
+            return ScriptChanges();
+        }
+
         public IEnumerable<string> DropDefaultConstraint(string tableName, string columnName)
         {
             Table table = GetTable(tableName);
@@ -129,7 +153,19 @@ namespace MigSharp.SqlServer.NUnit
         private static IEnumerable<string> TransformScript(StringCollection script)
         {
             Trace.WriteLine(script.Cast<string>().Aggregate((s1, s2) => s1 + Environment.NewLine + s2));
-            return script.Cast<string>().Where(c => !c.StartsWith("USE "));            
+            return script.Cast<string>()
+                .Where(c => !c.StartsWith("USE "))
+                .Select(c =>
+                    {
+                        // some SMO statements are prefixed with a comment like: /**** bla bla ****/\r\n
+                        string endOfComment = "*/" + Environment.NewLine;
+                        int endOfCommentIndex = c.IndexOf(endOfComment);
+                        if (endOfCommentIndex > 0)
+                        {
+                            return c.Substring(endOfCommentIndex + endOfComment.Length);
+                        }
+                        return c;
+                    });
         }
 
         private static DataType Convert(DbType dbType, int length)

@@ -1,6 +1,9 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
+- use 2 interfaces for Up/Down?
+- rename IProvider to IDdlProvider?
+- keep all migration entries in DbVersion or just the latest?
 - xml-document fluent interface
 - add LICENSE
 - exhaustively test whole fluent interface (100% code coverage)

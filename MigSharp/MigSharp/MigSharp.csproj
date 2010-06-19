@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="Core\Commands\CustomQueryCommand.cs" />
+    <Compile Include="Core\Commands\DropCommand.cs" />
     <Compile Include="Core\Commands\DropDefaultConstraintCommand.cs" />
     <Compile Include="Core\Entities\CreatedTable.cs" />
     <Compile Include="Core\Entities\CustomQuery.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="ICustomQuery.cs" />
     <Compile Include="IExistingTableWithAddedColumn.cs" />
     <Compile Include="IExistingTableBase.cs" />
+    <Compile Include="IUndoableMigration.cs" />
     <Compile Include="Process\ConnectionInfo.cs" />
     <Compile Include="Process\DbConnectionFactory.cs" />
     <Compile Include="Process\IDbConnectionFactory.cs" />

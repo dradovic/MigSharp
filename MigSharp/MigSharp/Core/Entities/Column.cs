@@ -16,6 +16,11 @@ namespace MigSharp.Core.Entities
             _alterColumnCommand.Add(new RenameCommand(_alterColumnCommand, newName));
         }
 
+        public void Drop()
+        {
+            _alterColumnCommand.Add(new DropCommand(_alterColumnCommand));
+        }
+
         public void DropDefaultConstraint()
         {
             _alterColumnCommand.Add(new DropDefaultConstraintCommand(_alterColumnCommand));

@@ -73,6 +73,11 @@ namespace MigSharp.Providers
             yield return commandText;
         }
 
+        public IEnumerable<string> DropTable(string tableName)
+        {
+            yield return string.Format("DROP TABLE [dbo].{0}", Escape(tableName));
+        }
+
         public IEnumerable<string> AddColumns(string tableName, IEnumerable<AddedColumn> columns)
         {
             Debug.Assert(columns.Count() > 0);
@@ -120,6 +125,11 @@ namespace MigSharp.Providers
         public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
         {
             yield return string.Format("EXEC dbo.sp_rename @objname=N'[dbo].{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", Escape(tableName), Escape(oldName), newName);
+        }
+
+        public IEnumerable<string> DropColumn(string tableName, string columnName)
+        {
+            yield return string.Format(string.Format("ALTER TABLE [dbo].{0} DROP COLUMN {1}", Escape(tableName), Escape(columnName)));
         }
 
         public IEnumerable<string> DropDefaultConstraint(string tableName, string columnName)
