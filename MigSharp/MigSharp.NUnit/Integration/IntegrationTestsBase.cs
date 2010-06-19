@@ -66,12 +66,30 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(Migration2.Tag, dbVersionTable.Rows[1][2], "The tag of Migration2 is wrong.");
         }
 
+        [Test]
+        public void TestUndoingMigration2()
+        {
+            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
+            migrator.UpgradeAll(assemblyContainingMigrations);
+
+            migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            DateTime timestamp1 = GetTimestamp(typeof(Migration1));
+            migrator.UpgradeUntil(assemblyContainingMigrations, timestamp1);
+
+            DataTable orderTable = GetTable(Migration2.OrderTableName);
+            Assert.IsNull(orderTable, "The order table was not dropped.");
+        }
+
         private static DateTime GetTimestamp(Type migration)
         {
             MigrationExportAttribute[] attributes = (MigrationExportAttribute[])migration.GetCustomAttributes(typeof(MigrationExportAttribute), false);
             return new DateTime(attributes[0].Year, attributes[0].Month, attributes[0].Day, attributes[0].Hour, attributes[0].Minute, attributes[0].Second);
         }
 
+        /// <summary>
+        /// Gets the content of the specified table or null if it does not exist.
+        /// </summary>
         protected abstract DataTable GetTable(string tableName);
 
         protected abstract string GetConnectionString();
