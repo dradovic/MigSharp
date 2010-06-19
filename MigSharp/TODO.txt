@@ -5,5 +5,4 @@ This file contains global TODOs for the next release that are not in the source 
 - add LICENSE
 - exhaustively test whole fluent interface (100% code coverage)
 - add integration tests to build environment
-- sign assembly
 - include logo
