@@ -11,24 +11,25 @@ namespace MigSharp.Process
 {
     internal class DbVersion : IDbVersion
     {
+        private readonly string _tableName;
         private readonly DbVersionDataSet _dataSet;
         private readonly DbProviderFactory _factory;
 
-        internal static string TableName { get { return "DbVersion"; } }
-
-        private DbVersion(DbVersionDataSet dataSet, DbProviderFactory factory)
+        private DbVersion(string tableName, DbVersionDataSet dataSet, DbProviderFactory factory)
         {
-            Debug.Assert(dataSet.DbVersion.TableName == TableName);
             Debug.Assert(dataSet.DbVersion.ModuleColumn.MaxLength == MigrationExportAttribute.MaximumModuleNameLength);
 
+            _tableName = tableName;
             _dataSet = dataSet;
             _factory = factory;
         }
 
         public static DbVersion Create(ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
         {
+            string tableName = Options.VersioningTableName;
+
             // execute boostrap migration step to ensure that the DbVersion table exists
-            var step = new MigrationStep(new BootstrapMigration(), new BootstrapMetadata(), connectionInfo, providerFactory, connectionFactory);
+            var step = new MigrationStep(new BootstrapMigration(tableName), new BootstrapMetadata(), connectionInfo, providerFactory, connectionFactory);
             step.Execute(null, MigrationDirection.Up);
 
             // create and fill DataSet
@@ -36,22 +37,22 @@ namespace MigSharp.Process
             DbProviderFactory factory = connectionFactory.GetDbProviderFactory(connectionInfo);
             using (IDbConnection connection = connectionFactory.OpenConnection(connectionInfo))
             {
-                DbDataAdapter adapter = CreateAdapter(factory, connection, dataSet);
+                DbDataAdapter adapter = CreateAdapter(tableName, factory, connection, dataSet);
                 adapter.Fill(dataSet.DbVersion); 
             }
-            var dbVersion = new DbVersion(dataSet, factory);
+            var dbVersion = new DbVersion(tableName, dataSet, factory);
             return dbVersion;
         }
 
-        private static DbDataAdapter CreateAdapter(DbProviderFactory factory, IDbConnection connection, DbVersionDataSet dataSet)
+        private static DbDataAdapter CreateAdapter(string tableName, DbProviderFactory factory, IDbConnection connection, DbVersionDataSet dataSet)
         {
             DbCommand selectCommand = factory.CreateCommand();
             selectCommand.Connection = (DbConnection)connection;
-            selectCommand.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT {0}, {1}, {2} FROM {3}",
+            selectCommand.CommandText = string.Format(CultureInfo.InvariantCulture, @"SELECT {0}, {1}, {2} FROM ""{3}""", // according to http://stackoverflow.com/questions/1544095/why-does-sql-server-management-studio-generate-code-using-square-brackets, double quotes seem to be the ANSI standard way of quoting tables
                 dataSet.DbVersion.TimestampColumn.ColumnName,
                 dataSet.DbVersion.ModuleColumn.ColumnName,
                 dataSet.DbVersion.TagColumn.ColumnName,
-                dataSet.DbVersion.TableName);
+                tableName);
             DbDataAdapter adapter = factory.CreateDataAdapter();
             adapter.SelectCommand = selectCommand;
             return adapter;
@@ -62,7 +63,7 @@ namespace MigSharp.Process
         /// </summary>
         internal static DbVersion Create(DbVersionDataSet dataSet)
         {
-            return new DbVersion(dataSet, null);
+            return new DbVersion(Options.VersioningTableName, dataSet, null);
         }
 
         public bool Includes(IMigrationMetadata metadata)
@@ -88,7 +89,7 @@ namespace MigSharp.Process
                 row.Delete();
             }
 
-            DbDataAdapter adapter = CreateAdapter(_factory, connection, _dataSet);
+            DbDataAdapter adapter = CreateAdapter(_tableName, _factory, connection, _dataSet);
             adapter.SelectCommand.Transaction = (DbTransaction)transaction;
             DbCommandBuilder builder = _factory.CreateCommandBuilder();
             builder.DataAdapter = adapter;
@@ -102,9 +103,16 @@ namespace MigSharp.Process
 
         private class BootstrapMigration : IMigration
         {
+            private readonly string _tableName;
+
+            public BootstrapMigration(string tableName)
+            {
+                _tableName = tableName;
+            }
+
             public void Up(IDatabase db)
             {
-                db.CreateTable(TableName).IfNotExists()
+                db.CreateTable(_tableName).IfNotExists()
                     .WithPrimaryKeyColumn("Timestamp", DbType.DateTime)
                     .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(MigrationExportAttribute.MaximumModuleNameLength)
                     .WithNullableColumn("Tag", DbType.String);
@@ -112,7 +120,7 @@ namespace MigSharp.Process
 
             public void Down(IDatabase db)
             {
-                db.Tables[TableName].Drop();
+                db.Tables[_tableName].Drop();
             }
         }
 
