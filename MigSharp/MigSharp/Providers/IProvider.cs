@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace MigSharp.Providers
 {
     /// <summary>
-    /// Represents a type that knows a database-specific SQL dialect for schema changing statements (DDL).
+    /// Represents a type that knows how to provide database-specific DDL statements.
     /// </summary>
     public interface IProvider
     {

@@ -1,7 +1,7 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
-- rename IProvider to IDdlProvider?
+- make DbVersion table name configurable
 - xml-document fluent interface
 - add LICENSE
 - exhaustively test whole fluent interface (100% code coverage)
