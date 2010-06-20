@@ -14,6 +14,9 @@ using MigSharp.Providers;
 
 namespace MigSharp
 {
+    /// <summary>
+    /// Represents the main entry point to perform migrations.
+    /// </summary>
     public class Migrator
     {
         private readonly ConnectionInfo _connectionInfo;
@@ -28,19 +31,29 @@ namespace MigSharp
             _connectionInfo = new ConnectionInfo(connectionString, providerInvariantName);
         }
 
-        public void UpgradeAll(Assembly assembly)
+        /// <summary>
+        /// Executes all pending migrations found in <paramref name="assembly"/>.
+        /// </summary>
+        /// <param name="assembly">The assembly to search for migrations.</param>
+        public void MigrateAll(Assembly assembly)
         {
-            Log.Info("Upgrading all...");
-            Updgrade(assembly, DateTime.MaxValue);
+            Log.Info("Migrating all...");
+            Migrate(assembly, DateTime.MaxValue);
         }
 
-        public void UpgradeUntil(Assembly assembly, DateTime timestamp)
+        /// <summary>
+        /// Executes all pending migrations that have a timestamp equal or lower to <paramref name="timestamp"/> and
+        /// undoes all migrations that have a timestampe greater than <paramref name="timestamp"/>.
+        /// </summary>
+        /// <param name="assembly">The assembly to search for migrations.</param>
+        /// <param name="timestamp">The timestamp to migrate to.</param>
+        public void MigrateTo(Assembly assembly, DateTime timestamp)
         {
-            Log.Info(string.Format(CultureInfo.CurrentCulture, "Upgrading until {0}...", timestamp));
-            Updgrade(assembly, timestamp);
+            Log.Info(string.Format(CultureInfo.CurrentCulture, "Migrating to {0}...", timestamp));
+            Migrate(assembly, timestamp);
         }
 
-        private void Updgrade(Assembly assembly, DateTime timestamp)
+        private void Migrate(Assembly assembly, DateTime timestamp)
         {
             DateTime start = DateTime.Now;
             List<Lazy<IMigration, IMigrationMetadata>> migrations = CollectMigrations(assembly);
@@ -51,15 +64,20 @@ namespace MigSharp
                 var providerFactory = new ProviderFactory();
                 var connectionFactory = new DbConnectionFactory();
                 var dbVersion = DbVersion.Create(_connectionInfo, providerFactory, connectionFactory);
-                var applicableMigrations = from m in migrations
+                var applicableUpMigrations = from m in migrations
                                            where m.Metadata.Timestamp() <= timestamp && !dbVersion.Includes(m.Metadata)
                                            orderby m.Metadata.Timestamp()
                                            select m;
-                int count = applicableMigrations.Count();
-                Log.Info("Found {0} applicable migration(s)", count);
-                if (count > 0)
+                int countUp = applicableUpMigrations.Count();
+                var applicableDownMigrations = from m in migrations
+                                             where m.Metadata.Timestamp() > timestamp && dbVersion.Includes(m.Metadata)
+                                             orderby m.Metadata.Timestamp() descending 
+                                             select m;
+                int countDown = applicableDownMigrations.Count();
+                Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);
+                if (countUp + countDown > 0)
                 {
-                    var batch = new MigrationBatch(applicableMigrations, _connectionInfo, providerFactory, connectionFactory);
+                    var batch = new MigrationBatch(applicableUpMigrations, applicableDownMigrations, _connectionInfo, providerFactory, connectionFactory);
                     batch.Execute(dbVersion);
                 }
             }

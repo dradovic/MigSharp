@@ -1,4 +1,3 @@
-using System;
 using System.Data;
 using System.Diagnostics;
 
@@ -29,7 +28,8 @@ namespace MigSharp.Process
         /// Executes the migration step and updates the versioning information in one transaction.
         /// </summary>
         /// <param name="dbVersion">Might be null in the case of a bootstrap step.</param>
-        public void Execute(IDbVersion dbVersion)
+        /// <param name="direction"></param>
+        public void Execute(IDbVersion dbVersion, MigrationDirection direction)
         {
             using (IDbConnection connection = _connectionFactory.OpenConnection(_connectionInfo))
             {
@@ -37,22 +37,30 @@ namespace MigSharp.Process
 
                 using (IDbTransaction transaction = connection.BeginTransaction())
                 {
-                    Execute(connection, transaction);
+                    Execute(connection, transaction, direction);
                     if (dbVersion != null)
                     {
-                        dbVersion.Update(_metadata, connection, transaction);
+                        dbVersion.Update(_metadata, connection, transaction, direction);
                     }
                     transaction.Commit();
                 }
             }
         }
 
-        private void Execute(IDbConnection connection, IDbTransaction transaction)
+        private void Execute(IDbConnection connection, IDbTransaction transaction, MigrationDirection direction)
         {
             Debug.Assert(connection.State == ConnectionState.Open);
 
             Database database = new Database();
-            _migration.Up(database);
+            if (direction == MigrationDirection.Up)
+            {
+                _migration.Up(database);
+            }
+            else
+            {
+                Debug.Assert(direction == MigrationDirection.Down);
+                _migration.Down(database);
+            }
             IProviderMetadata metadata;
             IProvider provider = _providerFactory.GetProvider(_connectionInfo.ProviderInvariantName, out metadata);
             CommandScripter scripter = new CommandScripter(provider, metadata);

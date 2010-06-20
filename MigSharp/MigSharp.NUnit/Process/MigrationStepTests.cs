@@ -14,22 +14,32 @@ namespace MigSharp.NUnit.Process
     public class MigrationStepTests
     {
         private const string TableName = "New Table";
+        private const string ProviderInvariantName = "providerName";
+        private const string FirstCommandText = "1st command";
+        private const string SecondCommandText = "2nd command";
 
         [Test]
-        public void TestExecute()
+        public void TestUpgrading()
         {
-            const string providerInvariantName = "providerName";
-            const string firstCommandText = "1st command";
-            const string secondCommandText = "2nd command";
+            TestMigrating(MigrationDirection.Up, provider => provider.Expect(p => p.CreateTable(TableName, null, false)).IgnoreArguments().Return(new[] { FirstCommandText, SecondCommandText }));
+        }
 
+        [Test]
+        public void TestDowngrading()
+        {
+            TestMigrating(MigrationDirection.Down, provider => provider.Expect(p => p.DropTable(TableName)).Return(new[] { FirstCommandText, SecondCommandText }));
+        }
+
+        private static void TestMigrating(MigrationDirection direction, Action<IProvider> setupExpectationOnProvider)
+        {
             TestMigrationMetadata metadata = new TestMigrationMetadata();
 
             TestMigration migration = new TestMigration();
             IProvider provider = MockRepository.GenerateMock<IProvider>();
-            provider.Expect(p => p.CreateTable(TableName, null, false)).IgnoreArguments().Return(new[] { firstCommandText, secondCommandText });
+            setupExpectationOnProvider(provider);
             IProviderFactory providerFactory = MockRepository.GenerateStub<IProviderFactory>();
             IProviderMetadata providerMetadata;
-            providerFactory.Expect(f => f.GetProvider(providerInvariantName, out providerMetadata)).Return(provider);
+            providerFactory.Expect(f => f.GetProvider(ProviderInvariantName, out providerMetadata)).Return(provider);
 
             IDbTransaction transaction = MockRepository.GenerateMock<IDbTransaction>();
             transaction.Expect(t => t.Commit());
@@ -39,23 +49,23 @@ namespace MigSharp.NUnit.Process
             connection.Expect(c => c.BeginTransaction()).Return(transaction);
 
             IDbCommand firstCommand = MockRepository.GenerateMock<IDbCommand>();
-            firstCommand.Expect(c => c.CommandText).SetPropertyWithArgument(firstCommandText);
+            firstCommand.Expect(c => c.CommandText).SetPropertyWithArgument(FirstCommandText);
             firstCommand.Expect(c => c.ExecuteNonQuery()).Return(0);
             connection.Expect(c => c.CreateCommand()).Return(firstCommand).Repeat.Once();
 
             IDbCommand secondCommand = MockRepository.GenerateMock<IDbCommand>();
-            secondCommand.Expect(c => c.CommandText).SetPropertyWithArgument(secondCommandText);
+            secondCommand.Expect(c => c.CommandText).SetPropertyWithArgument(SecondCommandText);
             secondCommand.Expect(c => c.ExecuteNonQuery()).Return(0);
             connection.Expect(c => c.CreateCommand()).Return(secondCommand).Repeat.Once();
 
             connection.Expect(c => c.Dispose());
             IDbConnectionFactory connectionFactory = MockRepository.GenerateStub<IDbConnectionFactory>();
             connectionFactory.Expect(c => c.OpenConnection(null)).IgnoreArguments().Return(connection);
-            MigrationStep step = new MigrationStep(migration, metadata, new ConnectionInfo("", providerInvariantName), providerFactory, connectionFactory);
+            MigrationStep step = new MigrationStep(migration, metadata, new ConnectionInfo("", ProviderInvariantName), providerFactory, connectionFactory);
 
             IDbVersion dbVersion = MockRepository.GenerateMock<IDbVersion>();
-            dbVersion.Expect(v => v.Update(metadata, connection, transaction));
-            step.Execute(dbVersion);
+            dbVersion.Expect(v => v.Update(metadata, connection, transaction, direction));
+            step.Execute(dbVersion, direction);
 
             connection.VerifyAllExpectations();
             transaction.VerifyAllExpectations();
@@ -71,6 +81,11 @@ namespace MigSharp.NUnit.Process
             {
                 db.CreateTable(TableName)
                     .WithPrimaryKeyColumn("Id", DbType.Int32);
+            }
+
+            public void Down(IDatabase db)
+            {
+                db.Tables[TableName].Drop();
             }
         }
 

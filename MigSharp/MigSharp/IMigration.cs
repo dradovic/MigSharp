@@ -6,9 +6,6 @@
     /// Additionally, the <see cref="MigrationExportAttribute"/> must be applied
     /// to a class implementing this interface in order to be recognized as a migration.
     /// </para>
-    /// <para>
-    /// If you want to be able to undo migrations, rather implement <see cref="IUndoableMigration"/>.
-    /// </para>
     /// </summary>
     public interface IMigration
     {
@@ -16,5 +13,10 @@
         /// Applies the required changes to the provided <paramref name="db"/> for this migration.
         /// </summary>
         void Up(IDatabase db);
+
+        /// <summary>
+        /// Undoes all changes from the <see cref="Up"/> method.
+        /// </summary>
+        void Down(IDatabase db);
     }
 }

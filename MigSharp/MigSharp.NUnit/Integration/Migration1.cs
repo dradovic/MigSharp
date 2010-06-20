@@ -16,5 +16,10 @@ namespace MigSharp.NUnit.Integration
             db.CreateTable(CustomerTableName)
                 .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32);
         }
+
+        public void Down(IDatabase db)
+        {
+            db.Tables[CustomerTableName].Drop();
+        }
     }
 }

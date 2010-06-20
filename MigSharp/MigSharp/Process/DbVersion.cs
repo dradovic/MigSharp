@@ -29,7 +29,7 @@ namespace MigSharp.Process
         {
             // execute boostrap migration step to ensure that the DbVersion table exists
             var step = new MigrationStep(new BootstrapMigration(), new BootstrapMetadata(), connectionInfo, providerFactory, connectionFactory);
-            step.Execute(null);
+            step.Execute(null, MigrationDirection.Up);
 
             // create and fill DataSet
             var dataSet = new DbVersionDataSet();
@@ -70,21 +70,30 @@ namespace MigSharp.Process
             return _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp(), metadata.ModuleName) != null;
         }
 
-        public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction)
+        public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction)
         {
             Debug.Assert(!(metadata is BootstrapMetadata));
 
             DateTime start = DateTime.Now;
 
-            _dataSet.DbVersion.AddDbVersionRow(metadata.Timestamp(), metadata.ModuleName, metadata.Tag);
+            if (direction == MigrationDirection.Up)
+            {
+                _dataSet.DbVersion.AddDbVersionRow(metadata.Timestamp(), metadata.ModuleName, metadata.Tag);
+            }
+            else
+            {
+                Debug.Assert(direction == MigrationDirection.Down);
+                DbVersionDataSet.DbVersionRow row = _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp(), metadata.ModuleName);
+                Debug.Assert(row != null, "Only migrations that were applied previous are being undone.");
+                row.Delete();
+            }
 
             DbDataAdapter adapter = CreateAdapter(_factory, connection, _dataSet);
             adapter.SelectCommand.Transaction = (DbTransaction)transaction;
             DbCommandBuilder builder = _factory.CreateCommandBuilder();
             builder.DataAdapter = adapter;
             adapter.InsertCommand = builder.GetInsertCommand();
-            //adapter.UpdateCommand = builder.GetUpdateCommand();
-            //adapter.DeleteCommand = builder.GetDeleteCommand();
+            adapter.DeleteCommand = builder.GetDeleteCommand();
             Log.Info(LogCategory.Performance, "Adapter creation took {0}ms", (DateTime.Now - start).TotalMilliseconds);
 
             adapter.Update(_dataSet.DbVersion); // write new row to database
@@ -99,6 +108,11 @@ namespace MigSharp.Process
                     .WithPrimaryKeyColumn("Timestamp", DbType.DateTime)
                     .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(MigrationExportAttribute.MaximumModuleNameLength)
                     .WithNullableColumn("Tag", DbType.String);
+            }
+
+            public void Down(IDatabase db)
+            {
+                db.Tables[TableName].Drop();
             }
         }
 

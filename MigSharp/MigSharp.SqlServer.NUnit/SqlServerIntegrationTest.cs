@@ -34,7 +34,14 @@ namespace MigSharp.SqlServer.NUnit
 
         protected override DataTable GetTable(string tableName)
         {
-            return _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", tableName)).Tables["Table"];
+            if (_database.Tables[tableName] != null) // the table exists
+            {
+                return _database.ExecuteWithResults(string.Format("SELECT * FROM [{0}]", tableName)).Tables["Table"];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         protected override string GetConnectionString()

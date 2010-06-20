@@ -15,7 +15,7 @@ namespace MigSharp.NUnit.Integration
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             DateTime timestamp1 = GetTimestamp(typeof(Migration1));
-            migrator.UpgradeUntil(typeof(Migration1).Assembly, timestamp1);
+            migrator.MigrateTo(typeof(Migration1).Assembly, timestamp1);
 
             // assert DbVersion table was created
             DataTable dbVersionTable = GetTable(DbVersion.TableName);
@@ -45,10 +45,10 @@ namespace MigSharp.NUnit.Integration
             DateTime timestamp1 = GetTimestamp(typeof(Migration1));
             DateTime timestamp2 = GetTimestamp(typeof(Migration2));
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
-            migrator.UpgradeUntil(assemblyContainingMigrations, timestamp1);
+            migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
             migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            migrator.UpgradeAll(assemblyContainingMigrations);
+            migrator.MigrateAll(assemblyContainingMigrations);
 
             // assert Order table was created and contains all entries
             DataTable orderTable = GetTable(Migration2.OrderTableName);
@@ -71,14 +71,22 @@ namespace MigSharp.NUnit.Integration
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
-            migrator.UpgradeAll(assemblyContainingMigrations);
+            migrator.MigrateAll(assemblyContainingMigrations);
 
             migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             DateTime timestamp1 = GetTimestamp(typeof(Migration1));
-            migrator.UpgradeUntil(assemblyContainingMigrations, timestamp1);
+            migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
+            // assert order table was dropped
             DataTable orderTable = GetTable(Migration2.OrderTableName);
             Assert.IsNull(orderTable, "The order table was not dropped.");
+
+            // assert DbVersion table has only necessary entries
+            DataTable dbVersionTable = GetTable(DbVersion.TableName);
+            Assert.AreEqual(1, dbVersionTable.Rows.Count, "The versioning table is missing entries or has too much entries.");
+            Assert.AreEqual(timestamp1, dbVersionTable.Rows[0][0], "The timestamp of Migration1 is wrong.");
+            Assert.AreEqual(string.Empty, dbVersionTable.Rows[0][1], "The module of Migration1 is wrong.");
+            Assert.AreEqual(DBNull.Value, dbVersionTable.Rows[0][2], "The tag of Migration1 is wrong.");
         }
 
         private static DateTime GetTimestamp(Type migration)

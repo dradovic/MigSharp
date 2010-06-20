@@ -9,9 +9,10 @@ namespace MigSharp.Process
         /// <summary>
         /// Updates the version to include the migration having the specified <paramref name="metadata"/>.
         /// </summary>
-        /// <param name="connection">An open connection to the database containing the versioning table.</param>
         /// <param name="metadata">The metadata of the migration to be included in the versioning table.</param>
+        /// <param name="connection">An open connection to the database containing the versioning table.</param>
         /// <param name="transaction"></param>
-        void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction);
+        /// <param name="direction"></param>
+        void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction);
     }
 }

@@ -63,7 +63,6 @@
     <Compile Include="ICustomQuery.cs" />
     <Compile Include="IExistingTableWithAddedColumn.cs" />
     <Compile Include="IExistingTableBase.cs" />
-    <Compile Include="IUndoableMigration.cs" />
     <Compile Include="Process\ConnectionInfo.cs" />
     <Compile Include="Process\DbConnectionFactory.cs" />
     <Compile Include="Process\IDbConnectionFactory.cs" />
@@ -97,6 +96,7 @@
     </Compile>
     <Compile Include="Process\IDbVersion.cs" />
     <Compile Include="Process\MetaDataExtensions.cs" />
+    <Compile Include="Process\MigrationDirection.cs" />
     <Compile Include="Providers\IProviderMetaData.cs" />
     <Compile Include="Providers\ProviderExportAttribute.cs" />
     <Compile Include="Providers\ProviderFactory.cs" />

@@ -9,18 +9,21 @@ namespace MigSharp.Process
 {
     internal class MigrationBatch
     {
-        private readonly IEnumerable<Lazy<IMigration, IMigrationMetadata>> _migrations;
+        private readonly IEnumerable<Lazy<IMigration, IMigrationMetadata>> _upMigrations;
+        private readonly IEnumerable<Lazy<IMigration, IMigrationMetadata>> _downMigrations;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProviderFactory _providerFactory;
         private readonly IDbConnectionFactory _connectionFactory;
 
         public MigrationBatch(
-            IEnumerable<Lazy<IMigration, IMigrationMetadata>> migrations, 
+            IEnumerable<Lazy<IMigration, IMigrationMetadata>> upMigrations,
+            IEnumerable<Lazy<IMigration, IMigrationMetadata>> downMigrations, 
             ConnectionInfo connectionInfo, 
             IProviderFactory providerFactory, 
             IDbConnectionFactory connectionFactory)
         {
-            _migrations = migrations;
+            _upMigrations = upMigrations;
+            _downMigrations = downMigrations;
             _connectionInfo = connectionInfo;
             _providerFactory = providerFactory;
             _connectionFactory = connectionFactory;
@@ -28,19 +31,28 @@ namespace MigSharp.Process
 
         public void Execute(IDbVersion dbVersion)
         {
-            foreach (var m in _migrations)
+            foreach (Lazy<IMigration, IMigrationMetadata> migration in _downMigrations)
             {
-                DateTime start = DateTime.Now;
-
-                var step = new MigrationStep(m.Value, m.Metadata, _connectionInfo, _providerFactory, _connectionFactory);
-                step.Execute(dbVersion);
-
-                Log.Info(LogCategory.Performance, "Migration to {0}{1}{2} took {3}s",
-                    m.Metadata.Timestamp(),
-                    !string.IsNullOrEmpty(m.Metadata.ModuleName) ? string.Format(CultureInfo.CurrentCulture, " [{0}]", m.Metadata.ModuleName) : string.Empty,
-                    !string.IsNullOrEmpty(m.Metadata.Tag) ? string.Format(CultureInfo.CurrentCulture, " '{0}'", m.Metadata.Tag) : string.Empty,
-                    (DateTime.Now - start).TotalSeconds);
+                ExecuteStep(migration.Value, migration.Metadata, dbVersion, MigrationDirection.Down);
             }
+            foreach (Lazy<IMigration, IMigrationMetadata> migration in _upMigrations)
+            {
+                ExecuteStep(migration.Value, migration.Metadata, dbVersion, MigrationDirection.Up);
+            }
+        }
+
+        private void ExecuteStep(IMigration migration, IMigrationMetadata metadata, IDbVersion dbVersion, MigrationDirection direction)
+        {
+            DateTime start = DateTime.Now;
+
+            var step = new MigrationStep(migration, metadata, _connectionInfo, _providerFactory, _connectionFactory);
+            step.Execute(dbVersion, direction);
+
+            Log.Info(LogCategory.Performance, "Migration to {0}{1}{2} took {3}s",
+                metadata.Timestamp(),
+                !string.IsNullOrEmpty(metadata.ModuleName) ? string.Format(CultureInfo.CurrentCulture, " [{0}]", metadata.ModuleName) : string.Empty,
+                !string.IsNullOrEmpty(metadata.Tag) ? string.Format(CultureInfo.CurrentCulture, " '{0}'", metadata.Tag) : string.Empty,
+                (DateTime.Now - start).TotalSeconds);
         }
     }
 }
