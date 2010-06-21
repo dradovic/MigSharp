@@ -1,6 +1,6 @@
 namespace MigSharp.Process
 {
-    internal enum MigrationDirection
+    public enum MigrationDirection
     {
         Up,
         Down
