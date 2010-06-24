@@ -10,7 +10,7 @@ namespace MigSharp.Process
         /// <summary>
         /// Verifies if a specific migration was performed.
         /// </summary>
-        bool Includes(IMigrationMetadata migration);
+        bool Includes(IMigrationMetadata metadata);
 
         /// <summary>
         /// Updates the version to include the migration having the specified <paramref name="metadata"/>.

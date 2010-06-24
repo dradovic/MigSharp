@@ -121,7 +121,10 @@ namespace MigSharp
                 Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);
                 if (countUp + countDown > 0)
                 {
-                    return new MigrationBatch(applicableUpMigrations, applicableDownMigrations, _connectionInfo, _providerFactory, _dbConnectionFactory, dbVersion);
+                    return new MigrationBatch(
+                        applicableUpMigrations.Select(l => new MigrationStep(l.Value, l.Metadata, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(),
+                        applicableDownMigrations.Select(l => new MigrationStep(l.Value, l.Metadata, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(), 
+                        dbVersion);
                 }
             }
             return MigrationBatch.Empty;

@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IMigrationBatch.cs" />
+    <Compile Include="MigrationEventArgs.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Core\Commands\Command.cs" />
     <Compile Include="Core\Commands\CustomQueryCommand.cs" />
@@ -97,6 +98,7 @@
       <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
     </Compile>
     <Compile Include="Process\IDbVersion.cs" />
+    <Compile Include="Process\IMigrationStep.cs" />
     <Compile Include="Process\MetaDataExtensions.cs" />
     <Compile Include="Process\MigrationDirection.cs" />
     <Compile Include="Providers\IProviderMetaData.cs" />

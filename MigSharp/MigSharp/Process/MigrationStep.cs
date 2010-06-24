@@ -7,13 +7,15 @@ using MigSharp.Providers;
 
 namespace MigSharp.Process
 {
-    internal class MigrationStep
+    internal class MigrationStep : IMigrationStep
     {
         private readonly IMigration _migration;
         private readonly IMigrationMetadata _metadata;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProviderFactory _providerFactory;
         private readonly IDbConnectionFactory _connectionFactory;
+
+        public IMigrationMetadata Metadata { get { return _metadata; } }
 
         public MigrationStep(IMigration migration, IMigrationMetadata metadata, ConnectionInfo connectionInfo, IProviderFactory providerFactory, IDbConnectionFactory connectionFactory)
         {

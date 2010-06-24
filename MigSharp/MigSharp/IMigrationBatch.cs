@@ -1,7 +1,5 @@
 using System;
 
-using MigSharp.Process;
-
 namespace MigSharp
 {
     /// <summary>
@@ -9,8 +7,10 @@ namespace MigSharp
     /// </summary>
     public interface IMigrationBatch
     {
-        event EventHandler<MigrationEventArgs> MigrationFinished;
-        //event EventHandler<CancelableMigrationEventArgs> MigrationStarting;
+        /// <summary>
+        /// Raised after each migration that has been executed.
+        /// </summary>
+        event EventHandler<MigrationEventArgs> StepExecuted;
 
         /// <summary>
         /// Gets the number of migrations in this batch.
@@ -21,29 +21,5 @@ namespace MigSharp
         /// Performs the migrations contained in this batch.
         /// </summary>
         void Execute();
-    }
-
-    //public class CancelableMigrationEventArgs : MigrationEventArgs
-    //{
-    //    public bool Cancel { get; set; }
-
-    //    public CancelableMigrationEventArgs(IMigrationMetadata metadata, MigrationDirection direction) : base(metadata, direction)
-    //    {
-    //    }
-    //}
-
-    public class MigrationEventArgs : EventArgs
-    {
-        private readonly IMigrationMetadata _metadata;
-        private readonly MigrationDirection _direction;
-
-        public IMigrationMetadata Metadata { get { return _metadata; } }
-        public MigrationDirection Direction { get { return _direction; } }
-
-        public MigrationEventArgs(IMigrationMetadata metadata, MigrationDirection direction)
-        {
-            _metadata = metadata;
-            _direction = direction;
-        }
     }
 }
