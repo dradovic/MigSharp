@@ -14,7 +14,7 @@ namespace MigSharp.NUnit.Integration
             Options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
 
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            DateTime timestamp1 = GetTimestamp(typeof(Migration1));
+            DateTime timestamp1 = typeof(Migration1).GetTimestamp();
             migrator.MigrateTo(typeof(Migration1).Assembly, timestamp1);
 
             // assert Versioning table was created
@@ -42,8 +42,8 @@ namespace MigSharp.NUnit.Integration
         public void TestMigration1SuccededByMigration2()
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            DateTime timestamp1 = GetTimestamp(typeof(Migration1));
-            DateTime timestamp2 = GetTimestamp(typeof(Migration2));
+            DateTime timestamp1 = typeof(Migration1).GetTimestamp();
+            DateTime timestamp2 = typeof(Migration2).GetTimestamp();
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
@@ -74,7 +74,7 @@ namespace MigSharp.NUnit.Integration
             migrator.MigrateAll(assemblyContainingMigrations);
 
             migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            DateTime timestamp1 = GetTimestamp(typeof(Migration1));
+            DateTime timestamp1 = typeof(Migration1).GetTimestamp();
             migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
             // assert order table was dropped
@@ -87,12 +87,6 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(timestamp1, dbVersionTable.Rows[0][0], "The timestamp of Migration1 is wrong.");
             Assert.AreEqual(string.Empty, dbVersionTable.Rows[0][1], "The module of Migration1 is wrong.");
             Assert.AreEqual(DBNull.Value, dbVersionTable.Rows[0][2], "The tag of Migration1 is wrong.");
-        }
-
-        private static DateTime GetTimestamp(Type migration)
-        {
-            MigrationExportAttribute[] attributes = (MigrationExportAttribute[])migration.GetCustomAttributes(typeof(MigrationExportAttribute), false);
-            return new DateTime(attributes[0].Year, attributes[0].Month, attributes[0].Day, attributes[0].Hour, attributes[0].Minute, attributes[0].Second);
         }
 
         /// <summary>

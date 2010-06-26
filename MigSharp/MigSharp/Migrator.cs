@@ -22,6 +22,9 @@ namespace MigSharp
         private readonly ProviderFactory _providerFactory = new ProviderFactory();
         private readonly DbConnectionFactory _dbConnectionFactory = new DbConnectionFactory();
 
+        private IVersioning _customVersioning;
+        private IBootstrapping _customBootstrapping;
+
         /// <summary>
         /// Initializes a new instance of <see cref="Migrator"/>.
         /// </summary>
@@ -73,51 +76,35 @@ namespace MigSharp
         }
 
         /// <summary>
-        /// Retrieves all pending migrations.
-        /// </summary>
-        /// <param name="assembly">The assembly that contains the migrations.</param>
-        /// <param name="versioning">The versioning component.</param>
-        public IMigrationBatch FetchPendingMigrations(Assembly assembly, IVersioning versioning)
-        {
-            return FetchMigrationsTo(assembly, DateTime.MaxValue, versioning);
-        }
-
-        /// <summary>
         /// Retrieves all required migrations to reach <paramref name="timestamp"/>.
         /// </summary>
         /// <param name="assembly">The assembly that contains the migrations.</param>
         /// <param name="timestamp">The timestamp to migrate to.</param>
         public IMigrationBatch FetchMigrationsTo(Assembly assembly, DateTime timestamp)
         {
-            DbVersion dbVersion = DbVersion.Create(_connectionInfo, _providerFactory, _dbConnectionFactory);
-            return FetchMigrationsTo(assembly, timestamp, dbVersion);
-        }
-
-        /// <summary>
-        /// Retrieves all required migrations to reach <paramref name="timestamp"/>.
-        /// </summary>
-        /// <param name="assembly">The assembly that contains the migrations.</param>
-        /// <param name="timestamp">The timestamp to migrate to.</param>
-        /// <param name="versioning">The versioning component.</param>
-        /// <returns></returns>
-        public IMigrationBatch FetchMigrationsTo(Assembly assembly, DateTime timestamp, IVersioning versioning)
-        {
+            // collect all migration
             DateTime start = DateTime.Now;
             List<Lazy<IMigration, IMigrationMetadata>> migrations = CollectAllMigrations(assembly);
             Log.Info(LogCategory.Performance, "Collecting migrations took {0}ms", (DateTime.Now - start).TotalMilliseconds);
 
+            // initialize versioning component
+            IVersioning versioning = InitializeVersioning(migrations.Select(m => m.Metadata));
+
+            // filter applicable migrations
             if (migrations.Count > 0)
             {
-                var applicableUpMigrations = from m in migrations
-                                             where m.Metadata.Timestamp() <= timestamp && !versioning.IsContained(m.Metadata)
-                                             orderby m.Metadata.Timestamp() ascending
-                                             select m;
-                int countUp = applicableUpMigrations.Count();
-                var applicableDownMigrations = from m in migrations
-                                               where m.Metadata.Timestamp() > timestamp && versioning.IsContained(m.Metadata)
-                                               orderby m.Metadata.Timestamp() descending
-                                               select m;
-                int countDown = applicableDownMigrations.Count();
+                List<Lazy<IMigration, IMigrationMetadata>> applicableUpMigrations = new List<Lazy<IMigration, IMigrationMetadata>>(
+                    from m in migrations
+                    where m.Metadata.Timestamp() <= timestamp && !versioning.IsContained(m.Metadata)
+                    orderby m.Metadata.Timestamp() ascending
+                    select m);
+                List<Lazy<IMigration, IMigrationMetadata>> applicableDownMigrations = new List<Lazy<IMigration, IMigrationMetadata>>(
+                    from m in migrations
+                    where m.Metadata.Timestamp() > timestamp && versioning.IsContained(m.Metadata)
+                    orderby m.Metadata.Timestamp() descending
+                    select m);
+                int countUp = applicableUpMigrations.Count;
+                int countDown = applicableDownMigrations.Count;
                 Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);
                 if (countUp + countDown > 0)
                 {
@@ -128,6 +115,45 @@ namespace MigSharp
                 }
             }
             return MigrationBatch.Empty;
+        }
+
+        private IVersioning InitializeVersioning(IEnumerable<IMigrationMetadata> existingMigrations)
+        {
+            IVersioning versioning;
+            if (_customVersioning != null)
+            {
+                versioning = _customVersioning;
+            }
+            else
+            {
+                DbVersion dbVersion = DbVersion.Create(_connectionInfo, _providerFactory, _dbConnectionFactory);
+                if (_customBootstrapping != null && dbVersion.IsEmpty)
+                {
+                    // TODO: unit test: this should only be performed if the native versioning table does not exist yet
+                    var migrationsContainedInCustomVersioning = from m in existingMigrations
+                                                                where _customBootstrapping.IsContained(m)
+                                                                select m;
+                    dbVersion.UpdateToInclude(migrationsContainedInCustomVersioning, _connectionInfo, _dbConnectionFactory);
+                }
+                versioning = dbVersion;
+            }
+            return versioning;
+        }
+
+        public void UseCustomVersioning(IVersioning customVersioning)
+        {
+            if (customVersioning == null) throw new ArgumentNullException("customVersioning");
+            if (_customBootstrapping != null) throw new InvalidOperationException("Either use custom versioning or custom bootstrapping.");
+
+            _customVersioning = customVersioning;
+        }
+
+        public void UseCustomBootstrapping(IBootstrapping customBootstrapping)
+        {
+            if (customBootstrapping == null) throw new ArgumentNullException("customBootstrapping");
+            if (_customVersioning != null) throw new InvalidOperationException("Either use custom versioning or custom bootstrapping.");
+
+            _customBootstrapping = customBootstrapping;
         }
 
         private static List<Lazy<IMigration, IMigrationMetadata>> CollectAllMigrations(Assembly assembly)

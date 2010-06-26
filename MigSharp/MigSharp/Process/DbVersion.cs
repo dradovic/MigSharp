@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
@@ -14,6 +15,8 @@ namespace MigSharp.Process
         private readonly string _tableName;
         private readonly DbVersionDataSet _dataSet;
         private readonly DbProviderFactory _factory;
+
+        public bool IsEmpty { get { return _dataSet.DbVersion.Rows.Count == 0; } }
 
         private DbVersion(string tableName, DbVersionDataSet dataSet, DbProviderFactory factory)
         {
@@ -75,11 +78,9 @@ namespace MigSharp.Process
         {
             Debug.Assert(!(metadata is BootstrapMetadata));
 
-            DateTime start = DateTime.Now;
-
             if (direction == MigrationDirection.Up)
             {
-                _dataSet.DbVersion.AddDbVersionRow(metadata.Timestamp(), metadata.ModuleName, metadata.Tag);
+                AddMigration(metadata);
             }
             else
             {
@@ -89,6 +90,17 @@ namespace MigSharp.Process
                 row.Delete();
             }
 
+            StoreChanges(connection, transaction);
+        }
+
+        private void AddMigration(IMigrationMetadata metadata)
+        {
+            _dataSet.DbVersion.AddDbVersionRow(metadata.Timestamp(), metadata.ModuleName, metadata.Tag);
+        }
+
+        private void StoreChanges(IDbConnection connection, IDbTransaction transaction)
+        {
+            DateTime start = DateTime.Now;
             DbDataAdapter adapter = CreateAdapter(_tableName, _factory, connection, _dataSet);
             adapter.SelectCommand.Transaction = (DbTransaction)transaction;
             DbCommandBuilder builder = _factory.CreateCommandBuilder();
@@ -99,6 +111,23 @@ namespace MigSharp.Process
 
             adapter.Update(_dataSet.DbVersion); // write new row to database
             Log.Info(LogCategory.Performance, "Version update took {0}ms", (DateTime.Now - start).TotalMilliseconds);
+        }
+
+        internal void UpdateToInclude(IEnumerable<IMigrationMetadata> containedMigrations, ConnectionInfo connectionInfo, IDbConnectionFactory connectionFactory)
+        {
+            foreach (IMigrationMetadata metadata in containedMigrations)
+            {
+                AddMigration(metadata);
+            }
+            using (IDbConnection connection = connectionFactory.OpenConnection(connectionInfo))
+            {
+                connection.Open();
+                using (IDbTransaction transaction = connection.BeginTransaction())
+                {
+                    StoreChanges(connection, transaction);
+                    transaction.Commit();
+                }
+            }
         }
 
         private class BootstrapMigration : IMigration

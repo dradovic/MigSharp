@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Process\IBootstrapping.cs" />
     <Compile Include="IMigrationBatch.cs" />
     <Compile Include="MigrationEventArgs.cs" />
     <Compile Include="Options.cs" />
