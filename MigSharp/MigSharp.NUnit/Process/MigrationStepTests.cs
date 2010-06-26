@@ -63,16 +63,19 @@ namespace MigSharp.NUnit.Process
             connectionFactory.Expect(c => c.OpenConnection(null)).IgnoreArguments().Return(connection);
             MigrationStep step = new MigrationStep(migration, metadata, new ConnectionInfo("", ProviderInvariantName), providerFactory, connectionFactory);
 
-            IDbVersion dbVersion = MockRepository.GenerateMock<IDbVersion>();
-            dbVersion.Expect(v => v.Update(metadata, connection, transaction, direction));
-            step.Execute(dbVersion, direction);
+            IVersioning versioning = MockRepository.GenerateMock<IVersioning>();
+            versioning.Expect(v => v.Update(metadata, connection, transaction, direction));
+#if DEBUG
+            versioning.Expect(v => v.IsContained(metadata)).Return(direction == MigrationDirection.Up);
+#endif
+            step.Execute(versioning, direction);
 
             connection.VerifyAllExpectations();
             transaction.VerifyAllExpectations();
             provider.VerifyAllExpectations();
             firstCommand.VerifyAllExpectations();
             secondCommand.VerifyAllExpectations();
-            dbVersion.VerifyAllExpectations();
+            versioning.VerifyAllExpectations();
         }
 
         private class TestMigration : IMigration

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Reflection;
 
@@ -17,7 +17,7 @@ namespace MigSharp.NUnit.Integration
             DateTime timestamp1 = GetTimestamp(typeof(Migration1));
             migrator.MigrateTo(typeof(Migration1).Assembly, timestamp1);
 
-            // assert DbVersion table was created
+            // assert Versioning table was created
             DataTable dbVersionTable = GetTable(Options.VersioningTableName);
             Assert.IsNotNull(dbVersionTable, string.Format("The '{0}' table was not created.", Options.VersioningTableName));
             Assert.AreEqual(3, dbVersionTable.Columns.Count);
@@ -31,7 +31,7 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(1, customerTable.Columns.Count);
             Assert.AreEqual(Migration1.ColumnNames[0], customerTable.Columns[0].ColumnName);
 
-            // assert DbVersion table has necessary entries
+            // assert Versioning table has necessary entries
             Assert.AreEqual(1, dbVersionTable.Rows.Count, "The versioning table is missing entries.");
             Assert.AreEqual(timestamp1, dbVersionTable.Rows[0][0], "The timestamp of Migration1 is wrong.");
             Assert.AreEqual(string.Empty, dbVersionTable.Rows[0][1], "The module of Migration1 is wrong.");
@@ -58,7 +58,7 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(1, orderTable.Rows.Count, "The order table does not contain all expected entries.");
             Assert.AreEqual(Migration2.FirstId, orderTable.Rows[0][Migration2.ColumnNames[0]], "The order table does not contain the expected Id value.");
 
-            // assert DbVersion table has necessary entries
+            // assert Versioning table has necessary entries
             DataTable dbVersionTable = GetTable(Options.VersioningTableName);
             Assert.AreEqual(2, dbVersionTable.Rows.Count, "The versioning table is missing entries.");
             Assert.AreEqual(timestamp2, dbVersionTable.Rows[1][0], "The timestamp of Migration2 is wrong.");
@@ -81,7 +81,7 @@ namespace MigSharp.NUnit.Integration
             DataTable orderTable = GetTable(Migration2.OrderTableName);
             Assert.IsNull(orderTable, "The order table was not dropped.");
 
-            // assert DbVersion table has only necessary entries
+            // assert Versioning table has only necessary entries
             DataTable dbVersionTable = GetTable(Options.VersioningTableName);
             Assert.AreEqual(1, dbVersionTable.Rows.Count, "The versioning table is missing entries or has too much entries.");
             Assert.AreEqual(timestamp1, dbVersionTable.Rows[0][0], "The timestamp of Migration1 is wrong.");

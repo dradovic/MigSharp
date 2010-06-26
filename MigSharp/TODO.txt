@@ -1,6 +1,11 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
+- provide means to replace legacy versioning table by asking once at beginning which version is the current one
+  --> DbVersion table gets populated by these entries
+- execute down steps before executing a newly added historic step?
+  --> adding historic steps is dangerous! do not support this scenario?
+- use long instead of DateTime parts
 - xml-document fluent interface
 - add LICENSE
 - exhaustively test whole fluent interface (100% code coverage)

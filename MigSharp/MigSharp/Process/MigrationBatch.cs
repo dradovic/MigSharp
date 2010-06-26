@@ -14,7 +14,7 @@ namespace MigSharp.Process
 
         private readonly IEnumerable<IMigrationStep> _upMigrations;
         private readonly IEnumerable<IMigrationStep> _downMigrations;
-        private readonly IDbVersion _dbVersion;
+        private readonly IVersioning _versioning;
 
         // TODO: unit test events
         public event EventHandler<MigrationEventArgs> StepExecuted;
@@ -25,11 +25,11 @@ namespace MigSharp.Process
         public MigrationBatch(
             IEnumerable<IMigrationStep> upMigrations,
             IEnumerable<IMigrationStep> downMigrations, 
-            IDbVersion dbVersion)
+            IVersioning versioning)
         {
             _upMigrations = upMigrations;
             _downMigrations = downMigrations;
-            _dbVersion = dbVersion;
+            _versioning = versioning;
         }
 
         public void Execute()
@@ -48,7 +48,7 @@ namespace MigSharp.Process
         {
             DateTime start = DateTime.Now;
 
-            step.Execute(_dbVersion, direction);
+            step.Execute(_versioning, direction);
 
             Log.Info(LogCategory.Performance, "Migration to {0}{1}{2} took {3}s",
                 step.Metadata.Timestamp(),

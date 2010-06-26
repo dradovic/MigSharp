@@ -76,10 +76,10 @@ namespace MigSharp
         /// Retrieves all pending migrations.
         /// </summary>
         /// <param name="assembly">The assembly that contains the migrations.</param>
-        /// <param name="dbVersion">The versioning component.</param>
-        public IMigrationBatch FetchPendingMigrations(Assembly assembly, IDbVersion dbVersion)
+        /// <param name="versioning">The versioning component.</param>
+        public IMigrationBatch FetchPendingMigrations(Assembly assembly, IVersioning versioning)
         {
-            return FetchMigrationsTo(assembly, DateTime.MaxValue, dbVersion);
+            return FetchMigrationsTo(assembly, DateTime.MaxValue, versioning);
         }
 
         /// <summary>
@@ -98,9 +98,9 @@ namespace MigSharp
         /// </summary>
         /// <param name="assembly">The assembly that contains the migrations.</param>
         /// <param name="timestamp">The timestamp to migrate to.</param>
-        /// <param name="dbVersion">The versioning component.</param>
+        /// <param name="versioning">The versioning component.</param>
         /// <returns></returns>
-        public IMigrationBatch FetchMigrationsTo(Assembly assembly, DateTime timestamp, IDbVersion dbVersion)
+        public IMigrationBatch FetchMigrationsTo(Assembly assembly, DateTime timestamp, IVersioning versioning)
         {
             DateTime start = DateTime.Now;
             List<Lazy<IMigration, IMigrationMetadata>> migrations = CollectAllMigrations(assembly);
@@ -109,12 +109,12 @@ namespace MigSharp
             if (migrations.Count > 0)
             {
                 var applicableUpMigrations = from m in migrations
-                                             where m.Metadata.Timestamp() <= timestamp && !dbVersion.Includes(m.Metadata)
+                                             where m.Metadata.Timestamp() <= timestamp && !versioning.IsContained(m.Metadata)
                                              orderby m.Metadata.Timestamp() ascending
                                              select m;
                 int countUp = applicableUpMigrations.Count();
                 var applicableDownMigrations = from m in migrations
-                                               where m.Metadata.Timestamp() > timestamp && dbVersion.Includes(m.Metadata)
+                                               where m.Metadata.Timestamp() > timestamp && versioning.IsContained(m.Metadata)
                                                orderby m.Metadata.Timestamp() descending
                                                select m;
                 int countDown = applicableDownMigrations.Count();
@@ -124,7 +124,7 @@ namespace MigSharp
                     return new MigrationBatch(
                         applicableUpMigrations.Select(l => new MigrationStep(l.Value, l.Metadata, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(),
                         applicableDownMigrations.Select(l => new MigrationStep(l.Value, l.Metadata, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(), 
-                        dbVersion);
+                        versioning);
                 }
             }
             return MigrationBatch.Empty;

@@ -1,4 +1,4 @@
-﻿using MigSharp.Process;
+using MigSharp.Process;
 
 using NUnit.Framework;
 
@@ -18,8 +18,8 @@ namespace MigSharp.NUnit.Process
             {
                 step1,
             };
-            IDbVersion dbVersion = MockRepository.GenerateStub<IDbVersion>();
-            MigrationBatch batch = new MigrationBatch(steps, steps, dbVersion);
+            IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
+            MigrationBatch batch = new MigrationBatch(steps, steps, versioning);
             int count = 0;
             batch.StepExecuted += (sender, args) => count++;
             batch.Execute();

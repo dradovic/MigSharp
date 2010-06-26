@@ -97,7 +97,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DbVersionDataSet.xsd</DependentUpon>
     </Compile>
-    <Compile Include="Process\IDbVersion.cs" />
+    <Compile Include="Process\IVersioning.cs" />
     <Compile Include="Process\IMigrationStep.cs" />
     <Compile Include="Process\MetaDataExtensions.cs" />
     <Compile Include="Process\MigrationDirection.cs" />

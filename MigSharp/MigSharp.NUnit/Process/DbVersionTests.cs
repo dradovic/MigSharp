@@ -16,55 +16,55 @@ namespace MigSharp.NUnit.Process
         private static readonly DateTime ExistingTimestampForTestModule = new DateTime(2010, 06, 17, 18, 38, 31);
         private const string TestModule = "Test Module";
 
-        [Test, TestCaseSource("GetCasesForIncludes")]
-        public bool TestIncludes(object metaData)
+        [Test, TestCaseSource("GetCasesForIsContained")]
+        public bool TestIsContained(object metaData)
         {
             DbVersion dbVersion = CreateDbVersion();
-            return dbVersion.Includes((IMigrationMetadata)metaData);
+            return dbVersion.IsContained((IMigrationMetadata)metaData);
         }
 
 // ReSharper disable UnusedMember.Local
-        private static IEnumerable<TestCaseData> GetCasesForIncludes()
+        private static IEnumerable<TestCaseData> GetCasesForIsContained()
 // ReSharper restore UnusedMember.Local
         {
             IMigrationMetadata migration = GetMigrationMetadata(ExistingTimestampForDefaultModule, string.Empty);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be true for existing timestamps")
+                .SetDescription("IsContained should be true for existing timestamps")
                 .Returns(true);
 
             migration = GetMigrationMetadata(ExistingTimestampForDefaultModule.AddDays(1), string.Empty);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be false for future missing timestamps")
+                .SetDescription("IsContained should be false for future missing timestamps")
                 .Returns(false);
 
             migration = GetMigrationMetadata(ExistingTimestampForDefaultModule.AddDays(-1), string.Empty);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be false for past missing timestamps")
+                .SetDescription("IsContained should be false for past missing timestamps")
                 .Returns(false);
 
             migration = GetMigrationMetadata(ExistingTimestampForTestModule, TestModule);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be true for existing timestamps (Test Module)")
+                .SetDescription("IsContained should be true for existing timestamps (Test Module)")
                 .Returns(true);
 
             migration = GetMigrationMetadata(ExistingTimestampForTestModule.AddDays(1), TestModule);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be false for future missing timestamps (Test Module)")
+                .SetDescription("IsContained should be false for future missing timestamps (Test Module)")
                 .Returns(false);
 
             migration = GetMigrationMetadata(ExistingTimestampForTestModule.AddDays(-1), TestModule);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be false for past missing timestamps (Test Module)")
+                .SetDescription("IsContained should be false for past missing timestamps (Test Module)")
                 .Returns(false);
 
             migration = GetMigrationMetadata(ExistingTimestampForTestModule, string.Empty);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be false for existing timestamps of another module")
+                .SetDescription("IsContained should be false for existing timestamps of another module")
                 .Returns(false);
 
             migration = GetMigrationMetadata(ExistingTimestampForDefaultModule, TestModule);
             yield return new TestCaseData(migration)
-                .SetDescription("Includes should be false for existing timestamps of another module")
+                .SetDescription("IsContained should be false for existing timestamps of another module")
                 .Returns(false);
         }
 

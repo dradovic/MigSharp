@@ -29,9 +29,9 @@ namespace MigSharp.Process
         /// <summary>
         /// Executes the migration step and updates the versioning information in one transaction.
         /// </summary>
-        /// <param name="dbVersion">Might be null in the case of a bootstrap step.</param>
+        /// <param name="versioning">Might be null in the case of a bootstrap step.</param>
         /// <param name="direction"></param>
-        public void Execute(IDbVersion dbVersion, MigrationDirection direction)
+        public void Execute(IVersioning versioning, MigrationDirection direction)
         {
             using (IDbConnection connection = _connectionFactory.OpenConnection(_connectionInfo))
             {
@@ -40,9 +40,10 @@ namespace MigSharp.Process
                 using (IDbTransaction transaction = connection.BeginTransaction())
                 {
                     Execute(connection, transaction, direction);
-                    if (dbVersion != null)
+                    if (versioning != null)
                     {
-                        dbVersion.Update(_metadata, connection, transaction, direction);
+                        versioning.Update(_metadata, connection, transaction, direction);
+                        Debug.Assert(versioning.IsContained(_metadata) == (direction == MigrationDirection.Up), "The post-condition of IVersioning.Update is violated.");
                     }
                     transaction.Commit();
                 }

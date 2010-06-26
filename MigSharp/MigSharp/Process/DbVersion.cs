@@ -9,7 +9,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Process
 {
-    internal class DbVersion : IDbVersion
+    internal class DbVersion : IVersioning
     {
         private readonly string _tableName;
         private readonly DbVersionDataSet _dataSet;
@@ -28,7 +28,7 @@ namespace MigSharp.Process
         {
             string tableName = Options.VersioningTableName;
 
-            // execute boostrap migration step to ensure that the DbVersion table exists
+            // execute boostrap migration step to ensure that the dbVersion table exists
             var step = new MigrationStep(new BootstrapMigration(tableName), new BootstrapMetadata(), connectionInfo, providerFactory, connectionFactory);
             step.Execute(null, MigrationDirection.Up);
 
@@ -66,7 +66,7 @@ namespace MigSharp.Process
             return new DbVersion(Options.VersioningTableName, dataSet, null);
         }
 
-        public bool Includes(IMigrationMetadata metadata)
+        public bool IsContained(IMigrationMetadata metadata)
         {
             return _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp(), metadata.ModuleName) != null;
         }
