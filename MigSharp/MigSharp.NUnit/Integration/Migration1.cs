@@ -3,7 +3,7 @@
 namespace MigSharp.NUnit.Integration
 {
     [MigrationExport(2010, 6, 15, 21, 55, 12)]
-    internal class Migration1 : IMigration
+    internal class Migration1 : IReversibleMigration
     {
         public const string CustomerTableName = "Customer";
         public static string[] ColumnNames = new[]

@@ -3,7 +3,7 @@ using System.Data;
 namespace MigSharp.NUnit.Integration
 {
     [MigrationExport(2010, 6, 17, 12, 50, 21, ModuleName = Module, Tag = Tag)]
-    internal class Migration2 : IMigration
+    internal class Migration2 : IReversibleMigration
     {
         public const string Module = "Migration 2";
         public const string Tag = "Some very informative tag...";

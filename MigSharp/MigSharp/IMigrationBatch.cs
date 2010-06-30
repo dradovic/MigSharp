@@ -3,7 +3,7 @@ using System;
 namespace MigSharp
 {
     /// <summary>
-    /// Represents a batch of <see cref="IMigration"/>s.
+    /// Represents a batch of <see cref="IReversibleMigration"/>s.
     /// </summary>
     public interface IMigrationBatch
     {

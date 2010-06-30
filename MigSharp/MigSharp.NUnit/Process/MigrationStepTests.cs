@@ -78,7 +78,7 @@ namespace MigSharp.NUnit.Process
             versioning.VerifyAllExpectations();
         }
 
-        private class TestMigration : IMigration
+        private class TestMigration : IReversibleMigration
         {
             public void Up(IDatabase db)
             {

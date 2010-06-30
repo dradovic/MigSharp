@@ -80,6 +80,7 @@ namespace MigSharp
         /// </summary>
         /// <param name="assembly">The assembly that contains the migrations.</param>
         /// <param name="timestamp">The timestamp to migrate to.</param>
+        /// <exception cref="IrreversibleMigrationException">When the migration path would require downgrading a migration which is not reversible.</exception>
         public IMigrationBatch FetchMigrationsTo(Assembly assembly, DateTime timestamp)
         {
             // collect all migration
@@ -103,6 +104,10 @@ namespace MigSharp
                     where m.Metadata.Timestamp() > timestamp && versioning.IsContained(m.Metadata)
                     orderby m.Metadata.Timestamp() descending
                     select m);
+                if (applicableDownMigrations.Any(m => !(m.Value is IReversibleMigration)))
+                {
+                    throw new IrreversibleMigrationException();
+                }
                 int countUp = applicableUpMigrations.Count;
                 int countDown = applicableDownMigrations.Count;
                 Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);

@@ -52,6 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IMigration.cs" />
+    <Compile Include="IrreversibleMigrationException.cs" />
     <Compile Include="Process\IBootstrapping.cs" />
     <Compile Include="IMigrationBatch.cs" />
     <Compile Include="MigrationEventArgs.cs" />
@@ -91,7 +93,7 @@
     <Compile Include="IExistingTableCollection.cs" />
     <Compile Include="Core\Entities\AdHocCollection.cs" />
     <Compile Include="Core\Entities\Database.cs" />
-    <Compile Include="IMigration.cs" />
+    <Compile Include="IReversibleMigration.cs" />
     <Compile Include="ICreatedTable.cs" />
     <Compile Include="Process\DbVersionDataSet.Designer.cs">
       <AutoGen>True</AutoGen>

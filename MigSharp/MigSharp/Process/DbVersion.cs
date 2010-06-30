@@ -130,7 +130,7 @@ namespace MigSharp.Process
             }
         }
 
-        private class BootstrapMigration : IMigration
+        private class BootstrapMigration : IReversibleMigration
         {
             private readonly string _tableName;
 

@@ -2,7 +2,6 @@ This file contains global TODOs for the next release that are not in the source 
 ====================================================================================
 
 - expose IDbConnection from IDatabase to allow for client-side migrations
-- provide means to mark an irreversible migration or IIrreversibleMigration?
 - support data migrations 
   - Rails migrations also support data migrations
   - with a SqlStatement convenience class?

@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using System.Diagnostics;
 
@@ -62,7 +63,12 @@ namespace MigSharp.Process
             else
             {
                 Debug.Assert(direction == MigrationDirection.Down);
-                _migration.Down(database);
+                IReversibleMigration migration = _migration as IReversibleMigration;
+                if (migration == null)
+                {
+                    throw new InvalidOperationException("Cannot downgrade an irreversible migration."); // this should never happen
+                }
+                migration.Down(database);
             }
             IProviderMetadata metadata;
             IProvider provider = _providerFactory.GetProvider(_connectionInfo.ProviderInvariantName, out metadata);

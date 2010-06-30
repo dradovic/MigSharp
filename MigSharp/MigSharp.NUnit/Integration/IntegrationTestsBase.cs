@@ -39,7 +39,7 @@ namespace MigSharp.NUnit.Integration
         }
 
         [Test]
-        public void TestMigration1SuccededByMigration2()
+        public void TestMigration1SuccededByAllOtherMigrations()
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             DateTime timestamp1 = typeof(Migration1).GetTimestamp();
@@ -60,7 +60,7 @@ namespace MigSharp.NUnit.Integration
 
             // assert Versioning table has necessary entries
             DataTable dbVersionTable = GetTable(Options.VersioningTableName);
-            Assert.AreEqual(2, dbVersionTable.Rows.Count, "The versioning table is missing entries.");
+            Assert.AreEqual(3, dbVersionTable.Rows.Count, "The versioning table is missing entries.");
             Assert.AreEqual(timestamp2, dbVersionTable.Rows[1][0], "The timestamp of Migration2 is wrong.");
             Assert.AreEqual(Migration2.Module, dbVersionTable.Rows[1][1], "The module of Migration2 is wrong.");
             Assert.AreEqual(Migration2.Tag, dbVersionTable.Rows[1][2], "The tag of Migration2 is wrong.");
@@ -69,9 +69,10 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestUndoingMigration2()
         {
+            DateTime timestamp2 = typeof(Migration2).GetTimestamp();
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
-            migrator.MigrateAll(assemblyContainingMigrations);
+            migrator.MigrateTo(assemblyContainingMigrations, timestamp2);
 
             migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             DateTime timestamp1 = typeof(Migration1).GetTimestamp();
