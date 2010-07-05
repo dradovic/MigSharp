@@ -64,7 +64,7 @@ namespace MigSharp.Process
         {
             Debug.Assert(connection.State == ConnectionState.Open);
 
-            Database database = new Database();
+            Database database = new Database(new MigrationContext(connection, transaction));
             if (direction == MigrationDirection.Up)
             {
                 _migration.Up(database);

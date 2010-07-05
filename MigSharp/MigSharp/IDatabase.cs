@@ -18,5 +18,10 @@ namespace MigSharp
         /// <param name="query">Custom SQL which must be understood by all providers that should be supported by this migration
         /// or alternatively use <see cref="ICustomQuery.IfUsing"/> to specify a provider explicitly.</param>
         ICustomQuery Execute(string query);
+
+        /// <summary>
+        /// Gets the runtime context of the migration.
+        /// </summary>
+        IMigrationContext Context { get; }
     }
 }

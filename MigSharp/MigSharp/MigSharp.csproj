@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IMigration.cs" />
+    <Compile Include="IMigrationContext.cs" />
     <Compile Include="IrreversibleMigrationException.cs" />
     <Compile Include="Process\IBootstrapping.cs" />
     <Compile Include="IMigrationBatch.cs" />
@@ -103,6 +104,7 @@
     </Compile>
     <Compile Include="Process\IVersioning.cs" />
     <Compile Include="Process\IMigrationStep.cs" />
+    <Compile Include="Process\MigrationContext.cs" />
     <Compile Include="Process\MigrationDirection.cs" />
     <Compile Include="Process\MigrationExtensions.cs" />
     <Compile Include="Providers\IProviderMetaData.cs" />

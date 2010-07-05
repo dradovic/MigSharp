@@ -4,14 +4,16 @@ namespace MigSharp.Core.Entities
 {
     internal class Database : IDatabase
     {
+        private readonly IMigrationContext _context;
         private readonly MigrateCommand _root = new MigrateCommand();
         private readonly TableCollection _tables;
 
         internal ICommand Root { get { return _root; } }
         public IExistingTableCollection Tables { get { return _tables; } }
 
-        public Database()
+        public Database(IMigrationContext context)
         {
+            _context = context;
             _tables = new TableCollection(_root);
         }
 
@@ -28,5 +30,7 @@ namespace MigSharp.Core.Entities
             _root.Add(customQueryCommand);
             return new CustomQuery(customQueryCommand);
         }
+
+        public IMigrationContext Context { get { return _context; } }
     }
 }

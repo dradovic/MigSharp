@@ -13,10 +13,12 @@ namespace MigSharp.NUnit
     [TestFixture, Category("Smoke")]
     public class SpecificationTests
     {
+        private IMigrationContext _context = MockRepository.GenerateStub<IMigrationContext>();
+
         [Test]
         public void TestRenamingTable()
         {
-            Database db = new Database();
+            Database db = new Database(_context);
             db.Tables["Customers"].Rename("Customer");
             IProvider provider = new SqlServerProvider();
             CommandScripter scripter = new CommandScripter(provider, MockRepository.GenerateStub<IProviderMetadata>());
@@ -28,7 +30,7 @@ namespace MigSharp.NUnit
         [Test]
         public void TestRenamingColumn()
         {
-            Database db = new Database();
+            Database db = new Database(_context);
             db.Tables["S_AggregatorValues"]
                 .Columns["Val"].Rename("ValAbsoluteIncome");
             IProvider provider = new SqlServerProvider();
@@ -41,7 +43,7 @@ namespace MigSharp.NUnit
         [Test]
         public void Test_F518()
         {
-            Database db = new Database();
+            Database db = new Database(_context);
             db.Tables["S_Aggregator"]
                 .AddColumn("Valid Flag", DbType.Byte).WithTemporaryDefault(0)
                 .AddNullableColumn("Paths", DbType.Int32)
