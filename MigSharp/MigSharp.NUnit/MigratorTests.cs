@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using MigSharp.NUnit.Integration;
 using MigSharp.Process;
@@ -49,7 +48,7 @@ namespace MigSharp.NUnit
         [Test, ExpectedException(typeof(IrreversibleMigrationException))]
         public void TestIrreversibleMigrationExceptionIsThrown()
         {
-            DateTime timestamp2 = typeof(Migration2).GetTimestamp();
+            long timestamp2 = typeof(Migration2).GetTimestamp();
             IVersioning versioning = GetVersioning(true, true, true);
 
             Migrator migrator = new Migrator("", "");
@@ -57,15 +56,15 @@ namespace MigSharp.NUnit
             migrator.FetchMigrationsTo(typeof(Migration1).Assembly, timestamp2); // should throw an IrreversibleMigrationException as Migration3 is irreversible
         }
 
-        private IVersioning GetVersioning(bool migration1IsContained, bool migration2IsContained, bool migration3IsContained)
+        private static IVersioning GetVersioning(bool migration1IsContained, bool migration2IsContained, bool migration3IsContained)
         {
             IVersioning versioning = MockRepository.GenerateMock<IVersioning>();
-            DateTime timestamp1 = typeof(Migration1).GetTimestamp();
-            DateTime timestamp2 = typeof(Migration2).GetTimestamp();
-            DateTime timestamp3 = typeof(Migration3).GetTimestamp();
-            versioning.Expect(v => v.IsContained(Arg<IMigrationMetadata>.Matches(m => m.Timestamp() == timestamp1))).Return(migration1IsContained);
-            versioning.Expect(v => v.IsContained(Arg<IMigrationMetadata>.Matches(m => m.Timestamp() == timestamp2))).Return(migration2IsContained);
-            versioning.Expect(v => v.IsContained(Arg<IMigrationMetadata>.Matches(m => m.Timestamp() == timestamp3))).Return(migration3IsContained);
+            long timestamp1 = typeof(Migration1).GetTimestamp();
+            long timestamp2 = typeof(Migration2).GetTimestamp();
+            long timestamp3 = typeof(Migration3).GetTimestamp();
+            versioning.Expect(v => v.IsContained(Arg<IMigrationMetadata>.Matches(m => m.Timestamp == timestamp1))).Return(migration1IsContained);
+            versioning.Expect(v => v.IsContained(Arg<IMigrationMetadata>.Matches(m => m.Timestamp == timestamp2))).Return(migration2IsContained);
+            versioning.Expect(v => v.IsContained(Arg<IMigrationMetadata>.Matches(m => m.Timestamp == timestamp3))).Return(migration3IsContained);
             return versioning;
         }
     }

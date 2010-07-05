@@ -55,7 +55,7 @@ namespace MigSharp
         /// </summary>
         /// <param name="assembly"></param>
         /// <param name="timestamp"></param>
-        public void MigrateTo(Assembly assembly, DateTime timestamp)
+        public void MigrateTo(Assembly assembly, long timestamp)
         {
             DateTime start = DateTime.Now;
             Log.Info("Migrating to {0}...", timestamp);
@@ -72,7 +72,7 @@ namespace MigSharp
         /// <param name="assembly">The assembly that contains the migrations.</param>
         public IMigrationBatch FetchPendingMigrations(Assembly assembly)
         {
-            return FetchMigrationsTo(assembly, DateTime.MaxValue);
+            return FetchMigrationsTo(assembly, long.MaxValue);
         }
 
         /// <summary>
@@ -81,30 +81,30 @@ namespace MigSharp
         /// <param name="assembly">The assembly that contains the migrations.</param>
         /// <param name="timestamp">The timestamp to migrate to.</param>
         /// <exception cref="IrreversibleMigrationException">When the migration path would require downgrading a migration which is not reversible.</exception>
-        public IMigrationBatch FetchMigrationsTo(Assembly assembly, DateTime timestamp)
+        public IMigrationBatch FetchMigrationsTo(Assembly assembly, long timestamp)
         {
             // collect all migration
             DateTime start = DateTime.Now;
-            List<Lazy<IMigration, IMigrationMetadata>> migrations = CollectAllMigrations(assembly);
+            List<Tuple<IMigration, IMigrationMetadata>> migrations = CollectAllMigrations(assembly);
             Log.Info(LogCategory.Performance, "Collecting migrations took {0}ms", (DateTime.Now - start).TotalMilliseconds);
 
             // initialize versioning component
-            IVersioning versioning = InitializeVersioning(migrations.Select(m => m.Metadata));
+            IVersioning versioning = InitializeVersioning(migrations.Select(t => t.Item2));
 
-            // filter applicable migrations
+            // filter applicable migrations)
             if (migrations.Count > 0)
             {
-                List<Lazy<IMigration, IMigrationMetadata>> applicableUpMigrations = new List<Lazy<IMigration, IMigrationMetadata>>(
+                List<Tuple<IMigration, IMigrationMetadata>> applicableUpMigrations = new List<Tuple<IMigration, IMigrationMetadata>>(
                     from m in migrations
-                    where m.Metadata.Timestamp() <= timestamp && !versioning.IsContained(m.Metadata)
-                    orderby m.Metadata.Timestamp() ascending
+                    where m.Item2.Timestamp <= timestamp && !versioning.IsContained(m.Item2)
+                    orderby m.Item2.Timestamp ascending
                     select m);
-                List<Lazy<IMigration, IMigrationMetadata>> applicableDownMigrations = new List<Lazy<IMigration, IMigrationMetadata>>(
+                List<Tuple<IMigration, IMigrationMetadata>> applicableDownMigrations = new List<Tuple<IMigration, IMigrationMetadata>>(
                     from m in migrations
-                    where m.Metadata.Timestamp() > timestamp && versioning.IsContained(m.Metadata)
-                    orderby m.Metadata.Timestamp() descending
+                    where m.Item2.Timestamp > timestamp && versioning.IsContained(m.Item2)
+                    orderby m.Item2.Timestamp descending
                     select m);
-                if (applicableDownMigrations.Any(m => !(m.Value is IReversibleMigration)))
+                if (applicableDownMigrations.Any(m => !(m.Item1 is IReversibleMigration)))
                 {
                     throw new IrreversibleMigrationException();
                 }
@@ -114,8 +114,8 @@ namespace MigSharp
                 if (countUp + countDown > 0)
                 {
                     return new MigrationBatch(
-                        applicableUpMigrations.Select(l => new MigrationStep(l.Value, l.Metadata, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(),
-                        applicableDownMigrations.Select(l => new MigrationStep(l.Value, l.Metadata, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(), 
+                        applicableUpMigrations.Select(l => new MigrationStep(l.Item1, l.Item2, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(),
+                        applicableDownMigrations.Select(l => new MigrationStep(l.Item1, l.Item2, _connectionInfo, _providerFactory, _dbConnectionFactory)).Cast<IMigrationStep>(), 
                         versioning);
                 }
             }
@@ -161,14 +161,16 @@ namespace MigSharp
             _customBootstrapping = customBootstrapping;
         }
 
-        private static List<Lazy<IMigration, IMigrationMetadata>> CollectAllMigrations(Assembly assembly)
+        private static List<Tuple<IMigration, IMigrationMetadata>> CollectAllMigrations(Assembly assembly)
         {
             Log.Info("Collecting all migrations...");
             var catalog = new AssemblyCatalog(assembly);
             var container = new CompositionContainer(catalog);
             var migrationImporter = new MigrationImporter();
             container.ComposeParts(migrationImporter);
-            var result = new List<Lazy<IMigration, IMigrationMetadata>>(migrationImporter.Migrations);
+            List<Tuple<IMigration, IMigrationMetadata>> result = 
+                new List<Tuple<IMigration, IMigrationMetadata>>(
+                    migrationImporter.Migrations.Select(l => new Tuple<IMigration, IMigrationMetadata>(l.Value, new MigrationMetadata(l.Metadata.Tag, l.Metadata.ModuleName, l.Value.GetType().GetTimestamp()))));
             Log.Info("Found {0} migration(s) in total", result.Count);
             return result;
         }
@@ -178,8 +180,26 @@ namespace MigSharp
 // ReSharper disable UnusedAutoPropertyAccessor.Local
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             [ImportMany]
-            public IEnumerable<Lazy<IMigration, IMigrationMetadata>> Migrations { get; set; } // set by MEF
+            public IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> Migrations { get; set; } // set by MEF
 // ReSharper restore UnusedAutoPropertyAccessor.Local
+        }
+
+        private class MigrationMetadata : IMigrationMetadata
+        {
+            private readonly string _tag;
+            private readonly string _moduleName;
+            private readonly long _timestamp;
+
+            public string Tag { get { return _tag; } }
+            public string ModuleName { get { return _moduleName; } }
+            public long Timestamp { get { return _timestamp; } }
+
+            public MigrationMetadata(string tag, string moduleName, long timestamp)
+            {
+                _tag = tag;
+                _timestamp = timestamp;
+                _moduleName = moduleName;
+            }
         }
     }
 }

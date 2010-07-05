@@ -349,7 +349,7 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public DbVersionRow AddDbVersionRow(System.DateTime Timestamp, string Module, string Tag) {
+            public DbVersionRow AddDbVersionRow(long Timestamp, string Module, string Tag) {
                 DbVersionRow rowDbVersionRow = ((DbVersionRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         Timestamp,
@@ -361,7 +361,7 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public DbVersionRow FindByTimestampModule(System.DateTime Timestamp, string Module) {
+            public DbVersionRow FindByTimestampModule(long Timestamp, string Module) {
                 return ((DbVersionRow)(this.Rows.Find(new object[] {
                             Timestamp,
                             Module})));
@@ -388,7 +388,7 @@ namespace MigSharp.Process {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private void InitClass() {
-                this.columnTimestamp = new global::System.Data.DataColumn("Timestamp", typeof(global::System.DateTime), null, global::System.Data.MappingType.Element);
+                this.columnTimestamp = new global::System.Data.DataColumn("Timestamp", typeof(long), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnTimestamp);
                 this.columnModule = new global::System.Data.DataColumn("Module", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnModule);
@@ -534,9 +534,9 @@ namespace MigSharp.Process {
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            public System.DateTime Timestamp {
+            public long Timestamp {
                 get {
-                    return ((global::System.DateTime)(this[this.tableDbVersion.TimestampColumn]));
+                    return ((long)(this[this.tableDbVersion.TimestampColumn]));
                 }
                 set {
                     this[this.tableDbVersion.TimestampColumn] = value;

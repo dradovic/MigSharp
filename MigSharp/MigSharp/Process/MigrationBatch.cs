@@ -46,15 +46,7 @@ namespace MigSharp.Process
 
         private void ExecuteStep(IMigrationStep step, MigrationDirection direction)
         {
-            DateTime start = DateTime.Now;
-
             step.Execute(_versioning, direction);
-
-            Log.Info(LogCategory.Performance, "Migration to {0}{1}{2} took {3}s",
-                step.Metadata.Timestamp(),
-                !string.IsNullOrEmpty(step.Metadata.ModuleName) ? string.Format(CultureInfo.CurrentCulture, " [{0}]", step.Metadata.ModuleName) : string.Empty,
-                !string.IsNullOrEmpty(step.Metadata.Tag) ? string.Format(CultureInfo.CurrentCulture, " '{0}'", step.Metadata.Tag) : string.Empty,
-                (DateTime.Now - start).TotalSeconds);
 
             OnStepExecuted(new MigrationEventArgs(step.Metadata, direction));
         }

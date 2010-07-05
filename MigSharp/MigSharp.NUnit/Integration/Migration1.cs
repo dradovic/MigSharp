@@ -2,7 +2,7 @@
 
 namespace MigSharp.NUnit.Integration
 {
-    [MigrationExport(2010, 6, 15, 21, 55, 12)]
+    [MigrationExport]
     internal class Migration1 : IReversibleMigration
     {
         public const string CustomerTableName = "Customer";

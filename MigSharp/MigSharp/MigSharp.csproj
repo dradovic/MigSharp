@@ -72,6 +72,7 @@
     <Compile Include="Process\ConnectionInfo.cs" />
     <Compile Include="Process\DbConnectionFactory.cs" />
     <Compile Include="Process\IDbConnectionFactory.cs" />
+    <Compile Include="Process\IMigrationExportMetadata.cs" />
     <Compile Include="Process\IMigrationMetaData.cs" />
     <Compile Include="MigrationExportAttribute.cs" />
     <Compile Include="Process\DbVersion.cs" />
@@ -102,8 +103,8 @@
     </Compile>
     <Compile Include="Process\IVersioning.cs" />
     <Compile Include="Process\IMigrationStep.cs" />
-    <Compile Include="Process\MetaDataExtensions.cs" />
     <Compile Include="Process\MigrationDirection.cs" />
+    <Compile Include="Process\MigrationExtensions.cs" />
     <Compile Include="Providers\IProviderMetaData.cs" />
     <Compile Include="Providers\ProviderExportAttribute.cs" />
     <Compile Include="Providers\ProviderFactory.cs" />

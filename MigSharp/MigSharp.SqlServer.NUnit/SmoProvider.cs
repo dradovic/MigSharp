@@ -197,7 +197,7 @@ namespace MigSharp.SqlServer.NUnit
                 case DbType.Int32:
                     return DataType.Int;
                 case DbType.Int64:
-                    break;
+                    return DataType.BigInt;
                 case DbType.Object:
                     break;
                 case DbType.SByte:

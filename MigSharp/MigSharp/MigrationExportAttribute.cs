@@ -10,20 +10,6 @@ namespace MigSharp
     {
         public const int MaximumModuleNameLength = 250;
 
-        private readonly int _year;
-        private readonly int _month;
-        private readonly int _day;
-        private readonly int _hour;
-        private readonly int _minute;
-        private readonly int _second;
-
-        public int Year { get { return _year; } }
-        public int Month { get { return _month; } }
-        public int Day { get { return _day; } }
-        public int Hour { get { return _hour; } }
-        public int Minute { get { return _minute; } }
-        public int Second { get { return _second; } }
-
         private string _moduleName = string.Empty;
         public string ModuleName
         {
@@ -40,15 +26,9 @@ namespace MigSharp
         /// <summary>
         /// Initializes a new instance of the attribute.
         /// </summary>
-        public MigrationExportAttribute(int year, int month, int day, int hour, int minute, int second)
+        public MigrationExportAttribute()
             : base(typeof(IMigration))
         {
-            _year = year;
-            _month = month;
-            _day = day;
-            _hour = hour;
-            _minute = minute;
-            _second = second;
         }
     }
 }

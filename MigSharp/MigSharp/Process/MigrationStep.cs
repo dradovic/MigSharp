@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 
 using MigSharp.Core;
 using MigSharp.Core.Entities;
@@ -34,6 +35,8 @@ namespace MigSharp.Process
         /// <param name="direction"></param>
         public void Execute(IVersioning versioning, MigrationDirection direction)
         {
+            DateTime start = DateTime.Now;
+
             using (IDbConnection connection = _connectionFactory.OpenConnection(_connectionInfo))
             {
                 Debug.Assert(connection.State == ConnectionState.Open);
@@ -49,6 +52,12 @@ namespace MigSharp.Process
                     transaction.Commit();
                 }
             }
+
+            Log.Info(LogCategory.Performance, "Migration to {0}{1}{2} took {3}s",
+                _metadata.Timestamp,
+                !string.IsNullOrEmpty(_metadata.ModuleName) ? string.Format(CultureInfo.CurrentCulture, " [{0}]", _metadata.ModuleName) : string.Empty,
+                !string.IsNullOrEmpty(_metadata.Tag) ? string.Format(CultureInfo.CurrentCulture, " '{0}'", _metadata.Tag) : string.Empty,
+                (DateTime.Now - start).TotalSeconds);
         }
 
         private void Execute(IDbConnection connection, IDbTransaction transaction, MigrationDirection direction)

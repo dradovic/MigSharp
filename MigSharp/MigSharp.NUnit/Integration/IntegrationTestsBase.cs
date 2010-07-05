@@ -4,6 +4,8 @@ using System.Reflection;
 
 using NUnit.Framework;
 
+using MigSharp.Process;
+
 namespace MigSharp.NUnit.Integration
 {
     public abstract class IntegrationTestsBase
@@ -14,7 +16,7 @@ namespace MigSharp.NUnit.Integration
             Options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
 
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            DateTime timestamp1 = typeof(Migration1).GetTimestamp();
+            long timestamp1 = typeof(Migration1).GetTimestamp();
             migrator.MigrateTo(typeof(Migration1).Assembly, timestamp1);
 
             // assert Versioning table was created
@@ -42,8 +44,8 @@ namespace MigSharp.NUnit.Integration
         public void TestMigration1SuccededByAllOtherMigrations()
         {
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            DateTime timestamp1 = typeof(Migration1).GetTimestamp();
-            DateTime timestamp2 = typeof(Migration2).GetTimestamp();
+            long timestamp1 = typeof(Migration1).GetTimestamp();
+            long timestamp2 = typeof(Migration2).GetTimestamp();
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
@@ -69,13 +71,13 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestUndoingMigration2()
         {
-            DateTime timestamp2 = typeof(Migration2).GetTimestamp();
+            long timestamp2 = typeof(Migration2).GetTimestamp();
             Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, timestamp2);
 
             migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
-            DateTime timestamp1 = typeof(Migration1).GetTimestamp();
+            long timestamp1 = typeof(Migration1).GetTimestamp();
             migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
             // assert order table was dropped

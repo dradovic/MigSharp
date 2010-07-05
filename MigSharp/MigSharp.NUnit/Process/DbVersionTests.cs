@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 using MigSharp.Process;
@@ -12,8 +11,8 @@ namespace MigSharp.NUnit.Process
     [TestFixture, Category("Smoke")]
     public class DbVersionTests
     {
-        private static readonly DateTime ExistingTimestampForDefaultModule = new DateTime(2010, 06, 09, 11, 01, 34);
-        private static readonly DateTime ExistingTimestampForTestModule = new DateTime(2010, 06, 17, 18, 38, 31);
+        private const long ExistingTimestampForDefaultModule = 20100609110134;
+        private const long ExistingTimestampForTestModule = 20100617183831;
         private const string TestModule = "Test Module";
 
         [Test, TestCaseSource("GetCasesForIsContained")]
@@ -32,12 +31,12 @@ namespace MigSharp.NUnit.Process
                 .SetDescription("IsContained should be true for existing timestamps")
                 .Returns(true);
 
-            migration = GetMigrationMetadata(ExistingTimestampForDefaultModule.AddDays(1), string.Empty);
+            migration = GetMigrationMetadata(ExistingTimestampForDefaultModule + 1, string.Empty);
             yield return new TestCaseData(migration)
                 .SetDescription("IsContained should be false for future missing timestamps")
                 .Returns(false);
 
-            migration = GetMigrationMetadata(ExistingTimestampForDefaultModule.AddDays(-1), string.Empty);
+            migration = GetMigrationMetadata(ExistingTimestampForDefaultModule - 1, string.Empty);
             yield return new TestCaseData(migration)
                 .SetDescription("IsContained should be false for past missing timestamps")
                 .Returns(false);
@@ -47,12 +46,12 @@ namespace MigSharp.NUnit.Process
                 .SetDescription("IsContained should be true for existing timestamps (Test Module)")
                 .Returns(true);
 
-            migration = GetMigrationMetadata(ExistingTimestampForTestModule.AddDays(1), TestModule);
+            migration = GetMigrationMetadata(ExistingTimestampForTestModule + 1, TestModule);
             yield return new TestCaseData(migration)
                 .SetDescription("IsContained should be false for future missing timestamps (Test Module)")
                 .Returns(false);
 
-            migration = GetMigrationMetadata(ExistingTimestampForTestModule.AddDays(-1), TestModule);
+            migration = GetMigrationMetadata(ExistingTimestampForTestModule - 1, TestModule);
             yield return new TestCaseData(migration)
                 .SetDescription("IsContained should be false for past missing timestamps (Test Module)")
                 .Returns(false);
@@ -68,15 +67,10 @@ namespace MigSharp.NUnit.Process
                 .Returns(false);
         }
 
-        private static IMigrationMetadata GetMigrationMetadata(DateTime timeStamp, string module)
+        private static IMigrationMetadata GetMigrationMetadata(long timestamp, string module)
         {
             IMigrationMetadata existingMigration = MockRepository.GenerateStub<IMigrationMetadata>();
-            existingMigration.Expect(m => m.Year).Return(timeStamp.Year);
-            existingMigration.Expect(m => m.Month).Return(timeStamp.Month);
-            existingMigration.Expect(m => m.Day).Return(timeStamp.Day);
-            existingMigration.Expect(m => m.Hour).Return(timeStamp.Hour);
-            existingMigration.Expect(m => m.Minute).Return(timeStamp.Minute);
-            existingMigration.Expect(m => m.Second).Return(timeStamp.Second);
+            existingMigration.Expect(m => m.Timestamp).Return(timestamp);
             existingMigration.Expect(m => m.ModuleName).Return(module);
             return existingMigration;
         }

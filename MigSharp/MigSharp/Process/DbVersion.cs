@@ -71,7 +71,7 @@ namespace MigSharp.Process
 
         public bool IsContained(IMigrationMetadata metadata)
         {
-            return _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp(), metadata.ModuleName) != null;
+            return _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp, metadata.ModuleName) != null;
         }
 
         public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction)
@@ -85,7 +85,7 @@ namespace MigSharp.Process
             else
             {
                 Debug.Assert(direction == MigrationDirection.Down);
-                DbVersionDataSet.DbVersionRow row = _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp(), metadata.ModuleName);
+                DbVersionDataSet.DbVersionRow row = _dataSet.DbVersion.FindByTimestampModule(metadata.Timestamp, metadata.ModuleName);
                 Debug.Assert(row != null, "Only migrations that were applied previous are being undone.");
                 row.Delete();
             }
@@ -95,7 +95,7 @@ namespace MigSharp.Process
 
         private void AddMigration(IMigrationMetadata metadata)
         {
-            _dataSet.DbVersion.AddDbVersionRow(metadata.Timestamp(), metadata.ModuleName, metadata.Tag);
+            _dataSet.DbVersion.AddDbVersionRow(metadata.Timestamp, metadata.ModuleName, metadata.Tag);
         }
 
         private void StoreChanges(IDbConnection connection, IDbTransaction transaction)
@@ -142,7 +142,7 @@ namespace MigSharp.Process
             public void Up(IDatabase db)
             {
                 db.CreateTable(_tableName).IfNotExists()
-                    .WithPrimaryKeyColumn("Timestamp", DbType.DateTime)
+                    .WithPrimaryKeyColumn("Timestamp", DbType.Int64)
                     .WithPrimaryKeyColumn("Module", DbType.StringFixedLength).OfLength(MigrationExportAttribute.MaximumModuleNameLength)
                     .WithNullableColumn("Tag", DbType.String);
             }
@@ -155,14 +155,9 @@ namespace MigSharp.Process
 
         private class BootstrapMetadata : IMigrationMetadata
         {
-            public int Year { get { throw new NotSupportedException(); } }
-            public int Month { get { throw new NotSupportedException(); } }
-            public int Day { get { throw new NotSupportedException(); } }
-            public int Hour { get { throw new NotSupportedException(); } }
-            public int Minute { get { throw new NotSupportedException(); } }
-            public int Second { get { throw new NotSupportedException(); } }
-            public string Tag { get { throw new NotSupportedException(); } }
-            public string ModuleName { get { throw new NotSupportedException(); } }
+            public string Tag { get { return "Bootstrapping"; } }
+            public string ModuleName { get { return "MigSharp"; } }
+            public long Timestamp { get { return 0; } }
         }
     }
 }

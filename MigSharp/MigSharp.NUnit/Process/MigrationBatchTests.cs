@@ -28,14 +28,9 @@ namespace MigSharp.NUnit.Process
 
         private class Metadata1 : IMigrationMetadata
         {
-            public int Year { get { return 2010; } }
-            public int Month { get { return 6; } }
-            public int Day { get { return 24; } }
-            public int Hour { get { return 10; } }
-            public int Minute { get { return 22; } }
-            public int Second { get { return 21; } }
             public string Tag { get { return null; } }
             public string ModuleName { get { return string.Empty; } }
+            public long Timestamp { get { return 1; } }
         }
     }
 }

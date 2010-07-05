@@ -181,7 +181,7 @@ namespace MigSharp.Providers
                 case DbType.Int32:
                     return "[int]";
                 case DbType.Int64:
-                    break;
+                    return "[bigint]";
                 case DbType.Object:
                     break;
                 case DbType.SByte:

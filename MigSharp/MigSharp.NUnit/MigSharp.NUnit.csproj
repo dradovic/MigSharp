@@ -61,7 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HelperExtensions.cs" />
     <Compile Include="Integration\IntegrationTestsBase.cs" />
     <Compile Include="Integration\Migration1.cs" />
     <Compile Include="Integration\Migration2.cs" />

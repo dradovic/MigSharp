@@ -1,7 +1,6 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
-- get timestamp from class name
 - expose IDbConnection from IDatabase to allow for client-side migrations
 - support data migrations 
   - Rails migrations also support data migrations

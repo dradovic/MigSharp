@@ -1,14 +1,7 @@
 namespace MigSharp.Process
 {
-    public interface IMigrationMetadata
+    public interface IMigrationMetadata : IMigrationExportMetadata
     {
-        int Year { get; }
-        int Month { get; }
-        int Day { get; }
-        int Hour { get; }
-        int Minute { get; }
-        int Second { get; }
-        string Tag { get; }
-        string ModuleName { get; }
+        long Timestamp { get; }
     }
 }

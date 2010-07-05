@@ -35,7 +35,7 @@ namespace MigSharp.NUnit
             db.Tables["Customers"]
                 .AddColumn("NewNonNullableColumn", DbType.Int32)
                 .AddColumn("NewNonNullableColumnWithTempDflt7", DbType.Int32).WithTemporaryDefault(7)
-                .AddNullableColumn("NewNullableColumn", DbType.Int32)
+                .AddNullableColumn("NewNullableColumn", DbType.Int64)
                 .AddColumn("NewNonNullableColumnWithFixedLength", DbType.Int32).OfLength(128);
             yield return new TestCaseData(db).SetDescription("AddColumns");
 
