@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA4A057D-7277-4869-BA9E-6764C7736EC1}"
 	ProjectSection(SolutionItems) = preProject
 		How to release.txt = How to release.txt
+		LICENSE.txt = LICENSE.txt
 		Open.snk = Open.snk
 		TODO.txt = TODO.txt
 	EndProjectSection

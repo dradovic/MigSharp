@@ -6,6 +6,5 @@ This file contains global TODOs for the next release that are not in the source 
   - Rails migrations also support data migrations
   - with a SqlStatement convenience class?
 - xml-document fluent interface
-- add LICENSE
 - exhaustively test whole fluent interface (100% code coverage)
 - include logo
