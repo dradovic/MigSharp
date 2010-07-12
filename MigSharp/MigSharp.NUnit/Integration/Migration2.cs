@@ -22,7 +22,7 @@ namespace MigSharp.NUnit.Integration
             db.CreateTable(OrderTableName)
                 .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32);
 
-            db.Execute(string.Format("INSERT INTO [{0}] VALUES (1)", OrderTableName, FirstId));
+            db.Execute(string.Format("INSERT INTO [{0}] VALUES ({1})", OrderTableName, FirstId));
         }
 
         public void Down(IDatabase db)

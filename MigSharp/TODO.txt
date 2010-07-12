@@ -1,6 +1,7 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
+- finish module support: each module must be independently upgradable
 - xml-document fluent interface
 - exhaustively test whole fluent interface (100% code coverage)
-- include logo
+  --> auto generate tests
