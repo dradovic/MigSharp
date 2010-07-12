@@ -43,6 +43,19 @@ namespace MigSharp.NUnit
                 .Returns(1);
         }
 
+        [Test]
+        public void VerifyPendingMigrationsAreFoundForSpecificModule()
+        {
+            IVersioning versioning = GetVersioning(false, false, false);
+
+            Migrator migrator = new Migrator("", "", m => m == Migration2.Module);
+            migrator.UseCustomVersioning(versioning);
+            IMigrationBatch batch = migrator.FetchPendingMigrations(typeof(Migration1).Assembly);
+
+            Assert.AreEqual(1, batch.Count, string.Format("Only one migration for the module named '{0}' exists.", Migration2.Module));
+        }
+
+
         // TODO: test custom bootstrapping
 
         [Test, ExpectedException(typeof(IrreversibleMigrationException))]
@@ -55,6 +68,7 @@ namespace MigSharp.NUnit
             migrator.UseCustomVersioning(versioning);
             migrator.FetchMigrationsTo(typeof(Migration1).Assembly, timestamp2); // should throw an IrreversibleMigrationException as Migration3 is irreversible
         }
+
 
         private static IVersioning GetVersioning(bool migration1IsContained, bool migration2IsContained, bool migration3IsContained)
         {

@@ -19,6 +19,7 @@ namespace MigSharp
     public class Migrator
     {
         private readonly ConnectionInfo _connectionInfo;
+        private readonly Predicate<string> _moduleSelector;
         private readonly ProviderFactory _providerFactory = new ProviderFactory();
         private readonly DbConnectionFactory _dbConnectionFactory = new DbConnectionFactory();
 
@@ -26,13 +27,29 @@ namespace MigSharp
         private IBootstrapping _customBootstrapping;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Migrator"/>.
+        /// Initializes a new instance of <see cref="Migrator"/> for a specific module.
         /// </summary>
         /// <param name="connectionString">Connection string to the database to be migrated.</param>
         /// <param name="providerInvariantName">Invariant name of a provider. <seealso cref="DbProviderFactories.GetFactory(string)"/></param>
-        public Migrator(string connectionString, string providerInvariantName)
+        /// <param name="moduleSelector">A function that selects the module based on its name.</param>
+        public Migrator(string connectionString, string providerInvariantName, Predicate<string> moduleSelector)
         {
+            if (connectionString == null) throw new ArgumentNullException("connectionString");
+            if (providerInvariantName == null) throw new ArgumentNullException("providerInvariantName");
+            if (moduleSelector == null) throw new ArgumentNullException("moduleSelector");
+
             _connectionInfo = new ConnectionInfo(connectionString, providerInvariantName);
+            _moduleSelector = moduleSelector;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="Migrator"/> for all modules.
+        /// </summary>
+        /// <param name="connectionString">Connection string to the database to be migrated.</param>
+        /// <param name="providerInvariantName">Invariant name of a provider. <seealso cref="DbProviderFactories.GetFactory(string)"/></param>
+        public Migrator(string connectionString, string providerInvariantName) : 
+            this(connectionString, providerInvariantName, moduleName => true)
+        {
         }
 
         /// <summary>
@@ -83,9 +100,9 @@ namespace MigSharp
         /// <exception cref="IrreversibleMigrationException">When the migration path would require downgrading a migration which is not reversible.</exception>
         public IMigrationBatch FetchMigrationsTo(Assembly assembly, long timestamp)
         {
-            // collect all migration
+            // collect all migrations
             DateTime start = DateTime.Now;
-            List<Tuple<IMigration, IMigrationMetadata>> migrations = CollectAllMigrations(assembly);
+            List<Tuple<IMigration, IMigrationMetadata>> migrations = CollectAllMigrationsForModule(assembly, _moduleSelector);
             Log.Info(LogCategory.Performance, "Collecting migrations took {0}ms", (DateTime.Now - start).TotalMilliseconds);
 
             // initialize versioning component
@@ -161,7 +178,7 @@ namespace MigSharp
             _customBootstrapping = customBootstrapping;
         }
 
-        private static List<Tuple<IMigration, IMigrationMetadata>> CollectAllMigrations(Assembly assembly)
+        private static List<Tuple<IMigration, IMigrationMetadata>> CollectAllMigrationsForModule(Assembly assembly, Predicate<string> includeModule)
         {
             Log.Info("Collecting all migrations...");
             var catalog = new AssemblyCatalog(assembly);
@@ -170,7 +187,9 @@ namespace MigSharp
             container.ComposeParts(migrationImporter);
             List<Tuple<IMigration, IMigrationMetadata>> result = 
                 new List<Tuple<IMigration, IMigrationMetadata>>(
-                    migrationImporter.Migrations.Select(l => new Tuple<IMigration, IMigrationMetadata>(l.Value, new MigrationMetadata(l.Metadata.Tag, l.Metadata.ModuleName, l.Value.GetType().GetTimestamp()))));
+                    migrationImporter.Migrations
+                    .Where(l => includeModule(l.Metadata.ModuleName))
+                    .Select(l => new Tuple<IMigration, IMigrationMetadata>(l.Value, new MigrationMetadata(l.Metadata.Tag, l.Metadata.ModuleName, l.Value.GetType().GetTimestamp()))));
             Log.Info("Found {0} migration(s) in total", result.Count);
             return result;
         }
