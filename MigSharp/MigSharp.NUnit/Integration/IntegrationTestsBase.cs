@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 using MigSharp.Process;
 
+using Rhino.Mocks;
+
 namespace MigSharp.NUnit.Integration
 {
     public abstract class IntegrationTestsBase
@@ -72,7 +74,7 @@ namespace MigSharp.NUnit.Integration
         public void TestUndoingMigration2()
         {
             long timestamp2 = typeof(Migration2).GetTimestamp();
-            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient"); // TODO: the providerInvariantName should be provided by the inheritor
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, timestamp2);
 
@@ -90,6 +92,29 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(timestamp1, dbVersionTable.Rows[0][0], "The timestamp of Migration1 is wrong.");
             Assert.AreEqual(string.Empty, dbVersionTable.Rows[0][1], "The module of Migration1 is wrong.");
             Assert.AreEqual(DBNull.Value, dbVersionTable.Rows[0][2], "The tag of Migration1 is wrong.");
+        }
+
+        [Test]
+        public void TestCustomBootstrapping()
+        {
+            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            IBootstrapping bootstrapping = MockRepository.GenerateMock<IBootstrapping>();
+
+            // assume that the first migration was already performed
+            long timestamp1 = typeof(Migration1).GetTimestamp();
+            bootstrapping.Expect(b => b.IsContained(Arg<IMigrationMetadata>.Matches(m => m.Timestamp == timestamp1))).Return(true);
+            migrator.UseCustomBootstrapping(bootstrapping);
+
+            migrator.MigrateTo(typeof(Migration1).Assembly, timestamp1);
+
+            // assert Customer table was *not* created
+            DataTable customerTable = GetTable(Migration1.CustomerTableName);
+            Assert.IsNull(customerTable);
+
+            // assert Versioning table has necessary entries
+            DataTable dbVersionTable = GetTable(Options.VersioningTableName);
+            Assert.AreEqual(1, dbVersionTable.Rows.Count, "The versioning table is missing entries.");
+            Assert.AreEqual(timestamp1, dbVersionTable.Rows[0][0], "The timestamp of Migration1 is wrong.");
         }
 
         /// <summary>

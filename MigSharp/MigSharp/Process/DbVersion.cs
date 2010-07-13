@@ -121,7 +121,6 @@ namespace MigSharp.Process
             }
             using (IDbConnection connection = connectionFactory.OpenConnection(connectionInfo))
             {
-                connection.Open();
                 using (IDbTransaction transaction = connection.BeginTransaction())
                 {
                     StoreChanges(connection, transaction);

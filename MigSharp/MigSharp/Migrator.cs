@@ -151,7 +151,6 @@ namespace MigSharp
                 DbVersion dbVersion = DbVersion.Create(_connectionInfo, _providerFactory, _dbConnectionFactory);
                 if (_customBootstrapping != null && dbVersion.IsEmpty)
                 {
-                    // TODO: unit test: this should only be performed if the native versioning table does not exist yet
                     var migrationsContainedInCustomVersioning = from m in existingMigrations
                                                                 where _customBootstrapping.IsContained(m)
                                                                 select m;
