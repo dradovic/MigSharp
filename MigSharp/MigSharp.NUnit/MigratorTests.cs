@@ -55,9 +55,6 @@ namespace MigSharp.NUnit
             Assert.AreEqual(1, batch.Count, string.Format("Only one migration for the module named '{0}' exists.", Migration2.Module));
         }
 
-
-        // TODO: test custom bootstrapping
-
         [Test, ExpectedException(typeof(IrreversibleMigrationException))]
         public void TestIrreversibleMigrationExceptionIsThrown()
         {

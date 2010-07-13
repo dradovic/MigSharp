@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 
 using Microsoft.SqlServer.Management.Smo;
@@ -55,11 +56,16 @@ namespace MigSharp.SqlServer.NUnit
             return builder.ConnectionString;
         }
 
+        protected override string GetProviderInvariantName()
+        {
+            return "System.Data.SqlClient";
+        }
+
         [TearDown]
         public void TearDown()
         {
             SqlConnection.ClearAllPools();
-            //_database.Drop(); // TODO: comment in
+            _database.Drop();
         }
     }
 }

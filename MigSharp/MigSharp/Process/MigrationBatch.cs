@@ -1,9 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-
-using MigSharp.Core;
-
 using System.Linq;
 
 namespace MigSharp.Process
@@ -16,15 +12,13 @@ namespace MigSharp.Process
         private readonly IEnumerable<IMigrationStep> _downMigrations;
         private readonly IVersioning _versioning;
 
-        // TODO: unit test events
         public event EventHandler<MigrationEventArgs> StepExecuted;
-        //public event EventHandler<CancelableMigrationEventArgs> MigrationStarting;
 
         public int Count { get { return _upMigrations.Count() + _downMigrations.Count(); } }
 
         public MigrationBatch(
             IEnumerable<IMigrationStep> upMigrations,
-            IEnumerable<IMigrationStep> downMigrations, 
+            IEnumerable<IMigrationStep> downMigrations,
             IVersioning versioning)
         {
             _upMigrations = upMigrations;
@@ -60,7 +54,6 @@ namespace MigSharp.Process
         internal class EmptyMigrationBatch : IMigrationBatch
         {
             public event EventHandler<MigrationEventArgs> StepExecuted;
-            //public event EventHandler<CancelableMigrationEventArgs> MigrationStarting;
 
             public int Count { get { return 0; } }
 

@@ -17,7 +17,7 @@ namespace MigSharp.NUnit.Integration
         {
             Options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
 
-            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            Migrator migrator = new Migrator(GetConnectionString(), GetProviderInvariantName());
             long timestamp1 = typeof(Migration1).GetTimestamp();
             migrator.MigrateTo(typeof(Migration1).Assembly, timestamp1);
 
@@ -45,13 +45,13 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestMigration1SuccededByAllOtherMigrations()
         {
-            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            Migrator migrator = new Migrator(GetConnectionString(), GetProviderInvariantName());
             long timestamp1 = typeof(Migration1).GetTimestamp();
             long timestamp2 = typeof(Migration2).GetTimestamp();
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
-            migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            migrator = new Migrator(GetConnectionString(), GetProviderInvariantName());
             migrator.MigrateAll(assemblyContainingMigrations);
 
             // assert Order table was created and contains all entries
@@ -74,11 +74,11 @@ namespace MigSharp.NUnit.Integration
         public void TestUndoingMigration2()
         {
             long timestamp2 = typeof(Migration2).GetTimestamp();
-            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient"); // TODO: the providerInvariantName should be provided by the inheritor
+            Migrator migrator = new Migrator(GetConnectionString(), GetProviderInvariantName());
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, timestamp2);
 
-            migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            migrator = new Migrator(GetConnectionString(), GetProviderInvariantName());
             long timestamp1 = typeof(Migration1).GetTimestamp();
             migrator.MigrateTo(assemblyContainingMigrations, timestamp1);
 
@@ -97,7 +97,7 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestCustomBootstrapping()
         {
-            Migrator migrator = new Migrator(GetConnectionString(), "System.Data.SqlClient");
+            Migrator migrator = new Migrator(GetConnectionString(), GetProviderInvariantName());
             IBootstrapping bootstrapping = MockRepository.GenerateMock<IBootstrapping>();
 
             // assume that the first migration was already performed
@@ -123,5 +123,7 @@ namespace MigSharp.NUnit.Integration
         protected abstract DataTable GetTable(string tableName);
 
         protected abstract string GetConnectionString();
+
+        protected abstract string GetProviderInvariantName();
     }
 }
