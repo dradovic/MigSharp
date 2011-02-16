@@ -1,0 +1,12 @@
+Pre-conditions:
+---------------
+
+- Build environment is green
+- No TODOs left in source code
+- AssemblyVersion is correct
+
+Post-actions:
+-------------
+
+- Increment AssemblyVersion
+- announce in CSA.NET

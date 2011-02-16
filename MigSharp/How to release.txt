@@ -1,5 +1,0 @@
-Pre-conditions:
----------------
-
-- Build environment is green
-- No TODOs left in source code

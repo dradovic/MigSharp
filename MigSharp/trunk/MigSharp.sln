@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA4A057D-7277-4869-BA9E-6764C7736EC1}"
+	ProjectSection(SolutionItems) = preProject
+		CustomDictionary.xml = CustomDictionary.xml
+		How to release.txt = How to release.txt
+		LICENSE.txt = LICENSE.txt
+		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
+		MigSharp.FxCop = MigSharp.FxCop
+		MigSharp.msbuild = MigSharp.msbuild
+		MigSharp.vsmdi = MigSharp.vsmdi
+		Open.snk = Open.snk
+		TODO.txt = TODO.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp", "MigSharp\MigSharp.csproj", "{EAFA7470-A919-449C-9142-3D515DAB52AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.NUnit", "MigSharp.NUnit\MigSharp.NUnit.csproj", "{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.Oracle.NUnit", "MigSharp.Oracle.NUnit\MigSharp.Oracle.NUnit.csproj", "{1DC203FB-09A8-49CB-8367-A70A5EA83DA5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.SqlServer.NUnit", "MigSharp.SqlServer.NUnit\MigSharp.SqlServer.NUnit.csproj", "{85FC36E4-926A-49B2-A29D-99FEA93C8054}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.Teradata.NUnit", "MigSharp.Teradata.NUnit\MigSharp.Teradata.NUnit.csproj", "{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.SqlServerCe.NUnit", "MigSharp.SqlServerCe.NUnit\MigSharp.SqlServerCe.NUnit.csproj", "{3BB17235-A896-4BF4-B25F-501EFF71F777}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EAFA7470-A919-449C-9142-3D515DAB52AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAFA7470-A919-449C-9142-3D515DAB52AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAFA7470-A919-449C-9142-3D515DAB52AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAFA7470-A919-449C-9142-3D515DAB52AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F2DFEF3-F0E8-436C-BB8C-8BC61B9A6A4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DC203FB-09A8-49CB-8367-A70A5EA83DA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DC203FB-09A8-49CB-8367-A70A5EA83DA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DC203FB-09A8-49CB-8367-A70A5EA83DA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DC203FB-09A8-49CB-8367-A70A5EA83DA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85FC36E4-926A-49B2-A29D-99FEA93C8054}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85FC36E4-926A-49B2-A29D-99FEA93C8054}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85FC36E4-926A-49B2-A29D-99FEA93C8054}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85FC36E4-926A-49B2-A29D-99FEA93C8054}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = .
+	EndGlobalSection
+EndGlobal

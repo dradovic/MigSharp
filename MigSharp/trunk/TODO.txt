@@ -1,0 +1,17 @@
+This file contains global TODOs for the next release that are not in the source code
+====================================================================================
+
+- fix all FIXME and NotImplementedException
+
+Documentation:
+- Known restriction: cannot drop Identity constraint
+- FAQ: I get 28 is maximum size/scale for DbType.Decimal
+- document: default values of type string are automatically escaped (cannot be function calls)
+
+Nice-to-have/backlog:
+- add a Console project to govern Mig#
+- add an MsBuild task to govern Mig#
+- create a project that can generate migrations based on an existing schema
+- find out *all* data types that are supported for keys
+- publish with NuGet?
+

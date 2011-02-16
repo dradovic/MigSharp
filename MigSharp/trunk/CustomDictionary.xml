@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Dictionary>
+ <Words>
+  <Recognized>
+   <Word>Ce</Word>
+   <Word>Db</Word>
+   <Word>Inlined</Word>
+   <Word>Mig</Word>
+   <Word>Migrator</Word>
+   <Word>Smo</Word>
+   <Word>Teradata</Word>
+  </Recognized>
+ </Words>
+ <Acronyms>
+  <CasingExceptions>
+  </CasingExceptions>
+ </Acronyms>
+</Dictionary>
