@@ -27,5 +27,6 @@ obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
+/MigSharp/MigSharp.*.NUnit/lib/
 .svn
 /Security
