@@ -61,7 +61,7 @@ namespace MigSharp
         /// </summary>
         /// <param name="connectionString">Connection string to the database to be migrated.</param>
         /// <param name="providerName">The name of the provider that should be used for this migrator (<see cref="ProviderNames"/>).</param>
-        public Migrator(string connectionString, string providerName) :
+        public Migrator(string connectionString, string providerName) : // signature used in a Wiki example
             this(connectionString, providerName, new MigrationOptions())
         {
         }
@@ -70,7 +70,7 @@ namespace MigSharp
         /// Executes all pending migrations found in <paramref name="assembly"/>.
         /// </summary>
         /// <param name="assembly">The assembly to search for migrations.</param>
-        public void MigrateAll(Assembly assembly)
+        public void MigrateAll(Assembly assembly) // signature used in a Wiki example
         {
             DateTime start = DateTime.Now;
             Log.Info("Migrating all...");

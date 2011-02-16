@@ -1,12 +1,19 @@
 Pre-conditions:
 ---------------
-
 - Build environment is green
-- No TODOs left in source code
+- No FIXME or NotImplementedException left in source code
 - AssemblyVersion is correct
+- CHANGES.txt is up-to-date
+- Sources are pushed to GitHub
+- Wiki on GitHub reflects new features and changes
+
+Releasing:
+----------
+- Tag the sources on GitHub with AssemblyVersion
+- Grab the artifacts from the 3.5 and 4.0 compilation configs (MigSharp.zip) and upload these to GitHub
 
 Post-actions:
 -------------
-
 - Increment AssemblyVersion
-- announce in CSA.NET
+- Announce
+  - CSA.NET

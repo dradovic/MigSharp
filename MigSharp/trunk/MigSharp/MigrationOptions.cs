@@ -113,7 +113,7 @@ namespace MigSharp
         ///<summary>
         /// Sets the level of SQL information being traced.
         ///</summary>
-        public static void SetSqlTraceLevel(SourceLevels sourceLevels)
+        public static void SetSqlTraceLevel(SourceLevels sourceLevels) // signature used in a Wiki example
         {
             Log.SetTraceLevel(LogCategory.Sql, sourceLevels);
         }
