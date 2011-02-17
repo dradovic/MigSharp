@@ -1,4 +1,6 @@
-Mig# (MigSharp) is a fluent database agnostic migrations / versioning framework for .NET.
+Mig# (MigSharp) is a .NET framework for database migrations and versioning
+==========================================================================
 
-Check the GitHub Wiki to get started: https://github.com/dradovic/MigSharp/wiki
-An overview of the most prominent feature can be found here: https://github.com/dradovic/MigSharp/wiki/Feature-Overview
+Check out the wiki to get started: https://github.com/dradovic/MigSharp/wiki
+
+An overview of the most prominent features can be found here: https://github.com/dradovic/MigSharp/wiki/Feature-Overview
