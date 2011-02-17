@@ -4,13 +4,17 @@ Pre-conditions:
 - No FIXME or NotImplementedException left in source code
 - AssemblyVersion is correct
 - CHANGES.txt is up-to-date
-- Sources are pushed to GitHub
+- All changes pushed to GitHub
 - Wiki on GitHub reflects new features and changes
 
 Releasing:
 ----------
-- Tag the sources on GitHub with AssemblyVersion
+- Tag the sources with AssemblyVersion
+  - git tag -a v1.0.0.0 -m "v1.0.0.0"
+  - git push origin v1.0.0.0
 - Grab the artifacts from the 3.5 and 4.0 compilation configs (MigSharp.zip) and upload these to GitHub
+  - rename them correspondingly
+- Verify downloads are okay (extracting the zip file works)
 
 Post-actions:
 -------------

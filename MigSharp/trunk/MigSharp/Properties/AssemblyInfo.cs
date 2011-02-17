@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("MigSharp")]
 [assembly: AssemblyProduct("MigSharp")]
 
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.0.1")]
+[assembly: AssemblyFileVersion("1.0.0.1")]
 
 [assembly: CLSCompliant(true)]
 
