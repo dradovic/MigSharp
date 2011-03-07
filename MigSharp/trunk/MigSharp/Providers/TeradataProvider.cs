@@ -189,12 +189,14 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> DropPrimaryKeyConstraint(string tableName, string constraintName)
         {
-            return DropConstraint(tableName, constraintName);
+            throw new NotSupportedException("Teradata always automatically generates a 'Primary Index' when creating a table which cannot be removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
+            //return DropConstraint(tableName, constraintName);
         }
 
         public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
         {
-            yield return string.Format("{0} add CONSTRAINT {1} PRIMARY KEY ({2})", AlterTable(tableName), Escape(constraintName), GetCsList(columnNames));
+            throw new NotSupportedException("Teradata always automatically generates a 'Primary Index' when creating a table which cannot be removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
+            //yield return string.Format("{0} ADD CONSTRAINT {1} PRIMARY KEY ({2})", AlterTable(tableName), Escape(constraintName), GetCsList(columnNames));
         }
 
         public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)

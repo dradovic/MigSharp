@@ -8,7 +8,6 @@ namespace MigSharp.NUnit.Integration
     {
         private const string TableNameInitial = "ChoseBadTableName";
 
-
         private const string TempColumn = "dummy";
         private const string TempColumnRenamed = "dummy-renamed";
 
@@ -26,8 +25,11 @@ namespace MigSharp.NUnit.Integration
             db.Tables[TableNameInitial].Rename(TableName);
 
             // add primary key constraint
-            db.Tables[TableName].AddPrimaryKey()
-                .OnColumn(ColumnNames[0]);
+            if (!db.Context.ProviderMetadata.Name.Contains("Teradata")) // Teradata does not support adding/dropping of PKs
+            {
+                db.Tables[TableName].AddPrimaryKey()
+                    .OnColumn(ColumnNames[0]);
+            }
 
             // alter column to nullable
             db.Tables[TableName].Columns[ColumnNames[1]].AlterToNotNullable(DbType.String).OfSize(128);
