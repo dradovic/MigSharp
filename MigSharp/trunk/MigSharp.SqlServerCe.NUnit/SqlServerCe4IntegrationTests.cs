@@ -1,7 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Data;
-using System.Data.Odbc;
+﻿using System.Data;
 using System.Data.SqlServerCe;
 using System.Globalization;
 using System.IO;
@@ -23,19 +20,7 @@ namespace MigSharp.SqlServerCe.NUnit
         [TestFixtureSetUp]
         public void TestFixtureSetup()
         {
-            // Registering the private deployed SQL CE provider
-            // http://stackoverflow.com/questions/1117683/add-a-dbproviderfactory-without-an-app-config
-
-            DataSet dataSet = ConfigurationManager.GetSection("system.data") as DataSet;
-            if (dataSet == null) throw new InvalidOperationException("cannot configure privately deployed SQL CE 4.0 driver");
-
-            DataRow[] dataRows = dataSet.Tables[0].Select(string.Format(CultureInfo.InvariantCulture, "InvariantName='{0}'", SqlServerCe4Provider.InvariantName));
-            foreach (var dataRow in dataRows)
-            {
-                dataSet.Tables[0].Rows.Remove(dataRow);
-            }
-
-            dataSet.Tables[0].Rows.Add(
+            RegisterAdoNetProvider(
                 "Microsoft SQL Server Compact Data Provider 4.0",
                 ".NET Framework Data Provider for Microsoft SQL Server Compact",
                 SqlServerCe4Provider.InvariantName,

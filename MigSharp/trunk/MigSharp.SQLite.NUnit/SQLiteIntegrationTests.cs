@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Configuration;
 using System.Data;
 using System.Data.SQLite;
-using System.Globalization;
 using System.IO;
 
 using MigSharp.NUnit.Integration;
@@ -55,23 +53,11 @@ namespace MigSharp.SQLite.NUnit
         [TestFixtureSetUp]
         public void TestFixtureSetup()
         {
-            // Registering the private deployed SQL CE provider
-            // http://stackoverflow.com/questions/1117683/add-a-dbproviderfactory-without-an-app-config
-
-            DataSet dataSet = ConfigurationManager.GetSection("system.data") as DataSet;
-            if (dataSet == null) throw new InvalidOperationException("cannot configure privately deployed SQL CE 4.0 driver");
-
-            DataRow[] dataRows = dataSet.Tables[0].Select(string.Format(CultureInfo.InvariantCulture, "InvariantName='{0}'", SQLiteProvider.InvariantName));
-            foreach (var dataRow in dataRows)
-            {
-                dataSet.Tables[0].Rows.Remove(dataRow);
-            }
-
-            dataSet.Tables[0].Rows.Add(
-                "Microsoft SQL Server Compact Data Provider 4.0",
-                ".NET Framework Data Provider for Microsoft SQL Server Compact",
+            RegisterAdoNetProvider(
+                "SQLite Data Provider",
+                ".Net Framework Data Provider for SQLite",
                 SQLiteProvider.InvariantName,
-                "System.Data.SqlServerCe.SqlCeProviderFactory, System.Data.SqlServerCe");
+                "System.Data.SQLite.SQLiteFactory, System.Data.SQLite");
         }
     }
 }
