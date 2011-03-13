@@ -5,12 +5,13 @@
     /// </summary>
     public static class ProviderNames
     {
+        public const string Oracle = "Oracle";
+        public const string OracleOdbc = "OracleOdbc";
+        public const string SQLite = "SQLite";
         public const string SqlServer2005 = "SqlServer2005";
         public const string SqlServer2005Odbc = "SqlServer2005Odbc";
         public const string SqlServer2008 = "SqlServer2008";
         public const string SqlServerCe4 = "SqlServerCe4";
-        public const string Oracle = "Oracle";
-        public const string OracleOdbc = "OracleOdbc";
         public const string Teradata = "Teradata";
         public const string TeradataOdbc = "TeradataOdbc";
     }

@@ -145,6 +145,7 @@
         <Abbreviation Text="ISO" />
         <Abbreviation Text="SNB" />
         <Abbreviation Text="HR" />
+        <Abbreviation Text="SQ" />
       </Naming2>
     </CodeStyleSettings>
     <HighlightingSettings>

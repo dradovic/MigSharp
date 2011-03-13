@@ -18,6 +18,7 @@ namespace MigSharp
         {
             ProviderNames.Oracle,
             ProviderNames.OracleOdbc,
+            ProviderNames.SQLite,
             ProviderNames.SqlServer2005,
             ProviderNames.SqlServer2005Odbc,
             ProviderNames.SqlServer2008,
