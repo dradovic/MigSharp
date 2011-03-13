@@ -45,7 +45,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\x64\System.Data.SQLite.DLL</HintPath>
+      <HintPath>lib\System.Data.SQLite.DLL</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -68,16 +68,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\x64\System.Data.SQLite.DLL" />
-    <Content Include="lib\x64\System.Data.SQLite.XML" />
-    <Content Include="lib\x86\System.Data.SQLite.DLL" />
-    <Content Include="lib\x86\System.Data.SQLite.XML" />
+    <Content Include="lib\System.Data.SQLite.DLL" />
+    <Content Include="lib\System.Data.SQLite.XML" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="lib\x64\System.Data.SQLite.exp" />
-    <None Include="lib\x64\System.Data.SQLite.lib" />
-    <None Include="lib\x86\System.Data.SQLite.exp" />
-    <None Include="lib\x86\System.Data.SQLite.lib" />
+    <None Include="lib\System.Data.SQLite.exp" />
+    <None Include="lib\System.Data.SQLite.lib" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
