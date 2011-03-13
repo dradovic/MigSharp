@@ -36,7 +36,7 @@ namespace MigSharp
 
         private Predicate<string> _moduleSelector = n => true; // select all modules by default
         /// <summary>
-        /// A function that selects the module based on its name. Only migrations for this module will be executed.
+        /// Gets or sets a function that selects the module based on its name. Only migrations for this module will be executed.
         /// </summary>
         public Predicate<string> ModuleSelector
         {

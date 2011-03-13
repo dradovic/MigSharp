@@ -23,6 +23,8 @@ namespace MigSharp.NUnit.Integration
 
         private static readonly IList<long> Timestamps;
 
+        private MigrationOptions _options;
+
         [SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static IntegrationTestsBase()
         {
@@ -41,24 +43,24 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestIsUpToDate()
         {
-            var options = new MigrationOptions { VersioningTableName = "My Versioning Table" }; // test overriding the default versioning table name
-            var migrator = new Migrator(ConnectionString, ProviderName, options);
+            _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
+            var migrator = new Migrator(ConnectionString, ProviderName, _options);
             Assert.IsFalse(migrator.IsUpToDate(typeof(Migration1).Assembly));
 
-            DataTable versioningTable = GetTable(options.VersioningTableName);
+            DataTable versioningTable = GetTable(_options.VersioningTableName);
             Assert.IsNull(versioningTable, "Migrator.IsUpToDate should not have any side-effects. In particualar, it should *not* create a versioning table. This allows for being able to check the up-to-dateness of a db without having the privilege to create tables.");
         }
 
         [Test]
         public void TestMigration1()
         {
-            var options = new MigrationOptions { VersioningTableName = "My Versioning Table" }; // test overriding the default versioning table name
-            var migrator = new Migrator(ConnectionString, ProviderName, options);
+            _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
+            var migrator = new Migrator(ConnectionString, ProviderName, _options);
             migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
 
             // assert Versioning table was created
-            DataTable versioningTable = GetTable(options.VersioningTableName);
-            Assert.IsNotNull(versioningTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", options.VersioningTableName));
+            DataTable versioningTable = GetTable(_options.VersioningTableName);
+            Assert.IsNotNull(versioningTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", _options.VersioningTableName));
             Assert.AreEqual(3, versioningTable.Columns.Count);
             Assert.AreEqual(BootstrapMigration.TimestampColumnName, versioningTable.Columns[0].ColumnName);
             Assert.AreEqual(BootstrapMigration.ModuleColumnName, versioningTable.Columns[1].ColumnName);
@@ -82,20 +84,18 @@ namespace MigSharp.NUnit.Integration
         public void TestMigration1SucceededByAllOtherMigrations()
         {
             // initialize special-case migrations with additional runtime data
-            var options = new MigrationOptions();
-            options.SupportedProviders.Set(new[] { ProviderName });
             IProviderMetadata providerMetadata;
-            IProvider provider = options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
+            IProvider provider = _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
             Migration5.Initialize(provider.GetSupportsAttributes());
             Migration8.Initialize(provider.GetSupportsAttributes());
 
             // execute Migration1
-            var migrator = new Migrator(ConnectionString, ProviderName, options);
+            var migrator = new Migrator(ConnectionString, ProviderName, _options);
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, Timestamps[0]);
 
             // execute all other migrations
-            migrator = new Migrator(ConnectionString, ProviderName, options);
+            migrator = new Migrator(ConnectionString, ProviderName, _options);
             migrator.MigrateAll(assemblyContainingMigrations);
             Assert.IsTrue(migrator.IsUpToDate(assemblyContainingMigrations));
 
@@ -127,7 +127,7 @@ namespace MigSharp.NUnit.Integration
             }
 
             // assert Versioning table has necessary entries
-            DataTable versioningTable = GetTable(options.VersioningTableName);
+            DataTable versioningTable = GetTable(_options.VersioningTableName);
             Assert.AreEqual(Migrations.Count, versioningTable.Rows.Count, "The versioning table has a wrong number of entries.");
             DataRow[] versioningRows = versioningTable.Select(null, BootstrapMigration.TimestampColumnName); // order by Timestamp
             for (int i = 0; i < Migrations.Count; i++)
@@ -143,8 +143,7 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestUndoingMigration2()
         {
-            var options = new MigrationOptions();
-            var migrator = new Migrator(ConnectionString, ProviderName, options);
+            var migrator = new Migrator(ConnectionString, ProviderName, _options);
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, Timestamps[1]);
 
@@ -156,7 +155,7 @@ namespace MigSharp.NUnit.Integration
             Assert.IsNull(orderTable, "The order table was not dropped.");
 
             // assert Versioning table has only necessary entries
-            DataTable versioningTable = GetTable(options.VersioningTableName);
+            DataTable versioningTable = GetTable(_options.VersioningTableName);
             Assert.AreEqual(1, versioningTable.Rows.Count, "The versioning table is missing entries or has too much entries.");
             Assert.AreEqual(Timestamps[0], versioningTable.Rows[0][0], "The timestamp of Migration1 is wrong.");
             Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, versioningTable.Rows[0][1], "The module of Migration1 is wrong.");
@@ -166,8 +165,9 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestCustomBootstrapping()
         {
-            var options = new MigrationOptions(Migration2.Module); // use a Module selection to verify that the bootstrapping is still considering *all* migrations
-            Migrator migrator = new Migrator(ConnectionString, ProviderName, options);
+            // use a Module selection to verify that the bootstrapping is still considering *all* migrations
+            _options.ModuleSelector = moduleName => moduleName == Migration2.Module;
+            Migrator migrator = new Migrator(ConnectionString, ProviderName, _options);
 
             IBootstrapper bootstrapper = MockRepository.GenerateStrictMock<IBootstrapper>();
             bootstrapper.Expect(b => b.BeginBootstrapping(null, null)).IgnoreArguments();
@@ -186,7 +186,7 @@ namespace MigSharp.NUnit.Integration
             Assert.IsNull(table);
 
             // assert Versioning table has necessary entries
-            DataTable versioningTable = GetTable(options.VersioningTableName);
+            DataTable versioningTable = GetTable(_options.VersioningTableName);
             Assert.AreEqual(Migrations.Count, versioningTable.Rows.Count, "The versioning table is missing entries.");
 
             bootstrapper.VerifyAllExpectations();
@@ -214,6 +214,8 @@ namespace MigSharp.NUnit.Integration
         [SetUp]
         public virtual void Setup()
         {
+            _options = new MigrationOptions();
+            _options.SupportedProviders.Set(new[] { ProviderName }); // avoid validation errors/warnings from other providers
         }
 
         [TearDown]
