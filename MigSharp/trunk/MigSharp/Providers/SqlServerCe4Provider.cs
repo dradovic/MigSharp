@@ -8,7 +8,7 @@ namespace MigSharp.Providers
     /// <summary>
     /// MigSharp provider for Microsoft SQL Compact Edition 4.0.
     /// </summary>
-    [ProviderExport(ProviderNames.SqlServerCe4, SqlCe4InvariantName, MaximumDbObjectNameLength = 128)]
+    [ProviderExport(ProviderNames.SqlServerCe4, InvariantName, MaximumDbObjectNameLength = 128)]
     [Supports(DbType.AnsiString, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true, Warning = "Is not natively supported by SQL Server CE 4. DbParameters with DbType.AnsiString will not work (instead use DbType.String).")]
     [Supports(DbType.AnsiString, Warning = "Is not natively supported by SQL Server CE 4. DbParameters with DbType.AnsiString throws an exception (instead cast the DbParameter to SqlCeParameter and set SqlDbType to SqlDbType.NText).")]
     [Supports(DbType.Binary)]
@@ -33,7 +33,7 @@ namespace MigSharp.Providers
     //[Supports(DbType.UInt64)]
     internal class SqlServerCe4Provider : SqlServerProviderBase
     {
-        public const string SqlCe4InvariantName = "System.Data.SqlServerCe.4.0";
+        public const string InvariantName = "System.Data.SqlServerCe.4.0";
 
         public override bool SpecifyWith { get { return false; } }
         public override string Dbo { get { return string.Empty; } }

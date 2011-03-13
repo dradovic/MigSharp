@@ -29,7 +29,7 @@ namespace MigSharp.SqlServerCe.NUnit
             DataSet dataSet = ConfigurationManager.GetSection("system.data") as DataSet;
             if (dataSet == null) throw new InvalidOperationException("cannot configure privately deployed SQL CE 4.0 driver");
 
-            DataRow[] dataRows = dataSet.Tables[0].Select(string.Format(CultureInfo.InvariantCulture, "InvariantName='{0}'", SqlServerCe4Provider.SqlCe4InvariantName));
+            DataRow[] dataRows = dataSet.Tables[0].Select(string.Format(CultureInfo.InvariantCulture, "InvariantName='{0}'", SqlServerCe4Provider.InvariantName));
             foreach (var dataRow in dataRows)
             {
                 dataSet.Tables[0].Rows.Remove(dataRow);
@@ -38,7 +38,7 @@ namespace MigSharp.SqlServerCe.NUnit
             dataSet.Tables[0].Rows.Add(
                 "Microsoft SQL Server Compact Data Provider 4.0",
                 ".NET Framework Data Provider for Microsoft SQL Server Compact",
-                SqlServerCe4Provider.SqlCe4InvariantName,
+                SqlServerCe4Provider.InvariantName,
                 "System.Data.SqlServerCe.SqlCeProviderFactory, System.Data.SqlServerCe");
         }
 
