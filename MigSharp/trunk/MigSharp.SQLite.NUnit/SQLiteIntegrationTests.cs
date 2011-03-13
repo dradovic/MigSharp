@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 namespace MigSharp.SQLite.NUnit
 {
-    [TestFixture, Category("SqlServerCe4")]
+    [TestFixture, Category("SQLite")]
     internal class SQLiteIntegrationTests : IntegrationTestsBase
     {
         private string _dataFile;
