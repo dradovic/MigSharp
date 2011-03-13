@@ -6,4 +6,7 @@
   <Target Name="UnitTests">
     <NUnit Platform="x86" NUnitVersion="NUnit-2.5.5" Assemblies="@(TestAssembly)" IncludeCategory="$(TestCategory)" />
   </Target>
+    <Target Name="UnitTestsX64">
+    <NUnit Platform="x64" NUnitVersion="NUnit-2.5.5" Assemblies="@(TestAssembly)" IncludeCategory="$(TestCategory)" />
+  </Target>
 </Project>
