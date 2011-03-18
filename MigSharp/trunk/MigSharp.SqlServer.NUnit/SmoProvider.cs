@@ -81,7 +81,6 @@ namespace MigSharp.SqlServer.NUnit
         public IEnumerable<string> AddColumn(string tableName, AddedColumn column)
         {
             Table table = GetTable(tableName);
-            List<DefaultConstraint> defaultConstraintsToDrop = new List<DefaultConstraint>();
             var c = new Microsoft.SqlServer.Management.Smo.Column(table, column.Name)
             {
                 DataType = Convert(column.DataType),
@@ -90,18 +89,10 @@ namespace MigSharp.SqlServer.NUnit
             };
             if (column.DefaultValue != null)
             {
-                DefaultConstraint defaultConstraint = AddDefaultConstraint(c, tableName, column.DefaultValue);
-                if (column.DropThereafter)
-                {
-                    defaultConstraintsToDrop.Add(defaultConstraint);
-                }
+                AddDefaultConstraint(c, tableName, column.DefaultValue);
             }
             table.Columns.Add(c);
             table.Alter();
-            foreach (DefaultConstraint defaultConstraint in defaultConstraintsToDrop)
-            {
-                defaultConstraint.Drop();
-            }
             return ScriptChanges(table.Parent.Parent);
         }
 
@@ -109,7 +100,7 @@ namespace MigSharp.SqlServer.NUnit
         {
             string constraintName = ProviderHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, column.Name);
             DefaultConstraint defaultConstraint = column.AddDefaultConstraint(constraintName);
-            object defaultValue = SpecialDefaultValue.CurrentDateTime.Equals(value) ? "GETDATE()" : value;
+            object defaultValue = SpecialDefaultValue.CurrentDateTime.Equals(value) ? "GETDATE()" : (value ?? "dummy for dropping case");
             defaultConstraint.Text = defaultValue.ToString();
             return defaultConstraint;
         }
@@ -215,7 +206,7 @@ namespace MigSharp.SqlServer.NUnit
             return ScriptChanges(table.Parent.Parent);
         }
 
-        public IEnumerable<string> DropForeignKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
         {
             Table table = GetTable(tableName);
             ForeignKey foreignKey = new ForeignKey(table, constraintName);
@@ -223,7 +214,7 @@ namespace MigSharp.SqlServer.NUnit
             return ScriptChanges(table.Parent.Parent);
         }
 
-        public IEnumerable<string> DropPrimaryKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
         {
             return DropConstraint(tableName, constraintName, IndexKeyType.DriPrimaryKey);
         }
@@ -256,6 +247,19 @@ namespace MigSharp.SqlServer.NUnit
         public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
         {
             return DropConstraint(tableName, constraintName, IndexKeyType.DriUniqueKey);
+        }
+
+        public IEnumerable<string> DropDefault(string tableName, Column column)
+        {
+            Table table = GetTable(tableName);
+            var c = new Microsoft.SqlServer.Management.Smo.Column(table, column.Name)
+            {
+                DataType = Convert(column.DataType),
+                Nullable = column.IsNullable,
+            };
+            DefaultConstraint defaultConstraint = AddDefaultConstraint(c, tableName, column.DefaultValue);
+            defaultConstraint.Drop();
+            return ScriptChanges(table.Parent.Parent);
         }
 
         private static IEnumerable<string> DropConstraint(string tableName, string constraintName, IndexKeyType keyType)

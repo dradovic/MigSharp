@@ -54,7 +54,7 @@ namespace MigSharp.Providers
                     primaryKeyColumns.Add(column.Name);
                 }
 
-                commandText += GetColumnString(column, column.IsIdentity, false);
+                commandText += GetColumnString(column, column.IsIdentity);
 
                 columnDelimiterIsNeeded = true;
             }
@@ -112,18 +112,8 @@ namespace MigSharp.Providers
         {
             // assemble ALTER TABLE statements
             string commandText = string.Format(@"{0} ADD ", AlterTable(tableName));
-            commandText += GetColumnString(column, column.IsIdentity, false);
+            commandText += GetColumnString(column, column.IsIdentity);
             yield return commandText;
-
-            // add commands to drop default constraints
-            if (column.DropThereafter)
-            {
-                Debug.Assert(column.DefaultValue != null);
-                foreach (string text in AlterColumn(tableName, column, true))
-                {
-                    yield return text;
-                }
-            }
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
@@ -143,12 +133,7 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> AlterColumn(string tableName, Column column)
         {
-            return AlterColumn(tableName, column, false);
-        }
-
-        private static IEnumerable<string> AlterColumn(string tableName, Column column, bool ignoreDefault)
-        {
-            yield return string.Format(string.Format("{0} ADD {1}", AlterTable(tableName), GetColumnString(column, false, ignoreDefault)));
+            yield return string.Format(string.Format("{0} ADD {1}", AlterTable(tableName), GetColumnString(column, false)));
         }
 
         private static IEnumerable<string> DropConstraint(string tableName, string constraintName)
@@ -182,12 +167,12 @@ namespace MigSharp.Providers
             yield return string.Format("{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3}({4})", AlterTable(tableName), Escape(constraintName), sourceCols, referencedTableName, targetCols);
         }
 
-        public IEnumerable<string> DropForeignKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
         {
             return DropConstraint(tableName, constraintName);
         }
 
-        public IEnumerable<string> DropPrimaryKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
         {
             throw new NotSupportedException("Teradata always automatically generates a 'Primary Index' when creating a table which cannot be removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
             //return DropConstraint(tableName, constraintName);
@@ -209,7 +194,13 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
         {
-            yield return string.Format("DROP UNIQUE INDEX {0} on {1}", Escape(constraintName), tableName);
+            yield return string.Format("DROP UNIQUE INDEX {0} ON {1}", Escape(constraintName), tableName);
+        }
+
+        public IEnumerable<string> DropDefault(string tableName, Column column)
+        {
+            Debug.Assert(column.DefaultValue == null, "The DefaultValue must be null as we are going to call AlterColumn with it.");
+            return AlterColumn(tableName, column);
         }
 
         private static string CreateTable(string tableName)
@@ -293,20 +284,14 @@ namespace MigSharp.Providers
             }
         }
 
-        private static string GetColumnString(Column column, bool isIdentity, bool ignoreDefault)
+        private static string GetColumnString(Column column, bool isIdentity)
         {
-            //Work out of this is an alter after a temp value as we need to ignore the default value in this case
-            /*bool ignoreDefault=false;
-            var col = column as AddedColumn;
-            if (col != null && col.DropThereafter)
-                ignoreDefault = true;*/
-
             string defaultConstraintClause = string.Empty;
             string commandText = string.Empty;
 
             if (!isIdentity && !GetTypeSpecifier(column.DataType).EndsWith("LOB", StringComparison.OrdinalIgnoreCase))
             {
-                string defaultValue = (ignoreDefault || column.DefaultValue == null) ? "NULL" : GetDefaultValueAsString(column.DefaultValue);
+                string defaultValue = column.DefaultValue == null ? "NULL" : GetDefaultValueAsString(column.DefaultValue);
 
                 defaultConstraintClause = string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", defaultValue);
             }

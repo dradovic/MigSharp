@@ -29,22 +29,25 @@ namespace MigSharp.NUnit.Integration
                 .WithNotNullableColumn(ColumnNames[1], DbType.String);
 
             // inserting another row without specifying the Id value should fail as the Identity constraint is removed
-            db.Execute(context =>
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite automatically generates identity columns for PKs
             {
-                IDbCommand command = context.Connection.CreateCommand();
-                command.Transaction = context.Transaction;
-                command.CommandText = GetInsertStatement((string)ExpectedValues[0, 1]);
-                Log.Verbose(LogCategory.Sql, command.CommandText);
-                try
-                {
-                    command.ExecuteNonQuery();
-                    Assert.Fail("The previous query should have failed.");
-                }
-                catch (DbException)
-                {
-                    // this is expected
-                }
-            });
+                db.Execute(context =>
+                    {
+                        IDbCommand command = context.Connection.CreateCommand();
+                        command.Transaction = context.Transaction;
+                        command.CommandText = GetInsertStatement((string)ExpectedValues[0, 1]);
+                        Log.Verbose(LogCategory.Sql, command.CommandText);
+                        try
+                        {
+                            command.ExecuteNonQuery();
+                            Assert.Fail("The previous query should have failed.");
+                        }
+                        catch (DbException)
+                        {
+                            // this is expected
+                        }
+                    });
+            }
 
             db.Execute(GetInsertStatement((int)ExpectedValues[0, 0], (string)ExpectedValues[0, 1]));
 

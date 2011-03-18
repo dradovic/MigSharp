@@ -36,22 +36,25 @@ namespace MigSharp.NUnit.Integration
             db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", TableName, ColumnNames[1], ExpectedValues[0, 1]));
 
             // removing the row from Other should fail as it is referenced by the foreign key
-            db.Execute(context =>
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // Mig# does not support SQLite foreign keys (see comments in SQLiteProvider.AddForeignKey)
             {
-                IDbCommand command = context.Connection.CreateCommand();
-                command.Transaction = context.Transaction;
-                command.CommandText = GetDeleteStatementForOther();
-                Log.Verbose(LogCategory.Sql, command.CommandText);
-                try
-                {
-                    command.ExecuteNonQuery();
-                    Assert.Fail("The previous query should have failed.");
-                }
-                catch (DbException)
-                {
-                    // this is expected
-                }
-            });
+                db.Execute(context =>
+                    {
+                        IDbCommand command = context.Connection.CreateCommand();
+                        command.Transaction = context.Transaction;
+                        command.CommandText = GetDeleteStatementForOther();
+                        Log.Verbose(LogCategory.Sql, command.CommandText);
+                        try
+                        {
+                            command.ExecuteNonQuery();
+                            Assert.Fail("The previous query should have failed.");
+                        }
+                        catch (DbException)
+                        {
+                            // this is expected
+                        }
+                    });
+            }
         }
 
         private static string GetDeleteStatementForOther()

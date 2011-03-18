@@ -19,27 +19,26 @@ namespace MigSharp.NUnit.Integration
             db.CreateTable(TableName)
                 .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32);
 
-
             db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" VALUES ({1})", TableName, ExpectedValues[0, 0]));
         }
 
         public void Down(IDatabase db)
         {
-            //Teradata does not allow droping of primary key you need to recreate the table without the key ...
-            if (db.Context.ProviderMetadata.Name == (ProviderNames.Teradata) || db.Context.ProviderMetadata.Name  == (ProviderNames.TeradataOdbc) )
+            // Teradata and SQLite do not allow droping of primary keys
+            if (db.Context.ProviderMetadata.Name.Contains("Teradata") || db.Context.ProviderMetadata.Name == ProviderNames.SQLite)
             {
-                db.Tables[TableName].Rename("tmprename");
+                // create new table and copy content from original table
+                const string temporaryName = "tmprename";
+                db.Tables[TableName].Rename(temporaryName);
                 db.CreateTable(TableName)
                     .WithNotNullableColumn(ColumnNames[0], DbType.Int32);
-                string query = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" select * from tmprename", TableName);
+                string query = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" SELECT * FROM {1}", TableName, temporaryName);
                 db.Execute(query);
-                db.Tables["tmprename"].Drop();
-
+                db.Tables[temporaryName].Drop();
             }
             else
             {
                 db.Tables[TableName].PrimaryKey().Drop(); // we could also directly drop the table but thus, the dropping of PK is tested as well
- 
             }
             db.Tables[TableName].Drop();
         }

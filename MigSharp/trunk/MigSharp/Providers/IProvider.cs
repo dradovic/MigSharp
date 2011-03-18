@@ -86,13 +86,13 @@ namespace MigSharp.Providers
         /// Drops a foreign key constraint from a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropForeignKeyConstraint(string tableName, string constraintName);
+        IEnumerable<string> DropForeignKey(string tableName, string constraintName);
 
         /// <summary>
         /// Drops a primary key constraint from a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropPrimaryKeyConstraint(string tableName, string constraintName);
+        IEnumerable<string> DropPrimaryKey(string tableName, string constraintName);
 
         /// <summary>
         /// Adds a primary key constraint to a table.
@@ -111,6 +111,12 @@ namespace MigSharp.Providers
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
         IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName);
+
+        /// <summary>
+        /// Drops the default value (constraint) from a column.
+        /// </summary>
+        /// <returns>The SQL commands to be executed.</returns>
+        IEnumerable<string> DropDefault(string tableName, Column column);
     }
 
     internal static class ProviderExtensions
@@ -171,7 +177,7 @@ namespace MigSharp.Providers
                 }
                 else if (parameter.ParameterType == typeof(AddedColumn))
                 {
-                    parameters.Add(new AddedColumn(string.Empty, new DataType(0, 0, 0), false, false, null, false));
+                    parameters.Add(new AddedColumn(string.Empty, new DataType(0, 0, 0), false, false, null));
                 }
                 else if (parameter.ParameterType == typeof(Column))
                 {

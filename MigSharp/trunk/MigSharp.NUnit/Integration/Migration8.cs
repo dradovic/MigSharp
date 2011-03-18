@@ -22,6 +22,7 @@ namespace MigSharp.NUnit.Integration
             { DbType.Binary, new byte[] { 123, byte.MinValue, byte.MaxValue } },
             { DbType.Byte, Byte.MaxValue },
             { DbType.Boolean, true },
+            { DbType.Date, new DateTime(2010, 12, 28, 18, 14, 33).Date },
             { DbType.DateTime, new DateTime(2010, 12, 28, 18, 14, 33) },
             { DbType.Decimal, 0.12345 },
             { DbType.Double, 3.14159265358979d },
@@ -32,10 +33,13 @@ namespace MigSharp.NUnit.Integration
             { DbType.SByte, SByte.MinValue },
             { DbType.Single, Single.MaxValue },
             { DbType.String, "Irgendöppis" }, // FIXME: don, "Unicodović" should work as well (see Migration5) 
-            { DbType.Date, new DateTime(2010, 12, 28, 18, 14, 33).Date },
+            { DbType.Time, DateTime.Parse("12/28/2010 19:25:21.9999", CultureInfo.InvariantCulture).TimeOfDay },
+            { DbType.UInt16, UInt16.MinValue },
+            { DbType.UInt32, UInt32.MinValue },
+            { DbType.UInt64, UInt64.MinValue },
+            { DbType.VarNumeric, 1.5f },
             { DbType.DateTimeOffset, new DateTimeOffset(2010, 12, 28, 18, 14, 33, TimeSpan.FromHours(-2.0)) },
             { DbType.DateTime2, DateTime.Parse("12/28/2010 19:25:21.9999", CultureInfo.InvariantCulture) },
-            { DbType.Time, DateTime.Parse("12/28/2010 19:25:21.9999", CultureInfo.InvariantCulture).TimeOfDay },
         };
 
         private static readonly Dictionary<string, DbType> Columns = new Dictionary<string, DbType>();
@@ -117,21 +121,25 @@ namespace MigSharp.NUnit.Integration
             if (db.Context.ProviderMetadata.Name.Contains("Oracle") ||
                 db.Context.ProviderMetadata.Name.Contains("Teradata"))
             {
-                // CLEAN: dr, move the logic for these exceptions to the provider
                 if (result is Guid)
                 {
                     type = DbType.Binary;
                     return ((Guid)result).ToByteArray();
                 }
-                if (result is bool)
-                {
-                    type = DbType.Int32;
-                    return Convert.ToInt32((bool)result, CultureInfo.InvariantCulture);
-                }
                 if (result is byte)
                 {
                     type = DbType.Int32;
                     return Convert.ToInt32(result, CultureInfo.InvariantCulture);
+                }
+            }
+            if (db.Context.ProviderMetadata.Name.Contains("Oracle") ||
+                db.Context.ProviderMetadata.Name.Contains("Teradata") ||
+                db.Context.ProviderMetadata.Name == ProviderNames.SQLite)
+            {
+                if (result is bool)
+                {
+                    type = DbType.Int32;
+                    return Convert.ToInt32((bool)result, CultureInfo.InvariantCulture);
                 }
             }
             return result;

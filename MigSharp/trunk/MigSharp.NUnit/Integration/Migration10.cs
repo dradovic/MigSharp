@@ -21,15 +21,18 @@ namespace MigSharp.NUnit.Integration
             db.CreateTable(TableName)
                 .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
                 .WithNotNullableColumn(ColumnNames[1], DbType.String).OfSize(100);
-
             db.Execute(GetInsertStatement(0));
             db.Execute(GetInsertStatement(1));
-            // add two new columns one of int and one of string
-            db.Tables[TableName].AddNotNullableColumn(ColumnNames[2], DbType.String).OfSize(100).HavingTemporaryDefault(DefaultString);
-            db.Tables[TableName].AddNotNullableColumn(ColumnNames[3], DbType.Int32).HavingTemporaryDefault(DefaultInt);
-            db.Tables[TableName].AddNotNullableColumn(ColumnNames[4], DbType.DateTime).HavingTemporaryDefault(DefaultDate);
-            // ensure that the default values have been droped
-            db.Execute(context =>
+
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite)
+            {
+                // add two new columns one of int and one of string
+                db.Tables[TableName].AddNotNullableColumn(ColumnNames[2], DbType.String).OfSize(100).HavingTemporaryDefault(DefaultString);
+                db.Tables[TableName].AddNotNullableColumn(ColumnNames[3], DbType.Int32).HavingTemporaryDefault(DefaultInt);
+                db.Tables[TableName].AddNotNullableColumn(ColumnNames[4], DbType.DateTime).HavingTemporaryDefault(DefaultDate);
+
+                // ensure that the default values have been droped
+                db.Execute(context =>
                 {
                     IDbCommand command = context.Connection.CreateCommand();
                     command.Transaction = context.Transaction;
@@ -45,6 +48,14 @@ namespace MigSharp.NUnit.Integration
                         // this is expected
                     }
                 });
+            }
+            else
+            {
+                // SQLite does not support dropping of default values
+                db.Tables[TableName].AddNotNullableColumn(ColumnNames[2], DbType.String).OfSize(100).HavingDefault(DefaultString);
+                db.Tables[TableName].AddNotNullableColumn(ColumnNames[3], DbType.Int32).HavingDefault(DefaultInt);
+                db.Tables[TableName].AddNotNullableColumn(ColumnNames[4], DbType.DateTime).HavingDefault(DefaultDate);
+            }
         }
 
         private string GetInsertStatement(int row)

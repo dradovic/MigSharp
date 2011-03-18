@@ -309,12 +309,12 @@ namespace MigSharp.NUnit.Process
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.DropForeignKeyConstraint(string tableName, string constraintName)
+            IEnumerable<string> IProvider.DropForeignKey(string tableName, string constraintName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.DropPrimaryKeyConstraint(string tableName, string constraintName)
+            IEnumerable<string> IProvider.DropPrimaryKey(string tableName, string constraintName)
             {
                 throw new NotSupportedException();
             }
@@ -330,6 +330,11 @@ namespace MigSharp.NUnit.Process
             }
 
             IEnumerable<string> IProvider.DropUniqueConstraint(string tableName, string constraintName)
+            {
+                throw new NotSupportedException();
+            }
+
+            public IEnumerable<string> DropDefault(string tableName, Column column)
             {
                 throw new NotSupportedException();
             }

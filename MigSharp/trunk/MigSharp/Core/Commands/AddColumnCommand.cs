@@ -3,6 +3,8 @@ using System.Data;
 
 using MigSharp.Providers;
 
+using System.Linq;
+
 namespace MigSharp.Core.Commands
 {
     internal class AddColumnCommand : Command, IScriptableCommand
@@ -37,13 +39,23 @@ namespace MigSharp.Core.Commands
             {
                 throw new InvalidCommandException("Adding nullable columns with default values is not supported: some database platforms (like SQL Server) leave missing values NULL and some update missing values to the default value. Consider adding the column first as not-nullable, and then altering it to nullable.");
             }
-            return provider.AddColumn(Parent.TableName, new AddedColumn(
+            string tableName = Parent.TableName;
+            var column = new AddedColumn(
                 ColumnName,
                 new DataType(Type, Size, Scale),
                 IsNullable,
                 IsIdentity,
-                DefaultValue,
-                DropThereafter));
+                DefaultValue);
+            IEnumerable<string> commands = provider.AddColumn(tableName, column);
+            if (DropThereafter)
+            {
+                commands = commands.Concat(provider.DropDefault(tableName, new Column(
+                    column.Name,
+                    column.DataType,
+                    column.IsNullable,
+                    null)));
+            }
+            return commands;
         }
     }
 }

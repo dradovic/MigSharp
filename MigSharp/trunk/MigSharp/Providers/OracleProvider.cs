@@ -183,16 +183,6 @@ namespace MigSharp.Providers
             string commandText = string.Format(CultureInfo.InvariantCulture, @"{0} ADD ", AlterTable(tableName));
             commandText += GetColumnString(column);
             yield return commandText;
-
-            // add commands to drop default constraints
-            if (column.DropThereafter)
-            {
-                Debug.Assert(column.DefaultValue != null);
-                foreach (string text in AlterColumn(tableName, column))
-                {
-                    yield return text;
-                }
-            }
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
@@ -212,12 +202,6 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> AlterColumn(string tableName, Column column)
         {
-            //Work out of this is an alter after a temp value as we need to ignore the default value in this case
-            bool ignoreDefault = false;
-            var col = column as AddedColumn;
-            if (col != null && col.DropThereafter)
-                ignoreDefault = true;
-
             string query = @"declare 
                              l_nullable varchar2(1);
                              l_datatype varchar2(106);
@@ -252,7 +236,7 @@ namespace MigSharp.Providers
             query = query.Replace(Environment.NewLine, " ");
             string colN = column.IsNullable ? "NULL" : "";
             string colY = column.IsNullable ? "" : "NOT NULL";
-            string defaultConstraintClause = (ignoreDefault || column.DefaultValue == null) ? "DEFAULT NULL" : string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", column.DefaultValue.ToString().Replace("'", "''"));
+            string defaultConstraintClause = (column.DefaultValue == null) ? "DEFAULT NULL" : string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", column.DefaultValue.ToString().Replace("'", "''"));
             yield return string.Format(CultureInfo.InvariantCulture, query, tableName, column.Name, GetTypeSpecifier(column.DataType), colN, colY, defaultConstraintClause);
         }
 
@@ -287,12 +271,12 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3}({4})", AlterTable(tableName), Escape(constraintName), sourceCols, Escape(referencedTableName), targetCols);
         }
 
-        public IEnumerable<string> DropForeignKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
         {
             return DropConstraint(tableName, constraintName);
         }
 
-        public IEnumerable<string> DropPrimaryKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
         {
             return DropConstraint(tableName, constraintName);
         }
@@ -310,6 +294,12 @@ namespace MigSharp.Providers
         public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
         {
             return DropConstraint(tableName, constraintName);
+        }
+
+        public IEnumerable<string> DropDefault(string tableName, Column column)
+        {
+            Debug.Assert(column.DefaultValue == null, "The DefaultValue must be null as we are going to call AlterColumn with it.");
+            return AlterColumn(tableName, column);
         }
 
         private static string CreateTable(string tableName)

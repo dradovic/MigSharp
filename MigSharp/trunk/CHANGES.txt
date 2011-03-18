@@ -1,2 +1,5 @@
-1.0.1 - Teradata: raise validation error on adding/dropping primary keys (Teradata does not support that)
+1.1.0 - Added support for SQLite
+      - IProvider: added the DropDefault method which replaces the AddedColumn.DropThereafter and gives the providers
+	    more flexibility to report what they support and what not
+      - Teradata: raise validation error on adding/dropping primary keys (Teradata does not support that)
 1.0.0 - Initial release

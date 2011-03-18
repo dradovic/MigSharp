@@ -109,16 +109,6 @@ namespace MigSharp.Providers
                 column.IsNullable ? string.Empty : "NOT ",
                 defaultConstraintClause);
             yield return commandText;
-
-            // add commands to drop default constraints
-            if (column.DropThereafter)
-            {
-                Debug.Assert(column.DefaultValue != null);
-                foreach (string text in DropDefaultConstraint(tableName, column, false))
-                {
-                    yield return text;
-                }
-            }
         }
 
         protected abstract IEnumerable<string> DropDefaultConstraint(string tableName, Column column, bool checkIfExists);
@@ -210,12 +200,12 @@ namespace MigSharp.Providers
                 string.Join(", ", columnNames.Select(n => Escape(n.ReferencedColumnName)).ToArray()));
         }
 
-        public IEnumerable<string> DropForeignKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
         {
             yield return DropConstraint(tableName, constraintName);
         }
 
-        public IEnumerable<string> DropPrimaryKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
         {
             yield return DropConstraint(tableName, constraintName);
         }
@@ -243,6 +233,12 @@ namespace MigSharp.Providers
         public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
         {
             yield return DropConstraint(tableName, constraintName);
+        }
+
+        public IEnumerable<string> DropDefault(string tableName, Column column)
+        {
+            Debug.Assert(column.DefaultValue == null);
+            return DropDefaultConstraint(tableName, column, false);
         }
 
         protected string DropConstraint(string tableName, string constraintName)

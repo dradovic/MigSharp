@@ -18,23 +18,30 @@ namespace MigSharp.NUnit.Integration
                 .WithNotNullableColumn(ColumnNames[1], DbType.Decimal).OfSize(3)
                 .WithNotNullableColumn(ColumnNames[2], DbType.Decimal).OfSize(5, 2);
 
-            db.Execute(GetInsertStatement((decimal)ExpectedValues[0, 2] + 0.003m));
-            db.Execute(context =>
-                {
-                    IDbCommand command = context.Connection.CreateCommand();
-                    command.Transaction = context.Transaction;
-                    command.CommandText = GetInsertStatement(1000m);
-                    Log.Verbose(LogCategory.Sql, command.CommandText);
-                    try
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite uses adaptiv algorithms for their data types: http://www.sqlite.org/datatype3.html
+            {
+                db.Execute(GetInsertStatement((decimal)ExpectedValues[0, 2] + 0.003m)); // the extra precision should be cut off silently
+                db.Execute(context =>
                     {
-                        command.ExecuteNonQuery();
-                        Assert.Fail("The previous query should have failed.");
-                    }
-                    catch (DbException)
-                    {
-                        // this is expected
-                    }
-                });
+                        IDbCommand command = context.Connection.CreateCommand();
+                        command.Transaction = context.Transaction;
+                        command.CommandText = GetInsertStatement(1000m);
+                        Log.Verbose(LogCategory.Sql, command.CommandText);
+                        try
+                        {
+                            command.ExecuteNonQuery();
+                            Assert.Fail("The previous query should have failed.");
+                        }
+                        catch (DbException)
+                        {
+                            // this is expected
+                        }
+                    });
+            }
+            else
+            {
+                db.Execute(GetInsertStatement((decimal)ExpectedValues[0, 2]));                
+            }
         }
 
         private string GetInsertStatement(decimal value2)

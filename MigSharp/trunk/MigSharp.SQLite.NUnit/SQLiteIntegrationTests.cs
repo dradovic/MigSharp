@@ -1,6 +1,6 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 
 using MigSharp.NUnit.Integration;
@@ -17,7 +17,19 @@ namespace MigSharp.SQLite.NUnit
 
         protected override DataTable GetTable(string tableName)
         {
-            throw new NotImplementedException();
+            var table = new DataTable(tableName) { Locale = CultureInfo.InvariantCulture };
+            try
+            {
+                using (var adapter = new SQLiteDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString))
+                {
+                    adapter.Fill(table);
+                }
+            }
+            catch (SQLiteException)
+            {
+                table = null;
+            }
+            return table;
         }
 
         protected override string ConnectionString

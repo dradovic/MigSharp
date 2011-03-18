@@ -1,7 +1,13 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
+- SQLite
+	- is it okay to implment UNIQUE as constraints?
+	- is it okay not to implement FKs?
+	- DbType.Single throws a System.OverflowException in the SQLiteDataReader when trying to convert the data type to a decimal!?
+	- update wiki and all referencing pages to include SQLite support
 - Document custom bootstrapping and custom versioning
+- Document TemporaryDefault feature
 - fix all FIXME and NotImplementedException
 
 Nice-to-have/backlog:

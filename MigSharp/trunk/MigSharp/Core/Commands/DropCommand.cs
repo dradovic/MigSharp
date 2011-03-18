@@ -30,7 +30,7 @@ namespace MigSharp.Core.Commands
             else if ((parentAlterPrimaryKeyCommand = Parent as AlterPrimaryKeyCommand) != null)
             {
                 string effectiveConstraintName = DefaultObjectNameProvider.GetPrimaryKeyConstraintName(parentAlterPrimaryKeyCommand.Parent.TableName, parentAlterPrimaryKeyCommand.ConstraintName);
-                return provider.DropPrimaryKeyConstraint(parentAlterPrimaryKeyCommand.Parent.TableName, effectiveConstraintName);
+                return provider.DropPrimaryKey(parentAlterPrimaryKeyCommand.Parent.TableName, effectiveConstraintName);
             }
             else if ((parentAlterIndexCommand = Parent as AlterIndexCommand) != null)
             {
@@ -42,7 +42,7 @@ namespace MigSharp.Core.Commands
             }
             else if ((parentAlterForeignKeyCommand = Parent as AlterForeignKeyCommand) != null)
             {
-                return provider.DropForeignKeyConstraint(parentAlterForeignKeyCommand.Parent.TableName, parentAlterForeignKeyCommand.ConstraintName);
+                return provider.DropForeignKey(parentAlterForeignKeyCommand.Parent.TableName, parentAlterForeignKeyCommand.ConstraintName);
             }
             else
             {

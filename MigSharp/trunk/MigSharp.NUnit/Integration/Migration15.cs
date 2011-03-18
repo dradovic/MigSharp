@@ -10,7 +10,7 @@ namespace MigSharp.NUnit.Integration
 
         public void Up(IDatabase db)
         {
-            if (!db.Context.ProviderMetadata.Name.Contains("Teradata"))
+            if (!db.Context.ProviderMetadata.Name.Contains("Teradata") && db.Context.ProviderMetadata.Name != ProviderNames.SQLite)
             {
                 db.CreateTable(TableName)
                     .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32)
@@ -19,7 +19,7 @@ namespace MigSharp.NUnit.Integration
             }
             else
             {
-                // Teradata does not allow adding/dropping primary keys
+                // Teradata and SQLite do not allow adding/dropping primary keys
                 db.CreateTable(TableName)
                     .WithNotNullableColumn(ColumnNames[0], DbType.Int32)
                     .WithNotNullableColumn(ColumnNames[1], DbType.Int32)
@@ -34,7 +34,7 @@ namespace MigSharp.NUnit.Integration
                 ExpectedValues[0, 2]));
 
             // add and drop primary keys
-            if (!db.Context.ProviderMetadata.Name.Contains("Teradata"))
+            if (!db.Context.ProviderMetadata.Name.Contains("Teradata") && db.Context.ProviderMetadata.Name != ProviderNames.SQLite)
             {
                 db.Tables[TableName].PrimaryKey().Drop();
 
@@ -47,7 +47,7 @@ namespace MigSharp.NUnit.Integration
                 db.Tables[TableName].PrimaryKey().Drop();
             }
 
-            // there should be not primary key now, so adding the same values should be ok
+            // there should be no primary key now, so adding the same values should be ok
             if (db.Context.ProviderMetadata.Name != ProviderNames.TeradataOdbc) // the Teradata *ODBC* driver auto-creates *unique* primary indexes which would lead to a "Duplicate row error"
             {
                 db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" VALUES({1}, {2}, {3})",

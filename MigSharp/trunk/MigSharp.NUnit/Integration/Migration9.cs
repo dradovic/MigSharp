@@ -25,22 +25,27 @@ namespace MigSharp.NUnit.Integration
             db.Tables[TableNameInitial].Rename(TableName);
 
             // add primary key constraint
-            if (!db.Context.ProviderMetadata.Name.Contains("Teradata")) // Teradata does not support adding/dropping of PKs
+            if (!db.Context.ProviderMetadata.Name.Contains("Teradata") && db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // Teradata and SQLite do not support adding/dropping of PKs
             {
                 db.Tables[TableName].AddPrimaryKey()
                     .OnColumn(ColumnNames[0]);
             }
 
             // alter column to nullable
-            db.Tables[TableName].Columns[ColumnNames[1]].AlterToNotNullable(DbType.String).OfSize(128);
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support dropping of columns
+            {
+                db.Tables[TableName].Columns[ColumnNames[1]].AlterToNotNullable(DbType.String).OfSize(128);
+            }
 
             // add column, alter it to not nullable right afterwards
             db.Tables[TableName].AddNullableColumn(ColumnNames[2], DbType.Double);
-
-            db.Tables[TableName].Columns[ColumnNames[2]].AlterToNotNullable(DbType.Double);
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support altering of columns
+            {
+                db.Tables[TableName].Columns[ColumnNames[2]].AlterToNotNullable(DbType.Double);
+            }
 
             // add colum (through rename if provider supports it) and the drop again
-            if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4)
+            if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4 || db.Context.ProviderMetadata.Name == ProviderNames.SQLite)
             {
                 db.Tables[TableName].AddNullableColumn(TempColumnRenamed, DbType.DateTime);
             }
@@ -49,14 +54,28 @@ namespace MigSharp.NUnit.Integration
                 db.Tables[TableName].AddNullableColumn(TempColumn, DbType.DateTime);
                 db.Tables[TableName].Columns[TempColumn].Rename(TempColumnRenamed);
             }
-            db.Tables[TableName].Columns[TempColumnRenamed].Drop();
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support dropping of columns
+            {
+                db.Tables[TableName].Columns[TempColumnRenamed].Drop();
+            }
 
             // remove, add and remove again unique constraint
             db.Tables[TableName].UniqueConstraints[UniqueColumnConstraint].Drop();
             db.Tables[TableName].AddUniqueConstraint(UniqueColumnConstraint)
                 .OnColumn(UniqueColumn);
             db.Tables[TableName].UniqueConstraints[UniqueColumnConstraint].Drop();
-            db.Tables[TableName].Columns[UniqueColumn].Drop();
+            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support dropping of columns
+            {
+                db.Tables[TableName].Columns[UniqueColumn].Drop();
+            }
+            else
+            {
+                db.Tables[TableName].Drop();
+                db.CreateTable(TableName)
+                    .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32)
+                    .WithNotNullableColumn(ColumnNames[1], DbType.String).OfSize(128);
+                db.Tables[TableName].AddNullableColumn(ColumnNames[2], DbType.Double);
+            }
 
             // add index
             db.Tables[TableName].AddIndex("My Index")

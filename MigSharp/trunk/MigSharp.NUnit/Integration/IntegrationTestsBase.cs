@@ -87,7 +87,6 @@ namespace MigSharp.NUnit.Integration
             // initialize special-case migrations with additional runtime data
             IProviderMetadata providerMetadata;
             IProvider provider = _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
-            Migration5.Initialize(provider.GetSupportsAttributes());
             Migration8.Initialize(provider.GetSupportsAttributes());
 
             // execute Migration1

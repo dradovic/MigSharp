@@ -131,14 +131,14 @@ namespace MigSharp.Providers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IEnumerable<string> DropForeignKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
         {
             AddMethodName();
             return Enumerable.Empty<string>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IEnumerable<string> DropPrimaryKeyConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
         {
             AddMethodName();
             return Enumerable.Empty<string>();
@@ -164,6 +164,13 @@ namespace MigSharp.Providers
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
+        {
+            AddMethodName();
+            return Enumerable.Empty<string>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IEnumerable<string> DropDefault(string tableName, Column column)
         {
             AddMethodName();
             return Enumerable.Empty<string>();

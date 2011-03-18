@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace MigSharp.SqlServerCe.NUnit
 {
     [TestFixture, Category("SqlServerCe4")]
-    public class SqlCe4ServerIntegrationTests : IntegrationTestsBase
+    public class SqlServerCe4IntegrationTests : IntegrationTestsBase
     {
         private string _dataFile;
 
@@ -54,7 +54,6 @@ namespace MigSharp.SqlServerCe.NUnit
             {
                 table = null;
             }
-
             return table;
         }
 
