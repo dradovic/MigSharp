@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 using MigSharp.Providers;
@@ -26,6 +27,10 @@ namespace MigSharp.Core.Commands
             if (createColumnCommands.Count == 0)
             {
                 throw new InvalidCommandException("At least one column must be added to the CreateTable command.");
+            }
+            if (createColumnCommands.Any(c => c.IsIdentity && c.Type != DbType.Int32 && c.Type != DbType.Int64))
+            {
+                throw new InvalidCommandException("Identity is only allowed on Int32 and Int64 typed columns.");                
             }
             return provider.CreateTable(
                 _tableName,

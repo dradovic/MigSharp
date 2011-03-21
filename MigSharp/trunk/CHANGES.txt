@@ -1,5 +1,6 @@
 1.1.0 - Added support for SQLite
       - Int64 can be used as data type in primary keys
+	  - Restricted usage of .AsIdentity() to Int32 and Int64 data typed columns
       - IProvider: added the DropDefault method which replaces the AddedColumn.DropThereafter and gives the providers
 	    more flexibility to report what they support and what not
       - Teradata: raise validation error on adding/dropping primary keys (Teradata does not support that)
