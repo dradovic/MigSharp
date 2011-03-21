@@ -22,7 +22,7 @@ namespace MigSharp.Providers
     [Supports(DbType.Guid)]
     [Supports(DbType.Int16)]
     [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int64)]
+    [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
     //[Supports(DbType.SByte)]
     [Supports(DbType.Single)]
     [Supports(DbType.String, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]

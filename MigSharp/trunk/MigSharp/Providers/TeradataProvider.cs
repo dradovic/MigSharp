@@ -20,7 +20,7 @@ namespace MigSharp.Providers
     [Supports(DbType.Guid, Warning = "Requires custom ADO.NET code to convert to/from a byte array (call Guid.ToByteArray(), Guid(byte[])) and the DbParameter.DbType must be set to DbType.Binary.")]
     [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int64)]
+    [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions.")]
     internal class TeradataProvider : IProvider

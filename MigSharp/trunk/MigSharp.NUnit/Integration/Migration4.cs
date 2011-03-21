@@ -9,7 +9,7 @@ namespace MigSharp.NUnit.Integration
         public void Up(IDatabase db)
         {
             db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
+                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int64).AsIdentity()
                 .WithNotNullableColumn(ColumnNames[1], DbType.String);
 
             db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"")VALUES ('{2}')", TableName, ColumnNames[1], ExpectedValues[0, 1]));

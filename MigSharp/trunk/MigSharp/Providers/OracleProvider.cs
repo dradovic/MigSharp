@@ -20,7 +20,7 @@ namespace MigSharp.Providers
     [Supports(DbType.Guid, Warning = "Requires custom ADO.NET code to convert to/from a byte array (call Guid.ToByteArray(), Guid(byte[])) and the DbParameter.DbType must be set to DbType.Binary.")]
     [Supports(DbType.Int16)]
     [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int64)]
+    [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, MaximumSize = 2000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, Warning = "Might require custom ADO.NET code as NCLOB has unique restrictions (e.g. columns using this data type cannot appear in a WHERE clause without converting using the Oracle 'to_char' function).")]
     internal class OracleProvider : IProvider
