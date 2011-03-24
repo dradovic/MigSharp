@@ -108,11 +108,11 @@ namespace MigSharp.Providers
             yield return string.Format("DROP TABLE {0}", Escape(tableName));
         }
 
-        public IEnumerable<string> AddColumn(string tableName, AddedColumn column)
+        public IEnumerable<string> AddColumn(string tableName, Column column)
         {
             // assemble ALTER TABLE statements
             string commandText = string.Format(@"{0} ADD ", AlterTable(tableName));
-            commandText += GetColumnString(column, column.IsIdentity);
+            commandText += GetColumnString(column, false);
             yield return commandText;
         }
 

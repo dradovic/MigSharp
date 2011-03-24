@@ -97,15 +97,14 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, "DROP TABLE {0}{1}", Dbo, Escape(tableName));
         }
 
-        public IEnumerable<string> AddColumn(string tableName, AddedColumn column)
+        public IEnumerable<string> AddColumn(string tableName, Column column)
         {
             // assemble ALTER TABLE statements
             string commandText = string.Format(CultureInfo.InvariantCulture, @"{0} ADD ", AlterTable(tableName));
             string defaultConstraintClause = GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue);
-            commandText += string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}{3}NULL{4}",
+            commandText += string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}NULL{3}",
                 Escape(column.Name),
                 GetTypeSpecifier(column.DataType),
-                column.IsIdentity ? "IDENTITY " : string.Empty,
                 column.IsNullable ? string.Empty : "NOT ",
                 defaultConstraintClause);
             yield return commandText;

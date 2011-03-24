@@ -38,7 +38,7 @@ namespace MigSharp.Providers
         /// Adds columns to an existing table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> AddColumn(string tableName, AddedColumn column);
+        IEnumerable<string> AddColumn(string tableName, Column column);
 
         /// <summary>
         /// Renames an existing table.
@@ -174,10 +174,6 @@ namespace MigSharp.Providers
                 else if (parameter.ParameterType == typeof(IEnumerable<string>))
                 {
                     parameters.Add(Enumerable.Empty<string>());
-                }
-                else if (parameter.ParameterType == typeof(AddedColumn))
-                {
-                    parameters.Add(new AddedColumn(string.Empty, new DataType(0, 0, 0), false, false, null));
                 }
                 else if (parameter.ParameterType == typeof(Column))
                 {

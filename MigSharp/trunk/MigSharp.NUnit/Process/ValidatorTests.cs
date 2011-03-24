@@ -269,7 +269,7 @@ namespace MigSharp.NUnit.Process
                 throw new NotSupportedException(NotSupportedMessageForDropTable);
             }
 
-            IEnumerable<string> IProvider.AddColumn(string tableName, AddedColumn column)
+            IEnumerable<string> IProvider.AddColumn(string tableName, Column column)
             {
                 throw new NotSupportedException();
             }

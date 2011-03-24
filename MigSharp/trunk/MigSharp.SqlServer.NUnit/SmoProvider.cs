@@ -78,14 +78,13 @@ namespace MigSharp.SqlServer.NUnit
             return ScriptChanges(table.Parent.Parent);
         }
 
-        public IEnumerable<string> AddColumn(string tableName, AddedColumn column)
+        public IEnumerable<string> AddColumn(string tableName, Column column)
         {
             Table table = GetTable(tableName);
             var c = new Microsoft.SqlServer.Management.Smo.Column(table, column.Name)
             {
                 DataType = Convert(column.DataType),
                 Nullable = column.IsNullable,
-                Identity = column.IsIdentity,
             };
             if (column.DefaultValue != null)
             {

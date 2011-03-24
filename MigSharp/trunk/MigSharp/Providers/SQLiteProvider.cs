@@ -79,7 +79,7 @@ namespace MigSharp.Providers
             CreatedColumn createdColumn = column as CreatedColumn;
             return string.Format(CultureInfo.InvariantCulture, "{0}{1}{2}",
                 createdColumn != null && createdColumn.IsIdentity && !createdColumn.IsPrimaryKey ? "AUTOINCREMENT" : string.Empty, // INTEGER column as PK is automatically AUTOINCREMENT: http://www.sqlite.org/autoinc.html
-                createdColumn != null && createdColumn.IsIdentity ? string.Empty : (column.IsNullable ? " NULL" : " NOT NULL"), // FIXME: what happens on AddColumn with IsIdentity=true? should this be supported?
+                createdColumn != null && createdColumn.IsIdentity ? string.Empty : (column.IsNullable ? " NULL" : " NOT NULL"),
                 column.DefaultValue != null ? " DEFAULT " + GetDefaultValueAsString(column.DefaultValue) : string.Empty);
         }
 
@@ -107,7 +107,7 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE ""{0}""", tableName);
         }
 
-        public IEnumerable<string> AddColumn(string tableName, AddedColumn column)
+        public IEnumerable<string> AddColumn(string tableName, Column column)
         {
             yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE ""{0}"" ADD COLUMN {1}", tableName, GetColumnDefinition(column));
         }

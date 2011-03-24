@@ -68,7 +68,7 @@ namespace MigSharp.Providers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IEnumerable<string> AddColumn(string tableName, AddedColumn column)
+        public IEnumerable<string> AddColumn(string tableName, Column column)
         {
             AddMethodName();
             AddNewObjectNames(column.Name);

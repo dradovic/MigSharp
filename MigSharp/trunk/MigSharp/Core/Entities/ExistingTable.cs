@@ -146,13 +146,6 @@ namespace MigSharp.Core.Entities
             return this;
         }
 
-        public IExistingTableWithAddedColumn AsIdentity()
-        {
-            var command = (AddColumnCommand)_command.Children.Last();
-            command.IsIdentity = true;
-            return this;
-        }
-
         IExistingTableBase IExistingTableWithAddedColumn.HavingDefault<T>(T value)
         {
             return HavingDefault(value, false);

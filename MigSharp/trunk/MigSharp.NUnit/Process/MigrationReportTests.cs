@@ -76,11 +76,6 @@ namespace MigSharp.NUnit.Process
             yield return new TestCaseData(db, "Adding nullable columns with default values is not supported: some database platforms (like SQL Server) leave missing values NULL and some update missing values to the default value. Consider adding the column first as not-nullable, and then altering it to nullable.", "").SetDescription("Default values nullable columns");
 
             db = new Database(context);
-            db.Tables["Customers"]
-                .AddNullableColumn("Name", DbType.String).AsIdentity();
-            yield return new TestCaseData(db, "Identity is only allowed on Int32 and Int64 typed columns.", "").SetDescription("Identity on invalid data type");
-
-            db = new Database(context);
             db.CreateTable("Customers")
                 .WithNotNullableColumn("Name", DbType.Double).AsIdentity();
             yield return new TestCaseData(db, "Identity is only allowed on Int32 and Int64 typed columns.", "").SetDescription("Identity on invalid data type");

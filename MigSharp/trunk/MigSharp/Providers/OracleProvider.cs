@@ -177,7 +177,7 @@ namespace MigSharp.Providers
             return value.ToString();
         }
 
-        public IEnumerable<string> AddColumn(string tableName, AddedColumn column)
+        public IEnumerable<string> AddColumn(string tableName, Column column)
         {
             // assemble ALTER TABLE statements
             string commandText = string.Format(CultureInfo.InvariantCulture, @"{0} ADD ", AlterTable(tableName));

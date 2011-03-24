@@ -21,7 +21,6 @@ namespace MigSharp.Core.Commands
         public bool DropThereafter { get; set; }
         public int Size { get; set; }
         public int Scale { get; set; }
-        public bool IsIdentity { get; set; }
 
         public new AlterTableCommand Parent { get { return (AlterTableCommand)base.Parent; } }
 
@@ -39,16 +38,11 @@ namespace MigSharp.Core.Commands
             {
                 throw new InvalidCommandException("Adding nullable columns with default values is not supported: some database platforms (like SQL Server) leave missing values NULL and some update missing values to the default value. Consider adding the column first as not-nullable, and then altering it to nullable.");
             }
-            if (IsIdentity && Type != DbType.Int32 && Type != DbType.Int64)
-            {
-                throw new InvalidCommandException("Identity is only allowed on Int32 and Int64 typed columns.");
-            }
             string tableName = Parent.TableName;
-            var column = new AddedColumn(
+            var column = new Column(
                 ColumnName,
                 new DataType(Type, Size, Scale),
                 IsNullable,
-                IsIdentity,
                 DefaultValue);
             IEnumerable<string> commands = provider.AddColumn(tableName, column);
             if (DropThereafter)

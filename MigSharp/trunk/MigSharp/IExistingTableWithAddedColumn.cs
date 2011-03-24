@@ -15,11 +15,6 @@ namespace MigSharp
         IExistingTableWithAddedColumn OfSize(int size, int scale);
 
         /// <summary>
-        /// Makes the column auto-increment.
-        /// </summary>
-        IExistingTableWithAddedColumn AsIdentity();
-
-        /// <summary>
         /// Adds a default value to the column.
         /// </summary>
         IExistingTableBase HavingDefault<T>(T value) where T : struct;
