@@ -17,16 +17,6 @@ namespace MigSharp.SqlServerCe.NUnit
 
         protected override string ProviderName { get { return ProviderNames.SqlServerCe4; } }
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetup()
-        {
-            RegisterAdoNetProvider(
-                "Microsoft SQL Server Compact Data Provider 4.0",
-                ".NET Framework Data Provider for Microsoft SQL Server Compact",
-                SqlServerCe4Provider.InvariantName,
-                "System.Data.SqlServerCe.SqlCeProviderFactory, System.Data.SqlServerCe");
-        }
-
         public override void Setup()
         {
             base.Setup();

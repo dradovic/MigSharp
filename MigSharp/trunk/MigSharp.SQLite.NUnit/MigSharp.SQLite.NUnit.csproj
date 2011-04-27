@@ -72,6 +72,7 @@
     <Content Include="lib\System.Data.SQLite.XML" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="lib\System.Data.SQLite.exp" />
     <None Include="lib\System.Data.SQLite.lib" />
   </ItemGroup>

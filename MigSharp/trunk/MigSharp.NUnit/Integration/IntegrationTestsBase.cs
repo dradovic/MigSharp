@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -209,22 +208,6 @@ namespace MigSharp.NUnit.Integration
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "No environment variable called '{0}' is defined.", variable));
             }
             return value;
-        }
-
-        protected static void RegisterAdoNetProvider(string name, string description, string invariantName, string assemblyQualifiedName)
-        {
-            // http://stackoverflow.com/questions/1117683/add-a-dbproviderfactory-without-an-app-config
-
-            DataSet dataSet = ConfigurationManager.GetSection("system.data") as DataSet;
-            if (dataSet == null) throw new InvalidOperationException("Could not get configuration section.");
-
-            DataRow[] dataRows = dataSet.Tables[0].Select(string.Format(CultureInfo.InvariantCulture, "InvariantName='{0}'", invariantName));
-            foreach (var dataRow in dataRows)
-            {
-                dataSet.Tables[0].Rows.Remove(dataRow);
-            }
-
-            dataSet.Tables[0].Rows.Add(name, description, invariantName, assemblyQualifiedName);
         }
 
         [SetUp]

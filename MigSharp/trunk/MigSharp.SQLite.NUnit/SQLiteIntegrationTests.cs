@@ -61,15 +61,5 @@ namespace MigSharp.SQLite.NUnit
 
             base.Teardown();
         }
-
-        [TestFixtureSetUp]
-        public void TestFixtureSetup()
-        {
-            RegisterAdoNetProvider(
-                "SQLite Data Provider",
-                ".Net Framework Data Provider for SQLite",
-                SQLiteProvider.InvariantName,
-                "System.Data.SQLite.SQLiteFactory, System.Data.SQLite");
-        }
     }
 }
