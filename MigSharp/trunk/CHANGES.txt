@@ -5,4 +5,6 @@
       - IProvider: added the DropDefault method which replaces the AddedColumn.DropThereafter and gives the providers
 	    more flexibility to report what they support and what not
       - Teradata: raise validation error on adding/dropping primary keys (Teradata does not support that)
+	  - BUG FIXES:
+	    - Oracle: multiple Mig# instances can be maintained side-by-side on the same database
 1.0.0 - Initial release

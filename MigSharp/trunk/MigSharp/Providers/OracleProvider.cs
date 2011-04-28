@@ -30,7 +30,7 @@ namespace MigSharp.Providers
 
         public string ExistsTable(string databaseName, string tableName)
         {
-            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM ALL_TABLES where TABLE_NAME = '{0}'", tableName);
+            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = '{0}' AND OWNER = USER", tableName);
         }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
