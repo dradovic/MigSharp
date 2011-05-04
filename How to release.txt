@@ -9,8 +9,7 @@ Pre-conditions:
 
 Releasing:
 ----------
-- Tag the sources on GitHub with AssemblyVersion
-- Grab the artifacts from the 3.5 and 4.0 compilation configs (MigSharp.zip) and upload these to GitHub
+- Grab the artifacts from the 3.5 and 4.0 compilation and upload these to GitHub
 
 Post-actions:
 -------------
