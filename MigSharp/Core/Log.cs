@@ -24,7 +24,7 @@ namespace MigSharp.Core
         {
             foreach (LogCategory category in Enum.GetValues(typeof(LogCategory)))
             {
-                TraceSource source = new TraceSource(string.Format(CultureInfo.InvariantCulture, "MigSharp.{0}", category), SourceLevels.All);
+                var source = new TraceSource(string.Format(CultureInfo.InvariantCulture, "MigSharp.{0}", category), SourceLevels.All);
                 Sources.Add(category, source);
                 SetTraceLevel(category, DefaultSourceLevel);
 
@@ -76,7 +76,12 @@ namespace MigSharp.Core
 
         private static void TraceEvent(LogCategory category, TraceEventType traceEventType, string format, object[] args)
         {
-            Sources[category].TraceEvent(traceEventType, 0, string.Format(CultureInfo.CurrentCulture, format, args));
+            string msg = format;
+            if (args.Length > 0) // only using string.Format when there are 'args' to inject; otherwise it might be wrong as 'format' might contain curly brackets which are part of the message itself and not place-holders
+            {
+                msg = string.Format(CultureInfo.CurrentCulture, format, args);
+            }
+            Sources[category].TraceEvent(traceEventType, 0, msg);
         }
 
         public static void SetTraceLevel(LogCategory category, SourceLevels sourceLevel)
