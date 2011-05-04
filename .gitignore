@@ -27,8 +27,7 @@ obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
-/MigSharp/*/MigSharp.*.NUnit/lib/
-/MigSharp/*/MigSharp.*.NUnit/amd64/
-/MigSharp/*/MigSharp.*.NUnit/x86/
+MigSharp.*.NUnit/lib/
+MigSharp.*.NUnit/amd64/
+MigSharp.*.NUnit/x86/
 .svn
-/Security
