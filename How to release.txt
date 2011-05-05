@@ -14,6 +14,7 @@ Releasing:
   - git push origin v1.0.0
 - Grab the artifacts from the 3.5 and 4.0 compilation configs (MigSharp.zip) and upload these to GitHub
   - rename them correspondingly
+  - pin the build on TeamCity
 - Verify downloads are okay (extracting the zip file works)
 
 Post-actions:
