@@ -242,7 +242,7 @@
     <CreateItem Include="@(ReferencePath)" Condition="'%(CopyLocal)'=='true'">
       <Output TaskParameter="Include" ItemName="IlmergeAssemblies" />
     </CreateItem>
-    <Exec Command="&quot;ILmerge.exe&quot; /keyfile:&quot;$(SolutionDir)Open.snk&quot; /internalize /out:@(MainAssembly) &quot;@(IntermediateAssembly)&quot; @(IlmergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
+    <Exec Command="&quot;$(ProjectDir)lib\ILmerge.exe&quot; /keyfile:&quot;$(SolutionDir)Open.snk&quot; /internalize /out:@(MainAssembly) &quot;@(IntermediateAssembly)&quot; @(IlmergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
   </Target>
   <Target Name="_CopyFilesMarkedCopyLocal" />
 </Project>
