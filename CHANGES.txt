@@ -1,1 +1,4 @@
-1.0.0.0 - Initial release (1.0.0, RC1)
+1.0.1 - BUG FIXES:
+	    - Oracle: multiple Mig# instances can be maintained side-by-side on the same database
+		- SQL Tracing: do not throw if the emitted SQL contains curly brackets
+1.0.0 - Initial release
