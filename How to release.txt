@@ -10,8 +10,8 @@ Pre-conditions:
 Releasing:
 ----------
 - Tag the sources with AssemblyVersion
-  - git tag -a v1.0.0.0 -m "v1.0.0.0"
-  - git push origin v1.0.0.0
+  - git tag -a v1.0.0 -m "v1.0.0"
+  - git push origin v1.0.0
 - Grab the artifacts from the 3.5 and 4.0 compilation configs (MigSharp.zip) and upload these to GitHub
   - rename them correspondingly
 - Verify downloads are okay (extracting the zip file works)
@@ -21,3 +21,12 @@ Post-actions:
 - Increment AssemblyVersion
 - Announce
   - CSA.NET
+
+To branch a release for patches:
+--------------------------------
+- Use the tag to branch off a release branch for patches:
+  - git checkout -b RB-1.0 v1.0.0
+- Publish the branch:
+  - git push origin RB-1.0
+- Merge bug-fixes from the master:
+  - git cherry-pick -n 07f42ff9379d99869048ee61264fbdf732ff6b8a
