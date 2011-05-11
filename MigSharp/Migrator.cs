@@ -222,7 +222,7 @@ namespace MigSharp
         /// <summary>
         /// Injects a custom bootstrapping mechanism.
         /// </summary>
-        public void UseCustomBootstrapping(IBootstrapper customBootstrapper)
+        public void UseCustomBootstrapping(IBootstrapper customBootstrapper) // signature used in Wiki Manual
         {
             if (customBootstrapper == null) throw new ArgumentNullException("customBootstrapper");
             if (_customVersioning != null) throw new InvalidOperationException("Either use custom versioning or custom bootstrapping.");
