@@ -72,19 +72,10 @@ namespace MigSharp
         /// <param name="assembly">The assembly to search for migrations.</param>
         public void MigrateAll(Assembly assembly) // signature used in a Wiki example
         {
-            MigrateAll(new List<Assembly> {assembly});
-        }
-
-        /// <summary>
-        /// Executes all pending migrations found in <paramref name="assemblies"/>.
-        /// </summary>
-        /// <param name="assemblies">The assemblies to search for migrations.</param>
-        public void MigrateAll(IEnumerable<Assembly> assemblies)
-        {
             DateTime start = DateTime.Now;
             Log.Info("Migrating all...");
 
-            IMigrationBatch batch = FetchMigrations(assemblies);
+            IMigrationBatch batch = FetchMigrations(assembly);
             batch.Execute();
 
             Log.Info(LogCategory.Performance, "All migration(s) took {0}s", (DateTime.Now - start).TotalSeconds);
@@ -112,16 +103,7 @@ namespace MigSharp
         /// <param name="assembly">The assembly that contains the migrations.</param>
         public IMigrationBatch FetchMigrations(Assembly assembly)
         {
-            return FetchMigrations(new List<Assembly> {assembly});
-        }
-
-        /// <summary>
-        /// Retrieves all pending migrations.
-        /// </summary>
-        /// <param name="assemblies">The assemblies that contains the migrations.</param>
-        public IMigrationBatch FetchMigrations(IEnumerable<Assembly> assemblies)
-        {
-            return FetchMigrationsTo(assemblies, long.MaxValue);
+            return FetchMigrationsTo(assembly, long.MaxValue);
         }
 
         /// <summary>
@@ -132,28 +114,13 @@ namespace MigSharp
         /// <exception cref="IrreversibleMigrationException">When the migration path would require downgrading a migration which is not reversible.</exception>
         public IMigrationBatch FetchMigrationsTo(Assembly assembly, long timestamp)
         {
-            return FetchMigrationsTo(new List<Assembly> {assembly}, timestamp);
-        }
-
-        /// <summary>
-        /// Retrieves all required migrations to reach <paramref name="timestamp"/>.
-        /// </summary>
-        /// <param name="assemblies">The assemblies that contains the migrations.</param>
-        /// <param name="timestamp">The timestamp to migrate to.</param>
-        /// <exception cref="IrreversibleMigrationException">When the migration path would require downgrading a migration which is not reversible.</exception>
-        public IMigrationBatch FetchMigrationsTo(IEnumerable<Assembly> assemblies, long timestamp)
-        {
             // collect all migrations
             DateTime start = DateTime.Now;
-            List<MigrationInfo> migrations = new List<MigrationInfo>();
-            foreach (var assembly in assemblies)
-            {
-                migrations.AddRange(CollectAllMigrationsForModule(assembly, _options.ModuleSelector));
-            }
+            List<MigrationInfo> migrations = CollectAllMigrationsForModule(assembly, _options.ModuleSelector);
             Log.Verbose(LogCategory.Performance, "Collecting migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
             // initialize versioning component
-            IVersioning versioning = InitializeVersioning(assemblies.First());
+            IVersioning versioning = InitializeVersioning(assembly);
 
             // filter applicable migrations)
             if (migrations.Count > 0)
