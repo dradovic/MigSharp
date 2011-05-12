@@ -28,6 +28,11 @@ namespace MigSharp
         private IBootstrapper _customBootstrapper;
 
         /// <summary>
+        /// Raised after each migration that has been executed.
+        /// </summary>
+        public event EventHandler<MigrationEventArgs> StepExecuted;
+        
+        /// <summary>
         /// Initializes a new instance of <see cref="Migrator"/>.
         /// </summary>
         /// <param name="connectionString">Connection string to the database to be migrated.</param>
@@ -77,6 +82,7 @@ namespace MigSharp
             Log.Info("Migrating all...");
 
             IMigrationBatch batch = FetchMigrations(assembly, additionalAssemblies);
+            batch.StepExecuted += StepExecuted;
             batch.Execute();
 
             Log.Info(LogCategory.Performance, "All migration(s) took {0}s", (DateTime.Now - start).TotalSeconds);
@@ -94,6 +100,7 @@ namespace MigSharp
             Log.Info("Migrating to {0}...", timestamp);
 
             IMigrationBatch batch = FetchMigrationsTo(assembly, timestamp, additionalAssemblies);
+            batch.StepExecuted += StepExecuted;
             batch.Execute();
 
             Log.Info(LogCategory.Performance, "Migration(s) to {0} took {1}s", timestamp, (DateTime.Now - start).TotalSeconds);
