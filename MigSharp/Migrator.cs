@@ -70,13 +70,12 @@ namespace MigSharp
         /// Executes all pending migrations found in <paramref name="assembly"/>.
         /// </summary>
         /// <param name="assembly">The assembly to search for migrations.</param>
-        /// <param name="additionalAssemblies">Optional assemblies that hold additional migrations.</param>
-        public void MigrateAll(Assembly assembly, params Assembly[] additionalAssemblies) // signature used in a Wiki example
+        public void MigrateAll(Assembly assembly) // signature used in a Wiki example
         {
             DateTime start = DateTime.Now;
             Log.Info("Migrating all...");
 
-            IMigrationBatch batch = FetchMigrations(assembly, additionalAssemblies);
+            IMigrationBatch batch = FetchMigrations(assembly);
             batch.Execute();
 
             Log.Info(LogCategory.Performance, "All migration(s) took {0}s", (DateTime.Now - start).TotalSeconds);
@@ -87,13 +86,12 @@ namespace MigSharp
         /// </summary>
         /// <param name="assembly"></param>
         /// <param name="timestamp"></param>
-        /// <param name="additionalAssemblies">Optional assemblies that hold additional migrations.</param>
-        public void MigrateTo(Assembly assembly, long timestamp, params Assembly[] additionalAssemblies)
+        public void MigrateTo(Assembly assembly, long timestamp)
         {
             DateTime start = DateTime.Now;
             Log.Info("Migrating to {0}...", timestamp);
 
-            IMigrationBatch batch = FetchMigrationsTo(assembly, timestamp, additionalAssemblies);
+            IMigrationBatch batch = FetchMigrationsTo(assembly, timestamp);
             batch.Execute();
 
             Log.Info(LogCategory.Performance, "Migration(s) to {0} took {1}s", timestamp, (DateTime.Now - start).TotalSeconds);
@@ -103,10 +101,9 @@ namespace MigSharp
         /// Retrieves all pending migrations.
         /// </summary>
         /// <param name="assembly">The assembly that contains the migrations.</param>
-        /// <param name="additionalAssemblies">Optional assemblies that hold additional migrations.</param>
-        public IMigrationBatch FetchMigrations(Assembly assembly, params Assembly[] additionalAssemblies)
+        public IMigrationBatch FetchMigrations(Assembly assembly)
         {
-            return FetchMigrationsTo(assembly, long.MaxValue, additionalAssemblies);
+            return FetchMigrationsTo(assembly, long.MaxValue);
         }
 
         /// <summary>
@@ -115,22 +112,15 @@ namespace MigSharp
         /// <param name="assembly">The assembly that contains the migrations.</param>
         /// <param name="timestamp">The timestamp to migrate to.</param>
         /// <exception cref="IrreversibleMigrationException">When the migration path would require downgrading a migration which is not reversible.</exception>
-        /// <param name="additionalAssemblies">Optional assemblies that hold additional migrations.</param>
-        public IMigrationBatch FetchMigrationsTo(Assembly assembly, long timestamp, params Assembly[] additionalAssemblies)
+        public IMigrationBatch FetchMigrationsTo(Assembly assembly, long timestamp)
         {
             // collect all migrations
             DateTime start = DateTime.Now;
-            Assembly[] assemblies = new Assembly[additionalAssemblies.Length + 1];
-            for (int i = 0; i < additionalAssemblies.Length; i++)
-            {
-                assemblies[i] = additionalAssemblies[i];
-            }
-            assemblies[additionalAssemblies.Length] = assembly;
-            List<MigrationInfo> migrations = CollectAllMigrationsForModules(assemblies, _options.ModuleSelector);
+            List<MigrationInfo> migrations = CollectAllMigrationsForModule(assembly, _options.ModuleSelector);
             Log.Verbose(LogCategory.Performance, "Collecting migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
             // initialize versioning component
-            IVersioning versioning = InitializeVersioning(assemblies);
+            IVersioning versioning = InitializeVersioning(assembly);
 
             // filter applicable migrations)
             if (migrations.Count > 0)
@@ -155,10 +145,10 @@ namespace MigSharp
                 if (countUp + countDown > 0)
                 {
                     return new MigrationBatch(
-                        // ReSharper disable RedundantEnumerableCastCall
+// ReSharper disable RedundantEnumerableCastCall
                         applicableUpMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Up, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory)).Cast<IMigrationStep>(),
                         applicableDownMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Down, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory)).Cast<IMigrationStep>(),
-                        // ReSharper restore RedundantEnumerableCastCall
+// ReSharper restore RedundantEnumerableCastCall
                         versioning,
                         _options);
                 }
@@ -170,13 +160,12 @@ namespace MigSharp
         /// Checks if any migrations are pending to be performed.
         /// </summary>
         /// <param name="assembly">The assembly that contains the migrations.</param>
-        /// <param name="additionalAssemblies">Optional assemblies that hold additional migrations.</param>
-        public bool IsUpToDate(Assembly assembly, params Assembly[] additionalAssemblies)
+        public bool IsUpToDate(Assembly assembly)
         {
-            return FetchMigrations(assembly, additionalAssemblies).Count == 0;
+            return FetchMigrations(assembly).Count == 0;
         }
 
-        private IVersioning InitializeVersioning(Assembly[] assemblies)
+        private IVersioning InitializeVersioning(Assembly assembly)
         {
             IVersioning versioning;
             if (_customVersioning != null)
@@ -188,14 +177,14 @@ namespace MigSharp
                 var v = new Versioning(_connectionInfo, _dbConnectionFactory, _provider, _providerMetadata, _options.VersioningTableName);
                 if (_customBootstrapper != null && !v.VersioningTableExists)
                 {
-                    ApplyCustomBootstrapping(v, assemblies);
+                    ApplyCustomBootstrapping(v, assembly);
                 }
                 versioning = v;
             }
             return versioning;
         }
 
-        private void ApplyCustomBootstrapping(Versioning versioning, Assembly[] assemblies)
+        private void ApplyCustomBootstrapping(Versioning versioning, Assembly assembly)
         {
             using (IDbConnection connection = _dbConnectionFactory.OpenConnection(_connectionInfo))
             {
@@ -204,7 +193,7 @@ namespace MigSharp
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var allMigrations = CollectAllMigrationsForModules(assemblies, s => true)
+                    var allMigrations = CollectAllMigrationsForModule(assembly, s => true)
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = from m in allMigrations
                                                              where _customBootstrapper.IsContained(m)
@@ -241,14 +230,10 @@ namespace MigSharp
             _customBootstrapper = customBootstrapper;
         }
 
-        private static List<MigrationInfo> CollectAllMigrationsForModules(Assembly[] assemblies, Predicate<string> includeModule)
+        private static List<MigrationInfo> CollectAllMigrationsForModule(Assembly assembly, Predicate<string> includeModule)
         {
-            var catalog = new AggregateCatalog();
-            foreach (var assembly in assemblies)
-            {
-                Log.Info("Collecting all migrations from assembly {0}...", assembly.FullName);
-                catalog.Catalogs.Add(new AssemblyCatalog(assembly));
-            }
+            Log.Info("Collecting all migrations from assembly {0}...", assembly.FullName);
+            var catalog = new AssemblyCatalog(assembly);
             var container = new CompositionContainer(catalog);
             var migrationImporter = new MigrationImporter();
             container.ComposeParts(migrationImporter);
@@ -263,11 +248,11 @@ namespace MigSharp
 
         private class MigrationImporter
         {
-            // ReSharper disable UnusedAutoPropertyAccessor.Local
+// ReSharper disable UnusedAutoPropertyAccessor.Local
             [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
             [ImportMany]
             public IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> Migrations { get; set; } // set by MEF
-            // ReSharper restore UnusedAutoPropertyAccessor.Local
+// ReSharper restore UnusedAutoPropertyAccessor.Local
         }
 
         private class MigrationMetadata : IMigrationMetadata
