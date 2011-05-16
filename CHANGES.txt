@@ -10,3 +10,5 @@
 	    - Oracle: multiple Mig# instances can be maintained side-by-side on the same database
 		- SQL Tracing: do not throw if the emitted SQL contains curly brackets
 1.0.0 - Initial release
+
+Note: Mig# uses "Semantic Versioning" http://semver.org/ (by Tom Preston-Werner)
