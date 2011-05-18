@@ -8,7 +8,7 @@ namespace MigSharp
     public interface IMigrationBatch
     {
         /// <summary>
-        /// Raised after each migration that has been executed.
+        /// Raised before each migration that will be executed.
         /// </summary>
         event EventHandler<MigrationEventArgs> StepExecuting;
 
