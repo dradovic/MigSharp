@@ -15,6 +15,7 @@ namespace MigSharp.Process
         private readonly IVersioning _versioning;
         private readonly MigrationOptions _options;
 
+        public event EventHandler<MigrationEventArgs> StepExecuting;
         public event EventHandler<MigrationEventArgs> StepExecuted;
 
         public int Count { get { return _upMigrations.Count() + _downMigrations.Count(); } }
@@ -62,9 +63,17 @@ namespace MigSharp.Process
 
         private void ExecuteStep(IMigrationStep step)
         {
+            OnStepExecuting(new MigrationEventArgs(step.Metadata, step.Direction));
+            
             step.Execute(_versioning);
 
             OnStepExecuted(new MigrationEventArgs(step.Metadata, step.Direction));
+        }
+
+        private void OnStepExecuting(MigrationEventArgs e)
+        {
+            EventHandler<MigrationEventArgs> tmp = StepExecuting;
+            if (tmp != null) tmp(this, e);
         }
 
         private void OnStepExecuted(MigrationEventArgs e)
@@ -75,6 +84,7 @@ namespace MigSharp.Process
 
         internal class EmptyMigrationBatch : IMigrationBatch
         {
+            public event EventHandler<MigrationEventArgs> StepExecuting;
             public event EventHandler<MigrationEventArgs> StepExecuted;
 
             public int Count { get { return 0; } }
