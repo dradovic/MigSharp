@@ -32,6 +32,26 @@ namespace MigSharp.NUnit.Process
         }
 
         [Test]
+        public void VerifyStepExecutingIsRaised()
+        {
+            IMigrationStep step = MockRepository.GenerateStub<IMigrationStep>();
+            step.Expect(s => s.Metadata).Return(new Metadata1());
+            step.Expect(s => s.Report(null)).IgnoreArguments().Return(CreateMigrationReport());
+            IMigrationStep[] steps = new[]
+            {
+                step,
+            };
+            IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
+            MigrationBatch batch = new MigrationBatch(steps, steps, versioning, new MigrationOptions());
+            int count = 0;
+            batch.StepExecuting += (sender, args) => count++;
+
+            batch.Execute();
+
+            Assert.AreEqual(2 * steps.Length, count);
+        }
+
+        [Test]
         public void VerifyStepExecutedIsRaised()
         {
             IMigrationStep step = MockRepository.GenerateStub<IMigrationStep>();
