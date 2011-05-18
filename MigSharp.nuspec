@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>MigSharp</id>
+    <version>1.1.0</version>
+    <title>Mig#</title>
+    <authors>dradovic</authors>
+    <owners />
+    <licenseUrl>https://github.com/dradovic/MigSharp/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/dradovic/MigSharp</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Write database migrations in your favorite .NET language and let Mig# generate the platform-dependent SQL code and update your schema.</description>
+    <summary>A .NET framework for multi-database platform migrations and versioning</summary>
+    <tags>migration database platform agnostic fluent schema versioning sql generator</tags>
+  </metadata>
+</package>

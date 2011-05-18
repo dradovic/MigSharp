@@ -2,7 +2,7 @@ Pre-conditions:
 ---------------
 - Build environment is green
 - No FIXME or NotImplementedException left in source code
-- AssemblyVersion is correct
+- AssemblyVersion is correct both in AssemblyInfo.cs and MigSharp.nuspec
 - CHANGES.txt is up-to-date
 - All changes pushed to GitHub
 - Wiki on GitHub reflects new features and changes
@@ -16,10 +16,11 @@ Releasing:
   - Rename them correspondingly
   - Pin the build on TeamCity
 - Verify downloads are okay (extracting the zip file works)
+- Publish NuGet package using the MigSharp.nuspec (see: http://docs.nuget.org/)
 
 Post-actions:
 -------------
-- Increment AssemblyVersion
+- Increment AssemblyVersion in AssemblyInfo.cs and MigSharp.nuspec
 - Announce
   - CSA.NET
 
