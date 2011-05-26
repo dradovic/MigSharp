@@ -19,7 +19,7 @@ namespace MigSharp.Providers
     [Supports(DbType.Decimal, MaximumSize = 28, MaximumScale = 28)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
     [Supports(DbType.Decimal, MaximumSize = 28)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
     [Supports(DbType.Double)]
-    [Supports(DbType.Guid)]
+    [Supports(DbType.Guid, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Int16)]
     [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
