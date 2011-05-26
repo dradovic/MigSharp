@@ -8,17 +8,17 @@ namespace MigSharp.Providers
     [Supports(DbType.AnsiString, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString)] // translates to VARCHAR(MAX) without specifying the size
     [Supports(DbType.Binary)]
-    [Supports(DbType.Byte)]
-    [Supports(DbType.Boolean)]
-    [Supports(DbType.DateTime)]
+    [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true)]
+    [Supports(DbType.Boolean, CanBeUsedAsPrimaryKey = true)]
+    [Supports(DbType.DateTime, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Decimal, MaximumSize = 28, MaximumScale = 28)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
-    [Supports(DbType.Decimal, MaximumSize = 28)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
+    [Supports(DbType.Decimal, MaximumSize = 28, CanBeUsedAsPrimaryKey = true)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
     [Supports(DbType.Double)]
-    [Supports(DbType.Guid)]
-    [Supports(DbType.Int16)]
+    [Supports(DbType.Guid, CanBeUsedAsPrimaryKey = true)]
+    [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Single)]
+    [Supports(DbType.Single, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String)] // translates to NVARCHAR(MAX) without specifying the Size
     [Supports(DbType.AnsiStringFixedLength, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]

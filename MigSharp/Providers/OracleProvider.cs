@@ -11,14 +11,14 @@ namespace MigSharp.Providers
     [Supports(DbType.AnsiString, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions (e.g. columns using this data type cannot appear in a WHERE clause without converting using the Oracle 'to_char' function).")]
     [Supports(DbType.Binary)]
-    [Supports(DbType.Byte, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
-    [Supports(DbType.Boolean, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
-    [Supports(DbType.DateTime)]
+    [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
+    [Supports(DbType.Boolean, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
+    [Supports(DbType.DateTime, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Decimal, MaximumSize = 28, MaximumScale = 28)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
-    [Supports(DbType.Decimal, MaximumSize = 28)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
+    [Supports(DbType.Decimal, MaximumSize = 28, CanBeUsedAsPrimaryKey = true)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
     [Supports(DbType.Double)]
-    [Supports(DbType.Guid, Warning = "Requires custom ADO.NET code to convert to/from a byte array (call Guid.ToByteArray(), Guid(byte[])) and the DbParameter.DbType must be set to DbType.Binary.")]
-    [Supports(DbType.Int16)]
+    [Supports(DbType.Guid, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from a byte array (call Guid.ToByteArray(), Guid(byte[])) and the DbParameter.DbType must be set to DbType.Binary.")]
+    [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, MaximumSize = 2000, CanBeUsedAsPrimaryKey = true)]

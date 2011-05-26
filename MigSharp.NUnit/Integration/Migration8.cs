@@ -109,6 +109,30 @@ namespace MigSharp.NUnit.Integration
                     int affectedRows = command.ExecuteNonQuery();
                     Assert.AreEqual(1, affectedRows);
                 });
+
+            // create a table for each supported primary key data type
+            // (as combining them all into one table would be too much)
+            foreach (SupportsAttribute support in _supports
+                .Where(s => s.CanBeUsedAsPrimaryKey))
+            {
+                ICreatedTable pkTable = db.CreateTable(TableName + "WithPkOf" + support.DbType);
+                int maximumSize = support.MaximumSize;
+                if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005 ||
+                    db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005Odbc ||
+                    db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2008)
+                {
+                    // SQL Server only allow PKs with a maximum length of 900 bytes
+                    if (support.DbType == DbType.AnsiStringFixedLength)
+                    {
+                        maximumSize = 900; // FEATURE: this information should be part of the SupportAttribute
+                    }
+                    if (support.DbType == DbType.StringFixedLength)
+                    {
+                        maximumSize = 450; // FEATURE: this information should be part of the SupportAttribute
+                    }
+                }
+                pkTable.WithPrimaryKeyColumn("Id", support.DbType).OfSize(maximumSize, support.MaximumScale);
+            }
         }
 
         private static object GetTestValue(KeyValuePair<string, DbType> column, IDatabase db, out DbType type)
