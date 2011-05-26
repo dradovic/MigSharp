@@ -1,4 +1,4 @@
-1.1.0 - Added support for SQLite
+1.1.0 - Added support for SQLite (without foreign keys)
       - Added support for retrieving migrations from multiple assemblies (thanks to FlorianHoornaar)
       - Int64 can be used as data type in primary keys
 	  - Restricted usage of .AsIdentity() to Int32 and Int64 data typed columns
