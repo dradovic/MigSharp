@@ -183,7 +183,7 @@
     <Compile Include="Process\MigrationExtensions.cs" />
     <Compile Include="Providers\DataType.cs" />
     <Compile Include="Process\IRecordedMigration.cs" />
-    <Compile Include="Providers\ProviderHelper.cs" />
+    <Compile Include="Providers\ObjectNameHelper.cs" />
     <Compile Include="Providers\RecordingProvider.cs" />
     <Compile Include="Providers\SqlServer2005Provider.cs" />
     <Compile Include="Providers\SqlServer2008Provider.cs" />

@@ -120,12 +120,12 @@ namespace MigSharp.Providers
 
         private static string GetTriggerName(string tableName)
         {
-            return ProviderHelper.GetObjectName(tableName, "TRG_SEQ", MaximumDbObjectNameLength, tableName.GetHashCode().ToString(CultureInfo.InvariantCulture));
+            return ObjectNameHelper.GetObjectName(tableName, "TRG_SEQ", MaximumDbObjectNameLength, tableName.GetHashCode().ToString(CultureInfo.InvariantCulture));
         }
 
         private static string GetSequenceName(string tableName)
         {
-            return ProviderHelper.GetObjectName(tableName, "SEQ", MaximumDbObjectNameLength, tableName.GetHashCode().ToString(CultureInfo.InvariantCulture));
+            return ObjectNameHelper.GetObjectName(tableName, "SEQ", MaximumDbObjectNameLength, tableName.GetHashCode().ToString(CultureInfo.InvariantCulture));
         }
 
         public IEnumerable<string> DropTable(string tableName)

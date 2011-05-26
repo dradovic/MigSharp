@@ -7,7 +7,7 @@ using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
-    internal static class ProviderHelper
+    internal static class ObjectNameHelper
     {
         private const string Delimiter = "_";
         private const char AbbreviationSymbol = '-';

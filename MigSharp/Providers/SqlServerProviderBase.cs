@@ -126,7 +126,7 @@ namespace MigSharp.Providers
 
         protected static string GetDefaultConstraintName(string tableName, string columnName)
         {
-            return ProviderHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, columnName);
+            return ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, columnName);
         }
 
         private static string GetDefaultValueAsString(object value)

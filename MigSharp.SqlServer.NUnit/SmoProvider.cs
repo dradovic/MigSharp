@@ -97,7 +97,7 @@ namespace MigSharp.SqlServer.NUnit
 
         private static DefaultConstraint AddDefaultConstraint(Microsoft.SqlServer.Management.Smo.Column column, string tableName, object value)
         {
-            string constraintName = ProviderHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, column.Name);
+            string constraintName = ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, column.Name);
             DefaultConstraint defaultConstraint = column.AddDefaultConstraint(constraintName);
             object defaultValue = SpecialDefaultValue.CurrentDateTime.Equals(value) ? "GETDATE()" : (value ?? "dummy for dropping case");
             defaultConstraint.Text = defaultValue.ToString();
