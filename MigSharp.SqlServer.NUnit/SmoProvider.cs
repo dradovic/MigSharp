@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
@@ -115,9 +116,25 @@ namespace MigSharp.SqlServer.NUnit
         {
             Table table = GetTable(tableName);
             var column = new Microsoft.SqlServer.Management.Smo.Column(table, oldName);
+
+            // rename default constraint
+            string oldDefaultConstraintName = ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, oldName);
+            string constraintName = oldDefaultConstraintName;
+            DefaultConstraint defaultConstraint = column.AddDefaultConstraint(constraintName);
+            defaultConstraint.Rename(ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, newName));
+
+            // rename column
             table.Columns.Add(column);
             column.Rename(newName);
-            return ScriptChanges(table.Parent.Parent);
+
+            // script changes
+            IEnumerable<string> commandTexts = ScriptChanges(table.Parent.Parent);
+            string renameDefaultConstraintCommandText = string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", oldDefaultConstraintName) + commandTexts.First();
+            yield return Regex.Replace(renameDefaultConstraintCommandText, @"EXEC \[\w+\]\.dbo\.sp_rename", @"EXEC dbo.sp_rename"); // for some reason SMO is putting the server name in front of dbo.sp_rename which we do not have in the SqlServerProvider
+            foreach (string commandText in commandTexts.Skip(1))
+            {
+                yield return commandText;
+            }
         }
 
         public IEnumerable<string> DropColumn(string tableName, string columnName)
