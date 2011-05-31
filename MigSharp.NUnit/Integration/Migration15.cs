@@ -38,9 +38,9 @@ namespace MigSharp.NUnit.Integration
             {
                 db.Tables[TableName].PrimaryKey().Drop();
 
-                db.Tables[TableName].AddPrimaryKey("Test_Mig_15")
+                db.Tables[TableName].AddPrimaryKey("Test Mig15")
                     .OnColumn(ColumnNames[1]);
-                db.Tables[TableName].PrimaryKey("Test_Mig_15").Drop();
+                db.Tables[TableName].PrimaryKey("Test Mig15").Drop();
 
                 db.Tables[TableName].AddPrimaryKey()
                     .OnColumn(ColumnNames[2]);
