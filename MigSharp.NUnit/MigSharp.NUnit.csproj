@@ -120,7 +120,6 @@
     <Compile Include="Providers\DataTypeTests.cs" />
     <Compile Include="Providers\ObjectNameHelperTests.cs" />
     <Compile Include="Providers\RecordingProviderTests.cs" />
-    <Compile Include="SpecificationTests.cs" />
     <Compile Include="ScriptComparer.cs" />
     <Compile Include="SupportedProvidersTests.cs" />
     <Compile Include="TestCaseGenerator.cs" />
