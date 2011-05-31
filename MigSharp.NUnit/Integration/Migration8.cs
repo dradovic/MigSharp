@@ -46,6 +46,8 @@ namespace MigSharp.NUnit.Integration
         private static readonly List<object> Values = new List<object>();
         private static IEnumerable<SupportsAttribute> _supports;
 
+        // CLEAN: this static information should be moved somewhere else (a integration test context class)
+        // where it is accessible to all migrations.
         internal static void Initialize(IEnumerable<SupportsAttribute> supports)
         {
             _supports = supports;
@@ -115,7 +117,7 @@ namespace MigSharp.NUnit.Integration
             foreach (SupportsAttribute support in _supports
                 .Where(s => s.CanBeUsedAsPrimaryKey))
             {
-                ICreatedTable pkTable = db.CreateTable(TableName + "WithPkOf" + support.DbType);
+                ICreatedTable pkTable = db.CreateTable(TableName + "WithPkOf" + support.DbType + support.MaximumScale);
                 int maximumSize = support.MaximumSize;
                 if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005 ||
                     db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005Odbc ||

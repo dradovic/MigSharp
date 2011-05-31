@@ -14,8 +14,8 @@ namespace MigSharp.Providers
     [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
     [Supports(DbType.Boolean, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
     [Supports(DbType.DateTime, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Decimal, MaximumSize = 18, MaximumScale = 18)] // according to: http://www.technion.ac.il/docs/sas/accdb/z1250040.htm
-    [Supports(DbType.Decimal, MaximumSize = 18, CanBeUsedAsPrimaryKey = true)] // according to: http://www.technion.ac.il/docs/sas/accdb/z1250040.htm
+    [Supports(DbType.Decimal, MaximumSize = 22, MaximumScale = 18, CanBeUsedAsPrimaryKey = true)] // according to: http://forums.teradata.com/forum/training/number-data-type
+    [Supports(DbType.Decimal, MaximumSize = 22, CanBeUsedAsPrimaryKey = true)] // according to: http://forums.teradata.com/forum/training/number-data-type
     [Supports(DbType.Double)]
     [Supports(DbType.Guid, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from a byte array (call Guid.ToByteArray(), Guid(byte[])) and the DbParameter.DbType must be set to DbType.Binary.")]
     [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true)]
