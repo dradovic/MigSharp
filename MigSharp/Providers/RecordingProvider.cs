@@ -138,19 +138,27 @@ namespace MigSharp.Providers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
-        {
-            AddMethodName();
-            return Enumerable.Empty<string>();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
         {
             AddMethodName();
             AddNewObjectNames(constraintName);
             // FEATURE: try to find out the data types of the pk columns add them to the _primaryKeyDataTypes list
             // This can only be done if the same migration has added the table, and if the columnNames are tracked, along with their data type.
+            return Enumerable.Empty<string>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        {
+            AddMethodName();
+            AddNewObjectNames(newName);
+            return Enumerable.Empty<string>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        {
+            AddMethodName();
             return Enumerable.Empty<string>();
         }
 

@@ -1,4 +1,6 @@
-﻿namespace MigSharp.Core.Commands
+﻿using System;
+
+namespace MigSharp.Core.Commands
 {
     internal class AlterPrimaryKeyCommand : Command
     {
@@ -10,6 +12,8 @@
         public AlterPrimaryKeyCommand(AlterTableCommand parent, string constraintName)
             : base(parent)
         {
+            if (string.IsNullOrEmpty(constraintName)) throw new ArgumentException("Empty constraintName.");
+
             _constraintName = constraintName;
         }
     }

@@ -63,6 +63,11 @@ namespace MigSharp.Providers
             yield return string.Format("EXEC dbo.sp_rename @objname=N'[dbo].{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", Escape(tableName), Escape(oldName), newName);
         }
 
+        public override IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        {
+            yield return string.Format("EXEC sp_rename N'[dbo].{0}.{1}', N'{2}', N'INDEX'", Escape(tableName), Escape(oldName), newName);
+        }
+
         public override IEnumerable<string> DropIndex(string tableName, string indexName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON [dbo].{1} WITH ( ONLINE = OFF )", Escape(indexName), Escape(tableName));

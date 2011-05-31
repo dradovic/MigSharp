@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 using MigSharp.Providers;
 
@@ -19,6 +20,7 @@ namespace MigSharp.Core.Commands
         {
             AlterTableCommand parentAlterTableCommand;
             AlterColumnCommand parentAlterColumnCommand;
+            AlterPrimaryKeyCommand parentAlterPrimaryKeyCommand;
             if ((parentAlterTableCommand = Parent as AlterTableCommand) != null)
             {
                 return provider.RenameTable(parentAlterTableCommand.TableName, _newName);
@@ -27,9 +29,13 @@ namespace MigSharp.Core.Commands
             {
                 return provider.RenameColumn(parentAlterColumnCommand.Parent.TableName, parentAlterColumnCommand.ColumnName, _newName);
             }
+            else if ((parentAlterPrimaryKeyCommand = Parent as AlterPrimaryKeyCommand) != null)
+            {
+                return provider.RenamePrimaryKey(parentAlterPrimaryKeyCommand.Parent.TableName, parentAlterPrimaryKeyCommand.ConstraintName, _newName);
+            }
             else
             {
-                throw new InvalidOperationException("The parent command of a RenameCommand must either be an AlterColumnCommand or an AlterTableCommand.");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Unknown parent command of a RenameCommand: {0}.", Parent.GetType()));
             }
         }
     }

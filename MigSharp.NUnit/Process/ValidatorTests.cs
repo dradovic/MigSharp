@@ -314,12 +314,17 @@ namespace MigSharp.NUnit.Process
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.DropPrimaryKey(string tableName, string constraintName)
+            IEnumerable<string> IProvider.AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
+            public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+            {
+                throw new NotSupportedException();
+            }
+
+            IEnumerable<string> IProvider.DropPrimaryKey(string tableName, string constraintName)
             {
                 throw new NotSupportedException();
             }

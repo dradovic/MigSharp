@@ -77,7 +77,7 @@ namespace MigSharp
         /// </summary>
         public static IExistingPrimaryKey PrimaryKey(this IExistingTable table)
         {
-            return table.PrimaryKey(null);
+            return table.PrimaryKey(DefaultObjectNameProvider.GetPrimaryKeyConstraintName(table.TableName, null));
         }
 
         /// <summary>

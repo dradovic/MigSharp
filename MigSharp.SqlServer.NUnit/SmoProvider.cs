@@ -230,14 +230,22 @@ namespace MigSharp.SqlServer.NUnit
             return ScriptChanges(table.Parent.Parent);
         }
 
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
-        {
-            return DropConstraint(tableName, constraintName, IndexKeyType.DriPrimaryKey);
-        }
-
         public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
         {
             return AddConstraint(tableName, constraintName, IndexKeyType.DriPrimaryKey, columnNames);
+        }
+
+        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        {
+            Table table = GetTable(tableName);
+            Index primaryKey = new Index(table, oldName) { IndexKeyType = IndexKeyType.DriPrimaryKey };
+            primaryKey.Rename(newName);
+            return ScriptChanges(table.Parent.Parent);
+        }
+
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        {
+            return DropConstraint(tableName, constraintName, IndexKeyType.DriPrimaryKey);
         }
 
         public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)

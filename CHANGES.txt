@@ -1,6 +1,7 @@
 1.1.0 - Added support for SQLite (without foreign keys)
       - Added support for retrieving migrations from multiple assemblies (thanks to FlorianHoornaar)
       - Extended/completed list of allowed primary key data types for all providers
+	  - Extended API to allow renaming of primary keys
 	  - Restricted usage of .AsIdentity() to Int32 and Int64 data typed columns
 	  - Removed .AsIdentity() option when adding columns (was not implemented consistently and was missing integration testing and constitues a super special-case which is hard to implement consistently for all platforms)
       - IProvider: added the DropDefault method which replaces the AddedColumn.DropThereafter and gives the providers

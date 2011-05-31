@@ -204,14 +204,16 @@ namespace MigSharp.Providers
             yield return DropConstraint(tableName, constraintName);
         }
 
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
-        {
-            yield return DropConstraint(tableName, constraintName);
-        }
-
         public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
         {
             return AddConstraint(tableName, constraintName, columnNames, "PRIMARY KEY");
+        }
+
+        public abstract IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName);
+
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        {
+            yield return DropConstraint(tableName, constraintName);
         }
 
         public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)

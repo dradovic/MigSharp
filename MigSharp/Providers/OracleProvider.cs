@@ -187,7 +187,7 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME to {1}", Escape(oldName), Escape(newName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME TO {1}", Escape(oldName), Escape(newName));
         }
 
         public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
@@ -276,14 +276,19 @@ namespace MigSharp.Providers
             return DropConstraint(tableName, constraintName);
         }
 
+        public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
+        {
+            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} PRIMARY KEY ({2})", AlterTable(tableName), Escape(constraintName), GetCsList(columnNames));
+        }
+
+        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        {
+            yield return string.Format(CultureInfo.InvariantCulture, "{0} RENAME CONSTRAINT {1} TO {2}", AlterTable(tableName), Escape(oldName), Escape(newName));
+        }
+
         public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
         {
             return DropConstraint(tableName, constraintName);
-        }
-
-        public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
-        {
-            yield return string.Format(CultureInfo.InvariantCulture, "{0} add CONSTRAINT {1} PRIMARY KEY ({2})", AlterTable(tableName), Escape(constraintName), GetCsList(columnNames));
         }
 
         public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)

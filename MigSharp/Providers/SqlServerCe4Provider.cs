@@ -61,6 +61,11 @@ namespace MigSharp.Providers
             throw new NotSupportedException("Consider adding a column with the new name, then UPDATEing it with the values from the old one, then dropping the old column. Or if the order of the columns matters, consider creating a new table with the desired schema, then INSERTing the content from the old table to the new one, then renaming the new table to the old name.");
         }
 
+        public override IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        {
+            throw new NotSupportedException("Drop and add the primary key with the new name instead.");
+        }
+
         public override IEnumerable<string> DropIndex(string tableName, string indexName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {1}.{0}", Escape(indexName), Escape(tableName));

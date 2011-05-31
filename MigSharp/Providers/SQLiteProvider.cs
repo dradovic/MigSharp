@@ -167,16 +167,21 @@ namespace MigSharp.Providers
             return Enumerable.Empty<string>(); // see comments in AddForeignKey
         }
 
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
-        {
-            // http://stackoverflow.com/questions/849269/sqlite-how-to-remove-an-unamed-primary-key
-            throw new NotSupportedException("Primary keys cannot be added/removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
-        }
-
         public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
         {
             // http://stackoverflow.com/questions/946011/sqlite-add-primary-key
-            throw new NotSupportedException("Primary keys cannot be added/removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
+            throw new NotSupportedException("Primary keys cannot be added/removed/renamed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
+        }
+
+        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        {
+            throw new NotSupportedException("Primary keys cannot be added/removed/renamed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
+        }
+
+        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        {
+            // http://stackoverflow.com/questions/849269/sqlite-how-to-remove-an-unamed-primary-key
+            throw new NotSupportedException("Primary keys cannot be added/removed/renamed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
         }
 
         public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)

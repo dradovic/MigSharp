@@ -89,16 +89,22 @@ namespace MigSharp.Providers
         IEnumerable<string> DropForeignKey(string tableName, string constraintName);
 
         /// <summary>
-        /// Drops a primary key constraint from a table.
-        /// </summary>
-        /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropPrimaryKey(string tableName, string constraintName);
-
-        /// <summary>
         /// Adds a primary key constraint to a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
         IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName);
+
+        /// <summary>
+        /// Renames the primary key.
+        /// </summary>
+        /// <returns>The SQL commands to be executed.</returns>
+        IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName);
+
+        /// <summary>
+        /// Drops a primary key constraint from a table.
+        /// </summary>
+        /// <returns>The SQL commands to be executed.</returns>
+        IEnumerable<string> DropPrimaryKey(string tableName, string constraintName);
 
         /// <summary>
         /// Adds an unique constraint to a table.

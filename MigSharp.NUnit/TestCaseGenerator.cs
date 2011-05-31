@@ -245,6 +245,14 @@ namespace MigSharp.NUnit
                 Enumerable.Empty<DataType>(),
                 string.Empty)
                 .SetDescription("MakeNullable OfSize");
+
+            db = new Database(context);
+            db.Tables["Table"].PrimaryKey().Rename("New PK Name");
+            yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
+                "New PK Name")
+                .SetDescription("Rename Primary Key");
         }
     }
 }
