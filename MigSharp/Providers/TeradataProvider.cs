@@ -30,8 +30,6 @@ namespace MigSharp.Providers
         private const string Identity = @"GENERATED ALWAYS AS IDENTITY
                 (START WITH 1
                  INCREMENT BY 1
-                 MINVALUE -2147483647
-                 MAXVALUE 2147483647
                  NO CYCLE)";
 
         public virtual string ExistsTable(string databaseName, string tableName)

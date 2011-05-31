@@ -5,7 +5,9 @@
 	  - Removed .AsIdentity() option when adding columns (was not implemented consistently and was missing integration testing and constitues a super special-case which is hard to implement consistently for all platforms)
       - IProvider: added the DropDefault method which replaces the AddedColumn.DropThereafter and gives the providers
 	    more flexibility to report what they support and what not
-      - Teradata: raise validation error on adding/dropping primary keys (Teradata does not support that)
+      - Teradata:
+	    - raise validation error on adding/dropping primary keys (Teradata does not support that)
+		- removed MINVALUE and MAXVALUE for identity column which is not needed and caused unexpected errors
 1.0.1 - BUG FIXES:
 	    - Oracle: multiple Mig# instances can be maintained side-by-side on the same database
 		- SQL Tracing: do not throw if the emitted SQL contains curly brackets
