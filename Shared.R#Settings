@@ -374,16 +374,18 @@
     <Daemon.SolutionSettings />
     <TodoManager ActiveGrouping="9">
       <Pattern Name="Not Implemented" Id="9F4E80481F12431CB36D19D6738780F2" Regexp="NotImplementedException" CaseSensitive="False" Color="Red" Icon="Error" LookInComments="False" LookInIdentifiers="True" LookInStringLiterals="False" />
-      <Pattern Name="ISSUE" Id="8198C1987D7E44C4B260EC2881165D07" Regexp="(\W|^)(?&lt;TAG&gt;ISSUE:)(\W|$)(.*)" CaseSensitive="False" Color="WindowText" Icon="Normal" LookInComments="True" LookInIdentifiers="False" LookInStringLiterals="False" />
-      <Pattern Name="FIXME" Id="18F369BB5B7947B7A3EDEC4FA841E118" Regexp="(\W|^)(?&lt;TAG&gt;FIXME: xy,)(\W|$)(.*)" CaseSensitive="False" Color="WindowText" Icon="Warning" LookInComments="True" LookInIdentifiers="False" LookInStringLiterals="False" />
-      <Pattern Name="CLEAN" Id="4496BB9F26B34125B7F027F5FCC33DD1" Regexp="(\W|^)(?&lt;TAG&gt;CLEAN:)(\W|$)(.*)" CaseSensitive="False" Color="WindowText" Icon="Normal" LookInComments="True" LookInIdentifiers="False" LookInStringLiterals="False" />
+      <Pattern Name="FIXME" Id="18F369BB5B7947B7A3EDEC4FA841E118" Regexp="(\W|^)(?&lt;TAG&gt;FIXME:)(\W|$)(.*)" CaseSensitive="False" Color="WindowText" Icon="Warning" LookInComments="True" LookInIdentifiers="False" LookInStringLiterals="False" />
       <Pattern Name="TEMP" Id="26D71E2EEE194F5CAB753A184767F7BD" Regexp="(\W|^)(?&lt;TAG&gt;TEMP:)(\W|$)(.*)" CaseSensitive="False" Color="Red" Icon="Error" LookInComments="True" LookInIdentifiers="False" LookInStringLiterals="False" />
-      <Filter Name="TEMP and Not Implemented" Id="CD46BB0659834A8F94AF048F0174BC58" Active="True">
+      <Pattern Name="FEATURE" Id="3E2D07204F5E469EB9CF3F74B84302AB" Regexp="(\W|^)(?&lt;TAG&gt;FEATURE:)(\W|$)(.*)" CaseSensitive="False" Color="WindowText" Icon="Normal" LookInComments="True" LookInIdentifiers="False" LookInStringLiterals="False" />
+      <Filter Name="TEMP and Not Implemented" Id="CD46BB0659834A8F94AF048F0174BC58" Active="False">
         <PatternRef Id="9F4E80481F12431CB36D19D6738780F2" />
         <PatternRef Id="26D71E2EEE194F5CAB753A184767F7BD" />
       </Filter>
-      <Filter Name="my FIXMEs" Id="7BD7005481C84765A1E10577C592BAC1" Active="False">
+      <Filter Name="FIXME" Id="7BD7005481C84765A1E10577C592BAC1" Active="False">
         <PatternRef Id="18F369BB5B7947B7A3EDEC4FA841E118" />
+      </Filter>
+      <Filter Name="FEATURE" Id="6C2403597047454E83F8DB6CAE8B7628" Active="True">
+        <PatternRef Id="3E2D07204F5E469EB9CF3F74B84302AB" />
       </Filter>
     </TodoManager>
     <RequiredProductsVersions />
