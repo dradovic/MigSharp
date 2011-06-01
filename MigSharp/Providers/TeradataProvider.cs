@@ -116,7 +116,7 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            yield return string.Format("rename table {0} to {1};", Escape(oldName), newName);
+            yield return string.Format("RENAME TABLE {0} TO {1};", Escape(oldName), Escape(newName));
         }
 
         public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
