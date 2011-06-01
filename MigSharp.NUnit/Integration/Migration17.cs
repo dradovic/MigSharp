@@ -40,7 +40,7 @@ namespace MigSharp.NUnit.Integration
         }
 
         public string TableName { get { return "Mig17"; } }
-        public string[] ColumnNames { get { return new[] { "Id", "Name" }; } }
+        public string[] ColumnNames { get { return new[] { "Id Column", "Name" }; } }
         public object[,] ExpectedValues
         {
             get
