@@ -16,10 +16,10 @@ namespace MigSharp.NUnit.Integration
                 db.Execute("bogus query which would fail");
             }
 
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32);
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32);
 
-            db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" VALUES ({1})", TableName, ExpectedValues[0, 0]));
+            db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" VALUES ({1})", Tables[0].Name, Tables[0].Value(0, 0)));
         }
 
         public void Down(IDatabase db)
@@ -29,29 +29,30 @@ namespace MigSharp.NUnit.Integration
             {
                 // create new table and copy content from original table
                 const string temporaryName = "tmprename";
-                db.Tables[TableName].Rename(temporaryName);
-                db.CreateTable(TableName)
-                    .WithNotNullableColumn(ColumnNames[0], DbType.Int32);
-                string query = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" SELECT * FROM {1}", TableName, temporaryName);
+                db.Tables[Tables[0].Name].Rename(temporaryName);
+                db.CreateTable(Tables[0].Name)
+                    .WithNotNullableColumn(Tables[0].Columns[0], DbType.Int32);
+                string query = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" SELECT * FROM {1}", Tables[0].Name, temporaryName);
                 db.Execute(query);
                 db.Tables[temporaryName].Drop();
             }
             else
             {
-                db.Tables[TableName].PrimaryKey().Drop(); // we could also directly drop the table but thus, the dropping of PK is tested as well
+                db.Tables[Tables[0].Name].PrimaryKey().Drop(); // we could also directly drop the table but thus, the dropping of PK is tested as well
             }
-            db.Tables[TableName].Drop();
+            db.Tables[Tables[0].Name].Drop();
         }
 
-        public string TableName { get { return "Order Space"; } }
-        public string[] ColumnNames { get { return new[] { "Id Space" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[1,1]
+                return new ExpectedTables
                 {
-                    { 1 }
+                    new ExpectedTable("Order Space", "Id Space")
+                    {
+                        1
+                    }
                 };
             }
         }

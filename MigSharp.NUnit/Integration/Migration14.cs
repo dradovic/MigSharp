@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 
@@ -13,20 +14,20 @@ namespace MigSharp.NUnit.Integration
     {
         public void Up(IDatabase db)
         {
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
-                .WithNotNullableColumn(ColumnNames[1], DbType.String);
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.String);
 
-            db.Execute(GetInsertStatement((string)ExpectedValues[0, 1]));
+            db.Execute(GetInsertStatement((string)Tables[0].Value(0, 1)));
 
             // Note: the following statement does *not* the identity constraint. Doing so is very difficult. For example, see: http://stackoverflow.com/questions/702745/sql-server-how-to-drop-identity-from-a-column
             //db.Tables[TableName].Columns[ColumnNames[0]].AlterToNotNullable(DbType.Int32);
 
-            db.Tables[TableName].Drop(); // make sure, TRIGGERS and SEQUENCES are dropped as well
+            db.Tables[Tables[0].Name].Drop(); // make sure, TRIGGERS and SEQUENCES are dropped as well
 
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32)
-                .WithNotNullableColumn(ColumnNames[1], DbType.String);
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32)
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.String);
 
             // inserting another row without specifying the Id value should fail as the Identity constraint is removed
             if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite automatically generates identity columns for PKs
@@ -35,7 +36,7 @@ namespace MigSharp.NUnit.Integration
                     {
                         IDbCommand command = context.Connection.CreateCommand();
                         command.Transaction = context.Transaction;
-                        command.CommandText = GetInsertStatement((string)ExpectedValues[0, 1]);
+                        command.CommandText = GetInsertStatement((string)Tables[0].Value(0, 1));
                         Log.Verbose(LogCategory.Sql, command.CommandText);
                         try
                         {
@@ -49,37 +50,38 @@ namespace MigSharp.NUnit.Integration
                     });
             }
 
-            db.Execute(GetInsertStatement((int)ExpectedValues[0, 0], (string)ExpectedValues[0, 1]));
+            db.Execute(GetInsertStatement((int)Tables[0].Value(0, 0), (string)Tables[0].Value(0, 1)));
 
-            db.Tables[TableName].Drop(); // make sure, TRIGGERS and SEQUENCES are dropped as well
+            db.Tables[Tables[0].Name].Drop(); // make sure, TRIGGERS and SEQUENCES are dropped as well
 
             // recreating the table with the identity constraint again might reveal undropped TRIGGERS or SEQUENCES
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
-                .WithNotNullableColumn(ColumnNames[1], DbType.String);
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.String);
 
-            db.Execute(GetInsertStatement((string)ExpectedValues[0, 1]));
+            db.Execute(GetInsertStatement((string)Tables[0].Value(0, 1)));
         }
 
         private string GetInsertStatement(int id, string name)
         {
-            return string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"", ""{2}"") VALUES ({3}, '{4}')", TableName, ColumnNames[0], ColumnNames[1], id, name);            
+            return string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"", ""{2}"") VALUES ({3}, '{4}')", Tables[0].Name, Tables[0].Columns[0], Tables[0].Columns[1], id, name);
         }
 
         private string GetInsertStatement(string name)
         {
-            return string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", TableName, ColumnNames[1], name);
+            return string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", Tables[0].Name, Tables[0].Columns[1], name);
         }
 
-        public string TableName { get { return "Mig14"; } }
-        public string[] ColumnNames { get { return new[] { "Id", "Name" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[,]
+                return new ExpectedTables
                 {
-                    { 1, "Name1" },
+                    new ExpectedTable("Mig14", "Id", "Name")
+                    {
+                        { 1, "Name1" },
+                    }
                 };
             }
         }

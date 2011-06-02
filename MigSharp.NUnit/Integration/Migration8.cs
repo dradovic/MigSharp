@@ -56,7 +56,7 @@ namespace MigSharp.NUnit.Integration
         public void Up(IDatabase db)
         {
             // create a table that contains columns for all supported data types
-            ICreatedTable table = db.CreateTable(TableName);
+            ICreatedTable table = db.CreateTable(Tables[0].Name);
             Columns.Clear();
             int i = 1;
             foreach (SupportsAttribute support in _supports
@@ -102,7 +102,7 @@ namespace MigSharp.NUnit.Integration
                     }
 
                     command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" ({1}) VALUES ({2})",
-                        TableName,
+                        Tables[0].Name,
                         string.Join(", ", Columns.Keys.Select(c => "\"" + c + "\"").ToArray()),
                         string.Join(", ", command.Parameters.Cast<IDbDataParameter>().Select(p => context.ProviderMetadata.GetParameterSpecifier(p)).ToArray()));
                     Log.Verbose(LogCategory.Sql, command.CommandText);
@@ -117,7 +117,7 @@ namespace MigSharp.NUnit.Integration
             foreach (SupportsAttribute support in _supports
                 .Where(s => s.CanBeUsedAsPrimaryKey))
             {
-                ICreatedTable pkTable = db.CreateTable(TableName + "WithPkOf" + support.DbType + support.MaximumScale);
+                ICreatedTable pkTable = db.CreateTable(Tables[0].Name + "WithPkOf" + support.DbType + support.MaximumScale);
                 int maximumSize = support.MaximumSize;
                 if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005 ||
                     db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005Odbc ||
@@ -171,19 +171,19 @@ namespace MigSharp.NUnit.Integration
             return result;
         }
 
-        public string TableName { get { return "Mig8"; } }
-        public string[] ColumnNames { get { return Columns.Keys.ToArray(); } }
-        public object[,] ExpectedValues
+        // FIXME: dr, add PK tables
+        public ExpectedTables Tables
         {
             get
             {
-                var expectedValues = new object[1,Values.Count];
-                int i = 0;
-                foreach (object value in Values)
+                IEnumerable<string> columnNames = Columns.Keys;
+                return new ExpectedTables
                 {
-                    expectedValues[0, i++] = value;
-                }
-                return expectedValues;
+                    new ExpectedTable("Mig8", columnNames.FirstOrDefault(), columnNames.Skip(1).ToArray())
+                    {
+                        Values.ToArray()
+                    }
+                };
             }
         }
     }

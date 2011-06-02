@@ -7,12 +7,19 @@ namespace MigSharp.NUnit.Integration
     {
         public void Up(IDatabase db)
         {
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32);
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32);
         }
 
-        public string TableName { get { return "Mig1"; } }
-        public string[] ColumnNames { get { return new[] { "Id" }; } }
-        public object[,] ExpectedValues { get { return new object[0,1]; } }
+        public ExpectedTables Tables
+        {
+            get
+            {
+                return new ExpectedTables
+                {
+                    new ExpectedTable("Mig1", "Id")
+                };
+            }
+        }
     }
 }

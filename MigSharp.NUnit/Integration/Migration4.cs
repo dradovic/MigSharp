@@ -8,22 +8,23 @@ namespace MigSharp.NUnit.Integration
     {
         public void Up(IDatabase db)
         {
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int64).AsIdentity()
-                .WithNotNullableColumn(ColumnNames[1], DbType.String);
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int64).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.String);
 
-            db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"")VALUES ('{2}')", TableName, ColumnNames[1], ExpectedValues[0, 1]));
+            db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"")VALUES ('{2}')", Tables[0].Name, Tables[0].Columns[1], Tables[0].Value(0, 1)));
         }
 
-        public string TableName { get { return "IdentityTable"; } }
-        public string[] ColumnNames { get { return new[] { "Id", "Description" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[,]
+                return new ExpectedTables
                 {
-                    { 1, "Test Row" },
+                    new ExpectedTable("Mig4", "Id", "Description")
+                    {
+                        { 1, "Test Row" },
+                    }
                 };
             }
         }

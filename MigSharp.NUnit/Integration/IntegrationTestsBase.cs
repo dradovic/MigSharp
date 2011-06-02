@@ -68,10 +68,10 @@ namespace MigSharp.NUnit.Integration
 
             // assert Customer table was created
             Migration1 migration1 = new Migration1();
-            DataTable customerTable = GetTable(migration1.TableName);
-            Assert.IsNotNull(customerTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", migration1.TableName));
+            DataTable customerTable = GetTable(migration1.Tables[0].Name);
+            Assert.IsNotNull(customerTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", migration1.Tables[0].Name));
             Assert.AreEqual(1, customerTable.Columns.Count);
-            Assert.AreEqual(migration1.ColumnNames[0], customerTable.Columns[0].ColumnName);
+            Assert.AreEqual(migration1.Tables[0].Columns[0], customerTable.Columns[0].ColumnName);
 
             // assert Versioning table has necessary entries
             Assert.AreEqual(1, versioningTable.Rows.Count, "The versioning table is missing entries.");
@@ -98,28 +98,41 @@ namespace MigSharp.NUnit.Integration
             migrator.MigrateAll(assemblyContainingMigrations);
             Assert.IsTrue(migrator.IsUpToDate(assemblyContainingMigrations));
 
+            // FIXME: dr, are the column names being checked?
+
             // assert all tables have been created with the expected content
             foreach (IIntegrationTestMigration migration in Migrations.OfType<IIntegrationTestMigration>())
             {
-                DataTable table = GetTable(migration.TableName);
-
-                Assert.IsNotNull(table, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", migration.TableName));
-                Assert.AreEqual(migration.ColumnNames.Length, table.Columns.Count, "The actual number of columns is wrong.");
-                Assert.AreEqual(migration.ExpectedValues.GetLength(0), table.Rows.Count, "The actual number of rows is wrong.");
-                for (int column = 0; column < migration.ColumnNames.Length; column++)
+                foreach (ExpectedTable expectedTable in migration.Tables)
                 {
-                    for (int row = 0; row < migration.ExpectedValues.GetLength(0); row++)
+                    DataTable table = GetTable(expectedTable.Name);
+
+                    Assert.IsNotNull(table, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", expectedTable.Name));
+                    Assert.AreEqual(expectedTable.Columns.Count, table.Columns.Count, "The actual number of columns is wrong.");
+                    Assert.AreEqual(expectedTable.Count, table.Rows.Count, "The actual number of rows is wrong.");
+                    for (int column = 0; column < expectedTable.Columns.Count; column++)
                     {
-                        object expectedValue = migration.ExpectedValues[row, column];
-                        object actualValue = table.Rows[row][column];
-                        Func<object, bool> evalValue = expectedValue as Func<object, bool>;
-                        if (evalValue != null)
+                        for (int row = 0; row < expectedTable.Count; row++)
                         {
-                            Assert.IsTrue(evalValue(actualValue), string.Format(CultureInfo.CurrentCulture, "In {0}, the actual value of cell {1}/{2} is wrong (the custom handler returned false).", migration.TableName, row, column));
-                        }
-                        else
-                        {
-                            Assert.AreEqual(expectedValue, actualValue, string.Format(CultureInfo.CurrentCulture, "In {0}, the actual value of cell {1}/{2} is wrong.", migration.TableName, row, column));
+                            object expectedValue = expectedTable.Value(row, column);
+                            object actualValue = table.Rows[row][column];
+                            Func<object, bool> evalValue = expectedValue as Func<object, bool>;
+                            if (evalValue != null)
+                            {
+                                Assert.IsTrue(evalValue(actualValue), string.Format(CultureInfo.CurrentCulture, "In {0}, the actual value of cell {1}/{2} of table {3} is wrong (the custom handler returned false).",
+                                    migration.GetType().Name,
+                                    row,
+                                    column,
+                                    expectedTable.Name));
+                            }
+                            else
+                            {
+                                Assert.AreEqual(expectedValue, actualValue, string.Format(CultureInfo.CurrentCulture, "In {0}, the actual value of cell {1}/{2} of table {3} is wrong.",
+                                    migration.GetType().Name,
+                                    row,
+                                    column,
+                                    expectedTable.Name));
+                            }
                         }
                     }
                 }
@@ -150,7 +163,7 @@ namespace MigSharp.NUnit.Integration
             migrator.MigrateTo(assemblyContainingMigrations, Timestamps[0]);
 
             // assert order table was dropped
-            DataTable orderTable = GetTable(new Migration2().TableName);
+            DataTable orderTable = GetTable(new Migration2().Tables[0].Name);
             Assert.IsNull(orderTable, "The order table was not dropped.");
 
             // assert Versioning table has only necessary entries
@@ -181,7 +194,7 @@ namespace MigSharp.NUnit.Integration
             migrator.MigrateAll(typeof(Migration1).Assembly);
 
             // assert Migration1 table was *not* created
-            DataTable table = GetTable(new Migration1().TableName);
+            DataTable table = GetTable(new Migration1().Tables[0].Name);
             Assert.IsNull(table);
 
             // assert Versioning table has necessary entries

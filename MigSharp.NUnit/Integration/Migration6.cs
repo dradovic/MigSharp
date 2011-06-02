@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 
@@ -9,22 +10,23 @@ namespace MigSharp.NUnit.Integration
     {
         public void Up(IDatabase db)
         {
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32)
-                .WithNotNullableColumn(ColumnNames[1], DbType.DateTime).HavingCurrentDateTimeAsDefault();
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32)
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.DateTime).HavingCurrentDateTimeAsDefault();
 
-            db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", TableName, ColumnNames[0], ExpectedValues[0, 0]));
+            db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", Tables[0].Name, Tables[0].Columns[0], Tables[0].Value(0, 0)));
         }
 
-        public string TableName { get { return "Mig6"; } }
-        public string[] ColumnNames { get { return new[] { "Id", "CurrentDateTime" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[,]
+                return new ExpectedTables
                 {
-                    { 1, new Func<object, bool>(v => Math.Abs((DateTime.Now - (DateTime)v).TotalHours) <= 24) },
+                    new ExpectedTable("Mig6", "Id", "CurrentDateTime")
+                    {
+                        { 1, new Func<object, bool>(v => Math.Abs((DateTime.Now - (DateTime)v).TotalHours) <= 24) },
+                    }
                 };
             }
         }

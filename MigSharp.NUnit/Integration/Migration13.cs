@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 
@@ -15,9 +16,9 @@ namespace MigSharp.NUnit.Integration
 
         public void Up(IDatabase db)
         {
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
-                .WithNotNullableColumn(ColumnNames[1], DbType.Int32); // FK to 'other'
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.Int32); // FK to 'other'
 
             const string otherId = "Id";
             const string otherName = "Name";
@@ -29,11 +30,11 @@ namespace MigSharp.NUnit.Integration
             db.Execute(GetDeleteStatementForOther()); // removing the row from Other should not be a problem since it is not referenced
             db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", Other, otherName, "Referenced"));
 
-            db.Tables[TableName].AddForeignKeyTo(Other)
-                .Through(ColumnNames[1], otherId);
+            db.Tables[Tables[0].Name].AddForeignKeyTo(Other)
+                .Through(Tables[0].Columns[1], otherId);
 
             // insert a row that references a row from Other
-            db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", TableName, ColumnNames[1], ExpectedValues[0, 1]));
+            db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", Tables[0].Name, Tables[0].Columns[1], Tables[0].Value(0, 1)));
 
             // removing the row from Other should fail as it is referenced by the foreign key
             if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // Mig# does not support SQLite foreign keys (see comments in SQLiteProvider.AddForeignKey)
@@ -62,15 +63,16 @@ namespace MigSharp.NUnit.Integration
             return string.Format(CultureInfo.InvariantCulture, @"DELETE FROM ""{0}""", Other);
         }
 
-        public string TableName { get { return "Mig13"; } }
-        public string[] ColumnNames { get { return new[] { "Id", "OtherId" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[,]
+                return new ExpectedTables
                 {
-                    { 1, 2 },
+                    new ExpectedTable("Mig13", "Id", "OtherId")
+                    {
+                        { 1, 2 },
+                    }
                 };
             }
         }

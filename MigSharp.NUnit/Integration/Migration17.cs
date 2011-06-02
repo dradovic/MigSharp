@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 
 namespace MigSharp.NUnit.Integration
@@ -10,44 +11,49 @@ namespace MigSharp.NUnit.Integration
 
         public void Up(IDatabase db)
         {
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
-                .WithNotNullableColumn(ColumnNames[1], DbType.String).OfSize(50);
-            db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" (\"{1}\") VALUES ('{2}')", TableName, ColumnNames[1], ExpectedValues[0, 1]));
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.String).OfSize(50);
+            db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" (\"{1}\") VALUES ('{2}')", Tables[0].Name, Tables[0].Columns[1], Tables[0].Value(0, 1)));
 
             if (db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 &&
                 db.Context.ProviderMetadata.Name != ProviderNames.SQLite &&
                 !db.Context.ProviderMetadata.Name.Contains("Teradata"))
             {
-                db.Tables[TableName].PrimaryKey().Rename("PK_" + NewTableName);
+                db.Tables[Tables[0].Name].PrimaryKey().Rename("PK_" + NewTableName);
             }
             else if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4)
             {
                 // this code is actually not required for the test but we still execute it because it is what the recommendation
                 // of the SqlServerCe4 is in the NotSupportedException for the primary key renaming
-                db.Tables[TableName].PrimaryKey().Drop();
-                db.Tables[TableName].AddPrimaryKey("PK_" + NewTableName)
-                    .OnColumn(ColumnNames[0]);
+                db.Tables[Tables[0].Name].PrimaryKey().Drop();
+                db.Tables[Tables[0].Name].AddPrimaryKey("PK_" + NewTableName)
+                    .OnColumn(Tables[0].Columns[0]);
             }
-            db.Tables[TableName].Rename(NewTableName);
+            db.Tables[Tables[0].Name].Rename(NewTableName);
 
             // create a new table that has the same name as the previously renamed table and also has an identity column to check
             // if associated db objects that are managed by the provider itself were renamed along with the table 
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
-                .WithNotNullableColumn(ColumnNames[1], DbType.String).OfSize(50);
-            db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" (\"{1}\") VALUES ('{2}')", TableName, ColumnNames[1], ExpectedValues[0, 1]));
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.String).OfSize(50);
+            db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" (\"{1}\") VALUES ('{2}')", Tables[0].Name, Tables[0].Columns[1], Tables[0].Value(0, 1)));
         }
 
-        public string TableName { get { return "Mig17"; } }
-        public string[] ColumnNames { get { return new[] { "Id Column", "Name" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[,]
+                return new ExpectedTables
                 {
-                    { 1, "Test" },
+                    new ExpectedTable("Mig17", "Id Column", "Name")
+                    {
+                        { 1, "Test" },
+                    },
+                    new ExpectedTable(NewTableName, "Id Column", "Name")
+                    {
+                        { 1, "Test" },
+                    }
                 };
             }
         }

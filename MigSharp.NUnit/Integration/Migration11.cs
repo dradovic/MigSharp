@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 
@@ -13,14 +14,14 @@ namespace MigSharp.NUnit.Integration
     {
         public void Up(IDatabase db)
         {
-            db.CreateTable(TableName)
-                .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32).AsIdentity()
-                .WithNotNullableColumn(ColumnNames[1], DbType.Decimal).OfSize(3)
-                .WithNotNullableColumn(ColumnNames[2], DbType.Decimal).OfSize(5, 2);
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.Decimal).OfSize(3)
+                .WithNotNullableColumn(Tables[0].Columns[2], DbType.Decimal).OfSize(5, 2);
 
             if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite uses adaptiv algorithms for their data types: http://www.sqlite.org/datatype3.html
             {
-                db.Execute(GetInsertStatement((decimal)ExpectedValues[0, 2] + 0.003m)); // the extra precision should be cut off silently
+                db.Execute(GetInsertStatement((decimal)Tables[0].Value(0, 2) + 0.003m)); // the extra precision should be cut off silently
                 db.Execute(context =>
                     {
                         IDbCommand command = context.Connection.CreateCommand();
@@ -40,25 +41,26 @@ namespace MigSharp.NUnit.Integration
             }
             else
             {
-                db.Execute(GetInsertStatement((decimal)ExpectedValues[0, 2]));                
+                db.Execute(GetInsertStatement((decimal)Tables[0].Value(0, 2)));
             }
         }
 
         private string GetInsertStatement(decimal value2)
         {
             return string.Format(CultureInfo.InvariantCulture,
-                @"INSERT INTO ""{0}"" (""{1}"", ""{2}"") VALUES ({3}, {4})", TableName, ColumnNames[1], ColumnNames[2], ExpectedValues[0, 1], value2);
+                @"INSERT INTO ""{0}"" (""{1}"", ""{2}"") VALUES ({3}, {4})", Tables[0].Name, Tables[0].Columns[1], Tables[0].Columns[2], Tables[0].Value(0, 1), value2);
         }
 
-        public string TableName { get { return "Mig11"; } }
-        public string[] ColumnNames { get { return new[] { "Id", "Dec3", "Dec3_2" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[,]
+                return new ExpectedTables
                 {
-                    { 1, 333m, 333.33m },
+                    new ExpectedTable("Mig11", "Id", "Dec3", "Dec3_2")
+                    {
+                        { 1, 333m, 333.33m },
+                    }
                 };
             }
         }

@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 
 namespace MigSharp.NUnit.Integration
@@ -17,94 +18,95 @@ namespace MigSharp.NUnit.Integration
         public void Up(IDatabase db)
         {
             db.CreateTable(TableNameInitial)
-                .WithNotNullableColumn(ColumnNames[0], DbType.Int32)
-                .WithNullableColumn(ColumnNames[1], DbType.String).OfSize(128)
+                .WithNotNullableColumn(Tables[0].Columns[0], DbType.Int32)
+                .WithNullableColumn(Tables[0].Columns[1], DbType.String).OfSize(128)
                 .WithNotNullableColumn(UniqueColumn, DbType.Int32).Unique(UniqueColumnConstraint);
 
             // rename table
-            db.Tables[TableNameInitial].Rename(TableName);
+            db.Tables[TableNameInitial].Rename(Tables[0].Name);
 
             // add primary key constraint
             if (!db.Context.ProviderMetadata.Name.Contains("Teradata") && db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // Teradata and SQLite do not support adding/dropping of PKs
             {
-                db.Tables[TableName].AddPrimaryKey()
-                    .OnColumn(ColumnNames[0]);
+                db.Tables[Tables[0].Name].AddPrimaryKey()
+                    .OnColumn(Tables[0].Columns[0]);
             }
 
             // alter column to nullable
             if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support dropping of columns
             {
-                db.Tables[TableName].Columns[ColumnNames[1]].AlterToNotNullable(DbType.String).OfSize(128);
+                db.Tables[Tables[0].Name].Columns[Tables[0].Columns[1]].AlterToNotNullable(DbType.String).OfSize(128);
             }
 
             // add column, alter it to not nullable right afterwards
-            db.Tables[TableName].AddNullableColumn(ColumnNames[2], DbType.Double);
+            db.Tables[Tables[0].Name].AddNullableColumn(Tables[0].Columns[2], DbType.Double);
             if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support altering of columns
             {
-                db.Tables[TableName].Columns[ColumnNames[2]].AlterToNotNullable(DbType.Double);
+                db.Tables[Tables[0].Name].Columns[Tables[0].Columns[2]].AlterToNotNullable(DbType.Double);
             }
 
             // add colum (through rename if provider supports it) and the drop again
             if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4 || db.Context.ProviderMetadata.Name == ProviderNames.SQLite)
             {
-                db.Tables[TableName].AddNullableColumn(TempColumnRenamed, DbType.DateTime);
+                db.Tables[Tables[0].Name].AddNullableColumn(TempColumnRenamed, DbType.DateTime);
             }
             else
             {
-                db.Tables[TableName].AddNullableColumn(TempColumn, DbType.DateTime);
-                db.Tables[TableName].Columns[TempColumn].Rename(TempColumnRenamed);
+                db.Tables[Tables[0].Name].AddNullableColumn(TempColumn, DbType.DateTime);
+                db.Tables[Tables[0].Name].Columns[TempColumn].Rename(TempColumnRenamed);
             }
             if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support dropping of columns
             {
-                db.Tables[TableName].Columns[TempColumnRenamed].Drop();
+                db.Tables[Tables[0].Name].Columns[TempColumnRenamed].Drop();
             }
 
             // remove, add and remove again unique constraint
-            db.Tables[TableName].UniqueConstraints[UniqueColumnConstraint].Drop();
-            db.Tables[TableName].AddUniqueConstraint(UniqueColumnConstraint)
+            db.Tables[Tables[0].Name].UniqueConstraints[UniqueColumnConstraint].Drop();
+            db.Tables[Tables[0].Name].AddUniqueConstraint(UniqueColumnConstraint)
                 .OnColumn(UniqueColumn);
-            db.Tables[TableName].UniqueConstraints[UniqueColumnConstraint].Drop();
+            db.Tables[Tables[0].Name].UniqueConstraints[UniqueColumnConstraint].Drop();
             if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite does not support dropping of columns
             {
-                db.Tables[TableName].Columns[UniqueColumn].Drop();
+                db.Tables[Tables[0].Name].Columns[UniqueColumn].Drop();
             }
             else
             {
-                db.Tables[TableName].Drop();
-                db.CreateTable(TableName)
-                    .WithPrimaryKeyColumn(ColumnNames[0], DbType.Int32)
-                    .WithNotNullableColumn(ColumnNames[1], DbType.String).OfSize(128);
-                db.Tables[TableName].AddNullableColumn(ColumnNames[2], DbType.Double);
+                db.Tables[Tables[0].Name].Drop();
+                db.CreateTable(Tables[0].Name)
+                    .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32)
+                    .WithNotNullableColumn(Tables[0].Columns[1], DbType.String).OfSize(128);
+                db.Tables[Tables[0].Name].AddNullableColumn(Tables[0].Columns[2], DbType.Double);
             }
 
             // add index
-            db.Tables[TableName].AddIndex("My Index")
-                .OnColumn(ColumnNames[1])
-                .OnColumn(ColumnNames[2]);
+            db.Tables[Tables[0].Name].AddIndex("My Index")
+                .OnColumn(Tables[0].Columns[1])
+                .OnColumn(Tables[0].Columns[2]);
 
             // insert test record
             db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"",""{2}"",""{3}"") VALUES ({4},'{5}',{6})",
-                TableName,
-                ColumnNames[0],
-                ColumnNames[1],
-                ColumnNames[2],
-                ExpectedValues[0, 0],
-                ExpectedValues[0, 1],
-                ExpectedValues[0, 2]));
+                Tables[0].Name,
+                Tables[0].Columns[0],
+                Tables[0].Columns[1],
+                Tables[0].Columns[2],
+                Tables[0].Value(0, 0),
+                Tables[0].Value(0, 1),
+                Tables[0].Value(0, 2)));
 
             // remove index
-            db.Tables[TableName].Indexes["My Index"].Drop();
+            db.Tables[Tables[0].Name].Indexes["My Index"].Drop();
         }
 
-        public string TableName { get { return "Mig9"; } }
-        public string[] ColumnNames { get { return new[] { "Id", "Name", "Grade" }; } }
-        public object[,] ExpectedValues
+        public ExpectedTables Tables
         {
             get
             {
-                return new object[,]
+                return new ExpectedTables
                 {
-                    { 1, "Charlie", 5.5 },
+                    new ExpectedTable("Mig9", "Id", "Name", "Grade")
+                    {
+                        { 1, "Charlie", 5.5 },
+                    }
                 };
             }
         }
