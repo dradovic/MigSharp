@@ -58,6 +58,15 @@ namespace MigSharp
         }
 
         /// <summary>
+        /// Initializes options that select migrations for specific module only.
+        /// </summary>
+        /// <param name="moduleName">The name of the selected module. Only migrations for this module will be executed.</param>
+        public MigrationOptions(string moduleName)
+        {
+            ModuleSelector = n => n == moduleName;
+        }
+
+        /// <summary>
         /// Suppresses validation warnings for the provider called <paramref name="providerName"/> and the data type <paramref name="type"/> under the <paramref name="condition"/>.
         /// </summary>
         public void SuppressWarning(string providerName, DbType type, SuppressCondition condition)
@@ -89,15 +98,6 @@ namespace MigSharp
                 }
             }
             return false;
-        }
-
-        /// <summary>
-        /// Initializes options that select migrations for specific module only.
-        /// </summary>
-        /// <param name="moduleName">The name of the selected module. Only migrations for this module will be executed.</param>
-        public MigrationOptions(string moduleName)
-        {
-            ModuleSelector = n => n == moduleName;
         }
 
         #region Static Options
