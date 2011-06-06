@@ -19,19 +19,21 @@ namespace MigSharp.Process
         private readonly IProvider _provider;
         private readonly IProviderMetadata _providerMetadata;
         private readonly string _versioningTableName;
+        private readonly ISqlDispatcher _sqlDispatcher;
 
         private PersistedVersioning _persistedVersioning;
         private Lazy<bool> _versioningTableExists;
 
         internal bool VersioningTableExists { get { return _versioningTableExists.Value; } }
 
-        internal Versioning(ConnectionInfo connectionInfo, IDbConnectionFactory connectionFactory, IProvider provider, IProviderMetadata providerMetadata, string versioningTableName)
+        internal Versioning(ConnectionInfo connectionInfo, IDbConnectionFactory connectionFactory, IProvider provider, IProviderMetadata providerMetadata, string versioningTableName, ISqlDispatcher sqlDispatcher)
         {
             _connectionInfo = connectionInfo;
             _connectionFactory = connectionFactory;
             _provider = provider;
             _providerMetadata = providerMetadata;
             _versioningTableName = versioningTableName;
+            _sqlDispatcher = sqlDispatcher;
 
             _versioningTableExists = new Lazy<bool>(() =>
                 {
@@ -50,11 +52,15 @@ namespace MigSharp.Process
 
         internal void UpdateToInclude(IEnumerable<IMigrationMetadata> containedMigrations, IDbConnection connection, IDbTransaction transaction)
         {
-            PersistedVersioning versioning = GetPersistedVersioning(connection, transaction);
-            versioning.UpdateToInclude(containedMigrations, connection, transaction);
+            IDbCommandExecutor executor;
+            using ((executor = _sqlDispatcher.CreateExecutor("CustomBootstrapping")) as IDisposable)
+            {
+                PersistedVersioning versioning = GetPersistedVersioning(connection, transaction, executor);
+                versioning.UpdateToInclude(containedMigrations, connection, transaction, executor);
+            }
         }
 
-        private PersistedVersioning GetPersistedVersioning(IDbConnection connection, IDbTransaction transaction)
+        private PersistedVersioning GetPersistedVersioning(IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor executor)
         {
             if (_persistedVersioning == null)
             {
@@ -65,7 +71,7 @@ namespace MigSharp.Process
 
                     // execute the boostrap migration to create the versioning table
                     var step = new BootstrapMigrationStep(new BootstrapMigration(_versioningTableName), _provider, _providerMetadata);
-                    step.Execute(connection, transaction, MigrationDirection.Up);
+                    step.Execute(connection, transaction, MigrationDirection.Up, executor);
                     _versioningTableExists = new Lazy<bool>(() => true); // now, the versioning table exists
                 }
                 else
@@ -98,14 +104,14 @@ namespace MigSharp.Process
             {
                 return false;
             }
-            PersistedVersioning versioning = GetPersistedVersioning(null, null);
+            PersistedVersioning versioning = GetPersistedVersioning(null, null, null);
             return versioning.IsContained(metadata);
         }
 
-        public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction)
+        public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor)
         {
-            PersistedVersioning versioning = GetPersistedVersioning(connection, transaction);
-            versioning.Update(metadata, connection, transaction, direction);
+            PersistedVersioning versioning = GetPersistedVersioning(connection, transaction, commandExecutor);
+            versioning.Update(metadata, connection, transaction, direction, commandExecutor);
         }
 
         #endregion

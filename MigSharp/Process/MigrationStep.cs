@@ -15,6 +15,7 @@ namespace MigSharp.Process
         private readonly MigrationDirection _direction;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ISqlDispatcher _sqlDispatcher;
 
         private string MigrationName { get { return Migration.GetType().FullName; } }
 
@@ -22,13 +23,14 @@ namespace MigSharp.Process
 
         public MigrationDirection Direction { get { return _direction; } }
 
-        public MigrationStep(IMigration migration, IMigrationMetadata metadata, MigrationDirection direction, ConnectionInfo connectionInfo, IProvider provider, IProviderMetadata providerMetadata, IDbConnectionFactory connectionFactory)
+        public MigrationStep(IMigration migration, IMigrationMetadata metadata, MigrationDirection direction, ConnectionInfo connectionInfo, IProvider provider, IProviderMetadata providerMetadata, IDbConnectionFactory connectionFactory, ISqlDispatcher sqlDispatcher)
             : base(migration, provider, providerMetadata)
         {
             _metadata = metadata;
             _direction = direction;
             _connectionInfo = connectionInfo;
             _connectionFactory = connectionFactory;
+            _sqlDispatcher = sqlDispatcher;
         }
 
         public IMigrationReport Report(IMigrationContext context)
@@ -52,11 +54,15 @@ namespace MigSharp.Process
 
                 using (IDbTransaction transaction = _connectionInfo.SupportsTransactions ? connection.BeginTransaction() : null)
                 {
-                    Execute(connection, transaction, _direction);
+                    IDbCommandExecutor executor;
+                    using ((executor = _sqlDispatcher.CreateExecutor(string.Format(CultureInfo.InvariantCulture, "Migration.{0}.{1}", _metadata.ModuleName, _metadata.Timestamp))) as IDisposable)
+                    {
+                        Execute(connection, transaction, _direction, executor);
 
-                    // update versioning
-                    versioning.Update(_metadata, connection, transaction, _direction);
-                    Debug.Assert(versioning.IsContained(_metadata) == (_direction == MigrationDirection.Up), "The post-condition of IVersioning.Update is violated.");
+                        // update versioning
+                        versioning.Update(_metadata, connection, transaction, _direction, executor);
+                        Debug.Assert(versioning.IsContained(_metadata) == (_direction == MigrationDirection.Up), "The post-condition of IVersioning.Update is violated.");
+                    }
 
                     if (transaction != null)
                     {
@@ -65,9 +71,9 @@ namespace MigSharp.Process
                 }
             }
 
-            Log.Verbose(LogCategory.Performance, "Migration to {0}{1}{2} took {3}s",
+            Log.Verbose(LogCategory.Performance, "Migration of module '{0}' to {1}{2} took {3}s",
+                _metadata.ModuleName,
                 _metadata.Timestamp,
-                !string.IsNullOrEmpty(_metadata.ModuleName) ? string.Format(CultureInfo.CurrentCulture, " [{0}]", _metadata.ModuleName) : string.Empty,
                 !string.IsNullOrEmpty(_metadata.Tag) ? string.Format(CultureInfo.CurrentCulture, " '{0}'", _metadata.Tag) : string.Empty,
                 (DateTime.Now - start).TotalSeconds);
         }

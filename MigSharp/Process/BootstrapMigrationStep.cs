@@ -25,23 +25,22 @@ namespace MigSharp.Process
             _providerMetadata = providerMetadata;
         }
 
-        internal void Execute(IDbConnection connection, IDbTransaction transaction, MigrationDirection direction)
+        internal void Execute(IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor)
         {
             Debug.Assert(connection.State == ConnectionState.Open);
 
-            var context = new RuntimeContext(connection, transaction, _providerMetadata);
+            var context = new RuntimeContext(connection, transaction, commandExecutor, _providerMetadata);
             Database database = GetDatabaseContainingMigrationChanges(direction, context);
-            var scripter = new CommandScripter(_provider);
-            foreach (string commandText in scripter.GetCommandTexts(database, context))
+            var translator = new CommandsToSqlTranslator(_provider);
+            foreach (string commandText in translator.TranslateToSql(database, context))
             {
                 IDbCommand command = connection.CreateCommand();
                 command.CommandTimeout = 0; // do not timeout; the client is responsible for not causing lock-outs
                 command.Transaction = transaction;
                 command.CommandText = commandText;
-                Log.Verbose(LogCategory.Sql, command.CommandText);
                 try
                 {
-                    command.ExecuteNonQuery();
+                    commandExecutor.ExecuteNonQuery(command);
                 }
                 catch (DbException x)
                 {

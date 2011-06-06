@@ -28,6 +28,7 @@ namespace MigSharp.Process
         /// <param name="connection">An open connection to the database containing the versioning table.</param>
         /// <param name="transaction">The associated transaction.</param>
         /// <param name="direction">The direction of the migration.</param>
-        void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction);
+        /// <param name="commandExecutor">Used to execute <see cref="IDbCommand"/>s.</param>
+        void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor);
     }
 }

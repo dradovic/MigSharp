@@ -5,7 +5,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class AddForeignKeyToCommand : Command, IScriptableCommand
+    internal class AddForeignKeyToCommand : Command, ITranslatableCommand
     {
         private readonly string _referencedTableName;
         private readonly string _constraintName;
@@ -20,7 +20,7 @@ namespace MigSharp.Core.Commands
             _constraintName = constraintName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             if (_columnNames.Count == 0)
             {

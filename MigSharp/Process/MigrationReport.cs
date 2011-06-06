@@ -48,11 +48,11 @@ namespace MigSharp.Process
         {
             // execute changes in 'database' against a RecordingProvider
             var recordingProvider = new RecordingProvider();
-            var scripter = new CommandScripter(recordingProvider);
+            var translator = new CommandsToSqlTranslator(recordingProvider);
             string error = string.Empty;
             try
             {
-                scripter.GetCommandTexts(database, null).ToList(); // .ToList() is important to effectively trigger the iteration
+                translator.TranslateToSql(database, null).ToList(); // .ToList() is important to effectively trigger the iteration
             }
             catch (InvalidCommandException x)
             {

@@ -91,6 +91,7 @@
     <Compile Include="Core\Commands\AlterUniqueConstraintCommand.cs" />
     <Compile Include="Core\Commands\CallCommand.cs" />
     <Compile Include="Core\Commands\InvalidCommandException.cs" />
+    <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />
     <Compile Include="Core\Entities\AddedIndex.cs" />
     <Compile Include="Core\Entities\AddedPrimaryKey.cs" />
@@ -100,8 +101,15 @@
     <Compile Include="Core\Entities\ExistingIndex.cs" />
     <Compile Include="Core\Entities\ForeignKeyCollection.cs" />
     <Compile Include="Core\Entities\IndexesCollection.cs" />
+    <Compile Include="Process\ISqlScripter.cs" />
+    <Compile Include="Process\AggregateScripter.cs" />
+    <Compile Include="Process\ExecutingCommandExecutor.cs" />
+    <Compile Include="Process\ScriptingCommandExecutor.cs" />
+    <Compile Include="Process\ISqlDispatcher.cs" />
+    <Compile Include="IDbCommandExecutor.cs" />
     <Compile Include="Process\IMigrationReport.cs" />
     <Compile Include="Process\IMigrationReporter.cs" />
+    <Compile Include="Process\LoggingScripter.cs" />
     <Compile Include="Process\MigrationReport.cs" />
     <Compile Include="IAddedIndex.cs" />
     <Compile Include="IForeignKey.cs" />
@@ -128,6 +136,8 @@
     <Compile Include="Process\DbCommandExtensions.cs" />
     <Compile Include="Process\History.cs" />
     <Compile Include="Process\MigrationContext.cs" />
+    <Compile Include="Process\ScriptingMode.cs" />
+    <Compile Include="Process\SqlDispatcher.cs" />
     <Compile Include="Providers\SQLiteProvider.cs" />
     <Compile Include="Providers\UnsupportedMethod.cs" />
     <Compile Include="Process\ValidationWarning.cs" />
@@ -156,7 +166,7 @@
     <Compile Include="Process\IMigrationMetaData.cs" />
     <Compile Include="MigrationExportAttribute.cs" />
     <Compile Include="Process\PersistedVersioning.cs" />
-    <Compile Include="Core\IScriptableCommand.cs" />
+    <Compile Include="Core\ITranslatableCommand.cs" />
     <Compile Include="Core\Commands\AddColumnCommand.cs" />
     <Compile Include="Core\Commands\AlterColumnCommand.cs" />
     <Compile Include="Core\Entities\ExistingColumn.cs" />
@@ -191,6 +201,8 @@
     <Compile Include="Providers\SqlServerCe4Provider.cs" />
     <Compile Include="Providers\SqlServerProviderBase.cs" />
     <Compile Include="Providers\SupportsAttribute.cs" />
+    <Compile Include="Process\FileScripter.cs" />
+    <Compile Include="Process\ScriptingOptions.cs" />
     <Compile Include="SupportedProviders.cs" />
     <Compile Include="Providers\Column.cs" />
     <Compile Include="Providers\ColumnReference.cs" />
@@ -208,7 +220,7 @@
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\SqlServerProvider.cs" />
-    <Compile Include="Core\CommandScripter.cs" />
+    <Compile Include="Core\CommandsToSqlTranslator.cs" />
     <Compile Include="Providers\CreatedColumn.cs" />
     <Compile Include="Core\Commands\RenameCommand.cs" />
     <Compile Include="Core\Entities\ExistingTable.cs" />

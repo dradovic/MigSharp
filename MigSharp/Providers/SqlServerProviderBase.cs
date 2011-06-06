@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -16,6 +17,11 @@ namespace MigSharp.Providers
         public abstract string Dbo { get; }
 
         public abstract string ExistsTable(string databaseName, string tableName);
+
+        public string ConvertToSql(object value, DbType targetDbType)
+        {
+            return SqlScriptingHelper.ToSql(value, targetDbType);
+        }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
@@ -112,7 +118,7 @@ namespace MigSharp.Providers
 
         protected abstract IEnumerable<string> DropDefaultConstraint(string tableName, Column column, bool checkIfExists);
 
-        private static string GetDefaultConstraintClause(string tableName, string columnName, object value)
+        private string GetDefaultConstraintClause(string tableName, string columnName, object value)
         {
             string constraintName = GetDefaultConstraintName(tableName, columnName);
             string defaultConstraintClause = string.Empty;
@@ -129,7 +135,7 @@ namespace MigSharp.Providers
             return ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, columnName);
         }
 
-        private static string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value)
         {
             if (value is SpecialDefaultValue)
             {
@@ -141,11 +147,15 @@ namespace MigSharp.Providers
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            if (value is DateTime)
+            else if (value is DateTime)
             {
-                return "'" + ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + "'"; // ISO 8601
+                return ConvertToSql(value, DbType.DateTime);
             }
-            return value.ToString();
+            else if (value is string)
+            {
+                return ConvertToSql(value, DbType.String);
+            }
+            return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         public abstract IEnumerable<string> RenameTable(string oldName, string newName);

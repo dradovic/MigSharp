@@ -40,6 +40,11 @@ namespace MigSharp.Providers
             return string.Format(CultureInfo.InvariantCulture, "SELECT 1 FROM sqlite_master WHERE name='{0}'", tableName);
         }
 
+        public string ConvertToSql(object value, DbType targetDbType)
+        {
+            return SqlScriptingHelper.ToSql(value, targetDbType);
+        }
+
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, @"CREATE TABLE ""{0}"" ({1}{2}{1})",
@@ -66,7 +71,7 @@ namespace MigSharp.Providers
             }
         }
 
-        private static string GetColumnDefinition(Column column)
+        private string GetColumnDefinition(Column column)
         {
             return string.Format(CultureInfo.InvariantCulture, @"""{0}"" {1}{2}",
                 column.Name,
@@ -74,7 +79,7 @@ namespace MigSharp.Providers
                 GetColumnConstraint(column));
         }
 
-        private static string GetColumnConstraint(Column column)
+        private string GetColumnConstraint(Column column)
         {
             CreatedColumn createdColumn = column as CreatedColumn;
             return string.Format(CultureInfo.InvariantCulture, "{0}{1}{2}",
@@ -83,7 +88,7 @@ namespace MigSharp.Providers
                 column.DefaultValue != null ? " DEFAULT " + GetDefaultValueAsString(column.DefaultValue) : string.Empty);
         }
 
-        private static string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value)
         {
             if (value is SpecialDefaultValue)
             {
@@ -95,11 +100,15 @@ namespace MigSharp.Providers
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            if (value is DateTime)
+            else if (value is DateTime)
             {
-                return "'" + ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + "'"; // ISO 8601
+                return ConvertToSql(value, DbType.DateTime);
             }
-            return value.ToString();
+            else if (value is string)
+            {
+                return ConvertToSql(value, DbType.String);
+            }
+            return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         public IEnumerable<string> DropTable(string tableName)

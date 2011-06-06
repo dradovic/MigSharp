@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -37,6 +38,12 @@ namespace MigSharp.Providers
             // ExistsTable is a special case: it must be supported by all providers as it is used to create
             // the versioning table. Also, it is only a querying method.
             return null;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public string ConvertToSql(object value, DbType targetDbType)
+        {
+            throw new NotSupportedException();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

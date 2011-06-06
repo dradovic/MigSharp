@@ -5,13 +5,13 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class DropCommand : Command, IScriptableCommand
+    internal class DropCommand : Command, ITranslatableCommand
     {
         public DropCommand(ICommand parent) : base(parent)
         {
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             AlterTableCommand parentAlterTableCommand;
             AlterColumnCommand parentAlterColumnCommand;

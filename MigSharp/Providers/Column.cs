@@ -1,4 +1,8 @@
-﻿namespace MigSharp.Providers
+﻿using System.Data;
+
+using MigSharp.Core;
+
+namespace MigSharp.Providers
 {
     public class Column
     {
@@ -18,15 +22,7 @@
             _name = name;
             _dataType = dataType;
             _isNullable = isNullable;
-            string defaultText = defaultValue as string;
-            if (defaultText != null)
-            {
-                _defaultValue = "'" + defaultText.Replace("'", "''") + "'"; // CLEAN: dr, find a better and more generic way to correctly escape the default value: overload quota yes/no
-            }
-            else
-            {
-                _defaultValue = defaultValue;
-            }
+            _defaultValue = defaultValue;
         }
     }
 }

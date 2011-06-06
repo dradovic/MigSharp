@@ -71,7 +71,7 @@ namespace MigSharp.Process
             AddToActualEntries(entryId);
         }
 
-        public void Store(IDbConnection connection, IDbTransaction transaction)
+        public void Store(IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor executor)
         {
             Debug.Assert(connection.State == ConnectionState.Open);
 
@@ -87,10 +87,8 @@ namespace MigSharp.Process
                     entryId.Timestamp.ToString(CultureInfo.InvariantCulture),
                     BootstrapMigration.ModuleColumnName,
                     _providerMetadata.GetParameterSpecifier(moduleNameParameter));
-                Log.Verbose(LogCategory.Sql, command.CommandText);
                 // note: we do not provide the timestamp as a parameter as the OracleOdbcProvider has an issue with it
-                int affectedRows = command.ExecuteNonQuery();
-                Debug.Assert(affectedRows == 1);
+                executor.ExecuteNonQuery(command);
                 RemoveFromActualEntries(entryId);
             }
             _entriesToDelete.Clear();
@@ -108,10 +106,8 @@ namespace MigSharp.Process
                     entry.Timestamp.ToString(CultureInfo.InvariantCulture),
                     _providerMetadata.GetParameterSpecifier(moduleNameParameter),
                     _providerMetadata.GetParameterSpecifier(tagParameter));
-                Log.Verbose(LogCategory.Sql, command.CommandText);
                 // note: we do not provide the timestamp as a parameter as the OracleOdbcProvider has an issue with it
-                int affectedRows = command.ExecuteNonQuery();
-                Debug.Assert(affectedRows == 1);
+                executor.ExecuteNonQuery(command);
                 AddToActualEntries(entry);
             }
             _entriesToInsert.Clear();

@@ -27,6 +27,11 @@ namespace MigSharp.SqlServer.NUnit
             throw new NotSupportedException();
         }
 
+        public string ConvertToSql(object value, DbType targetDbType)
+        {
+            throw new NotSupportedException();
+        }
+
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
             Table table = GetTable(tableName);
@@ -100,9 +105,31 @@ namespace MigSharp.SqlServer.NUnit
         {
             string constraintName = ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, column.Name);
             DefaultConstraint defaultConstraint = column.AddDefaultConstraint(constraintName);
-            object defaultValue = SpecialDefaultValue.CurrentDateTime.Equals(value) ? "GETDATE()" : (value ?? "dummy for dropping case");
-            defaultConstraint.Text = defaultValue.ToString();
+            defaultConstraint.Text = GetDefaultValueAsString(value);
             return defaultConstraint;
+        }
+
+        private static string GetDefaultValueAsString(object value)
+        {
+            if (value is SpecialDefaultValue)
+            {
+                switch ((SpecialDefaultValue)value)
+                {
+                    case SpecialDefaultValue.CurrentDateTime:
+                        return "GETDATE()";
+                    default:
+                        throw new ArgumentOutOfRangeException("value");
+                }
+            }
+            else if (value is DateTime)
+            {
+                return SqlScriptingHelper.ToSql(value, DbType.DateTime);
+            }
+            else if (value is string)
+            {
+                return SqlScriptingHelper.ToSql(value, DbType.String);
+            }
+            return System.Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
@@ -406,12 +433,12 @@ namespace MigSharp.SqlServer.NUnit
                     return Microsoft.SqlServer.Management.Smo.DataType.Char(type.Size);
                 case DbType.StringFixedLength:
                     return Microsoft.SqlServer.Management.Smo.DataType.NChar(type.Size);
-                //case DbType.Xml:
-                //    break;
-                //case DbType.DateTime2:
-                //    break;
-                //case DbType.DateTimeOffset:
-                //    break;
+                    //case DbType.Xml:
+                    //    break;
+                    //case DbType.DateTime2:
+                    //    break;
+                    //case DbType.DateTimeOffset:
+                    //    break;
                 default:
                     throw new ArgumentOutOfRangeException("type");
             }

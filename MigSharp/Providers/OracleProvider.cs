@@ -33,6 +33,16 @@ namespace MigSharp.Providers
             return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = '{0}' AND OWNER = USER", tableName);
         }
 
+        public string ConvertToSql(object value, DbType targetDbType)
+        {
+            if (targetDbType == DbType.DateTime)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "TO_DATE('{0}','DD-MON-YYYY HH24:MI:SS')",
+                    ((DateTime)value).ToString("dd-MMM-yyyy HH:mm:ss", CultureInfo.InvariantCulture));
+            }
+            return SqlScriptingHelper.ToSql(value, targetDbType);
+        }
+
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
             string commandText = string.Empty;
@@ -105,12 +115,12 @@ namespace MigSharp.Providers
             if (!String.IsNullOrEmpty(identityColumn))
             {
                 string sequenceName = GetSequenceName(tableName);
-                string createSequence = string.Format(CultureInfo.InvariantCulture, @"CREATE SEQUENCE ""{0}"" MINVALUE 1 START WITH 1 INCREMENT BY 1 CACHE 20", 
+                string createSequence = string.Format(CultureInfo.InvariantCulture, @"CREATE SEQUENCE ""{0}"" MINVALUE 1 START WITH 1 INCREMENT BY 1 CACHE 20",
                     sequenceName);
-                string createTrigger = string.Format(CultureInfo.InvariantCulture, @"CREATE TRIGGER ""{0}"" BEFORE INSERT ON {1} FOR EACH ROW BEGIN SELECT ""{3}"".NEXTVAL into :new.{2} FROM dual; END;", 
-                    GetTriggerName(tableName), 
-                    Escape(tableName), 
-                    Escape(identityColumn), 
+                string createTrigger = string.Format(CultureInfo.InvariantCulture, @"CREATE TRIGGER ""{0}"" BEFORE INSERT ON {1} FOR EACH ROW BEGIN SELECT ""{3}"".NEXTVAL into :new.{2} FROM dual; END;",
+                    GetTriggerName(tableName),
+                    Escape(tableName),
+                    Escape(identityColumn),
                     sequenceName);
                 comands = new List<string> { createSequence, commandText, createTrigger };
             }
@@ -138,7 +148,7 @@ namespace MigSharp.Providers
                 GetSequenceName(tableName));
         }
 
-        private static string GetColumnString(Column column)
+        private string GetColumnString(Column column)
         {
             string defaultConstraintClause = string.Empty;
             string commandText = string.Empty;
@@ -157,7 +167,7 @@ namespace MigSharp.Providers
             return commandText;
         }
 
-        private static string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value)
         {
             if (value is SpecialDefaultValue)
             {
@@ -169,12 +179,15 @@ namespace MigSharp.Providers
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            if (value is DateTime)
+            else if (value is DateTime)
             {
-                return string.Format(CultureInfo.InvariantCulture, "TO_DATE('{0}','DD-MON-YYYY HH24:MI:SS')",
-                    ((DateTime)value).ToString("dd-MMM-yyyy HH:mm:ss", CultureInfo.InvariantCulture));
+                return ConvertToSql(value, DbType.DateTime);
             }
-            return value.ToString();
+            else if (value is string)
+            {
+                return ConvertToSql(value, DbType.String);
+            }
+            return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         public IEnumerable<string> AddColumn(string tableName, Column column)
@@ -236,7 +249,7 @@ namespace MigSharp.Providers
             query = query.Replace(Environment.NewLine, " ");
             string colN = column.IsNullable ? "NULL" : "";
             string colY = column.IsNullable ? "" : "NOT NULL";
-            string defaultConstraintClause = (column.DefaultValue == null) ? "DEFAULT NULL" : string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", column.DefaultValue.ToString().Replace("'", "''"));
+            string defaultConstraintClause = (column.DefaultValue == null) ? "DEFAULT NULL" : string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", GetDefaultValueAsString(column.DefaultValue).Replace("'", "''"));
             yield return string.Format(CultureInfo.InvariantCulture, query, tableName, column.Name, GetTypeSpecifier(column.DataType), colN, colY, defaultConstraintClause);
         }
 
@@ -338,10 +351,10 @@ namespace MigSharp.Providers
                     return "NUMBER(3)";
                 case DbType.Boolean:
                     return "NUMBER(1)"; // CLEAN: add a constraint to only allow 0/1
-                //case DbType.Currency:
-                //    break;
-                //case DbType.Date:
-                //    break;
+                    //case DbType.Currency:
+                    //    break;
+                    //case DbType.Date:
+                    //    break;
                 case DbType.DateTime:
                     return "DATE";
                 case DbType.Decimal:
@@ -356,38 +369,38 @@ namespace MigSharp.Providers
                     return "INTEGER";
                 case DbType.Int64:
                     return "NUMBER(19)";
-                //case DbType.Object:
-                //    break;
-                //case DbType.SByte:
-                //    break;
-                //case DbType.Single:
-                //    break;
+                    //case DbType.Object:
+                    //    break;
+                    //case DbType.SByte:
+                    //    break;
+                    //case DbType.Single:
+                    //    break;
                 case DbType.String:
                     if (type.Size > 0)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "NVARCHAR2({0})", type.Size);
                     }
                     return "NCLOB";
-                //case DbType.Time:
-                //    break;
-                //case DbType.UInt16:
-                //    break;
-                //case DbType.UInt32:
-                //    break;
-                //case DbType.UInt64:
-                //    break;
-                //case DbType.VarNumeric:
-                //    break;
-                //case DbType.AnsiStringFixedLength:
-                //    break;
-                //case DbType.StringFixedLength:
-                //    break;
-                //case DbType.Xml:
-                //    break;
-                //case DbType.DateTime2:
-                //    break;
-                //case DbType.DateTimeOffset:
-                //    break;
+                    //case DbType.Time:
+                    //    break;
+                    //case DbType.UInt16:
+                    //    break;
+                    //case DbType.UInt32:
+                    //    break;
+                    //case DbType.UInt64:
+                    //    break;
+                    //case DbType.VarNumeric:
+                    //    break;
+                    //case DbType.AnsiStringFixedLength:
+                    //    break;
+                    //case DbType.StringFixedLength:
+                    //    break;
+                    //case DbType.Xml:
+                    //    break;
+                    //case DbType.DateTime2:
+                    //    break;
+                    //case DbType.DateTimeOffset:
+                    //    break;
                 default:
                     throw new ArgumentOutOfRangeException("type");
             }

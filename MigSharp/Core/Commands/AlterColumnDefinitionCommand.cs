@@ -5,7 +5,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class AlterColumnDefinitionCommand : Command, IScriptableCommand
+    internal class AlterColumnDefinitionCommand : Command, ITranslatableCommand
     {
         private readonly DbType _type;
         private readonly bool _isNullable;
@@ -23,7 +23,7 @@ namespace MigSharp.Core.Commands
             _isNullable = isNullable;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             return provider.AlterColumn(Parent.Parent.TableName, new Column(
                 Parent.ColumnName, 

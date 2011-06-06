@@ -47,5 +47,10 @@ namespace MigSharp
             string name = parameter.ParameterName.Substring(1); // the name itself starts after the @
             return metadata.ParameterExpression.Replace("p", name);
         }
+
+        public static bool UsesPositionalParameters(this IProviderMetadata metadata)
+        {
+            return !metadata.ParameterExpression.Contains("p");
+        }
     }
 }

@@ -259,6 +259,11 @@ namespace MigSharp.NUnit.Process
                 return string.Empty;
             }
 
+            public string ConvertToSql(object value, DbType targetDbType)
+            {
+                throw new NotSupportedException();
+            }
+
             IEnumerable<string> IProvider.CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
             {
                 yield break;

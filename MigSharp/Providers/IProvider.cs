@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -18,6 +19,11 @@ namespace MigSharp.Providers
         /// <param name="tableName">The table name.</param>
         /// <returns>The SQL command to be executed.</returns>
         string ExistsTable(string databaseName, string tableName);
+
+        /// <summary>
+        /// Converts an object to its SQL representation for scripting.
+        /// </summary>
+        string ConvertToSql(object value, DbType targetDbType);
 
         /// <summary>
         /// Creates a tables with the specified <paramref name="columns"/>

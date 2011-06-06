@@ -1,8 +1,6 @@
 ﻿using System.Data;
 using System.Globalization;
 
-using MigSharp.Core;
-
 using NUnit.Framework;
 
 namespace MigSharp.NUnit.Integration
@@ -41,9 +39,7 @@ namespace MigSharp.NUnit.Integration
                     command.CommandText = string.Format(CultureInfo.InvariantCulture, @"UPDATE ""{0}"" SET ""{1}"" = 'Stage 2' WHERE ""{1}"" = 'Stage 1'",
                         Tables[0].Name,
                         Tables[0].Columns[0]);
-                    Log.Verbose(LogCategory.Sql, command.CommandText);
-                    int affectedRows = command.ExecuteNonQuery();
-                    Assert.AreEqual(1, affectedRows, "Failed to insert a row.");
+                    context.CommandExecutor.ExecuteNonQuery(command);
                 });
 
             db.Execute(string.Format(CultureInfo.InvariantCulture, @"UPDATE ""{0}"" SET ""{1}"" = '{2}' WHERE ""{1}"" = 'Stage 2'",

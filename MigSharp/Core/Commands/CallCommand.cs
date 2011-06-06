@@ -5,7 +5,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class CallCommand : Command, IScriptableCommand
+    internal class CallCommand : Command, ITranslatableCommand
     {
         private readonly Action<IRuntimeContext> _action;
 
@@ -15,7 +15,7 @@ namespace MigSharp.Core.Commands
             _action = action;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             if (context != null) // the context == null, when recording the changes to the RecordingProvider for validation
             {

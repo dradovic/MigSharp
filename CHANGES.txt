@@ -1,4 +1,5 @@
 1.1.0 - Added support for SQLite (without foreign keys)
+      - Added support for SQL scripting: instead of executing migrations against a database, they can be scripted into files
       - Added support for retrieving migrations from multiple assemblies (thanks to FlorianHoornaar)
       - Extended/completed list of allowed primary key data types for all providers
 	  - Extended API to allow renaming of primary keys

@@ -231,7 +231,7 @@ namespace MigSharp.NUnit
                 string.Empty).SetDescription("MakeNullable OfSize");
 
             db = new Database(context);
-            db.Tables["Table"].Columns["Column"].AlterToNotNullable(DbType.String).OfSize(255).HavingDefault("myValue");
+            db.Tables["Table"].Columns["Column"].AlterToNotNullable(DbType.String).OfSize(255).HavingDefault("my default");
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.String, 255, 0) },
                 Enumerable.Empty<DataType>(),

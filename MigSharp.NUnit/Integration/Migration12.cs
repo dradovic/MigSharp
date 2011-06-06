@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 
-using MigSharp.Core;
 using MigSharp.Process;
-
-using NUnit.Framework;
 
 namespace MigSharp.NUnit.Integration
 {
@@ -41,9 +37,7 @@ namespace MigSharp.NUnit.Integration
                         Tables[0].Columns[2],
                         context.ProviderMetadata.GetParameterSpecifier(text),
                         context.ProviderMetadata.GetParameterSpecifier(ansiText));
-                    Log.Verbose(LogCategory.Sql, command.CommandText);
-                    int affectedRows = command.ExecuteNonQuery();
-                    Assert.AreEqual(1, affectedRows);
+                    context.CommandExecutor.ExecuteNonQuery(command);
                 });
         }
 

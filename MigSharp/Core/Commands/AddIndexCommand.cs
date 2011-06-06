@@ -5,7 +5,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class AddIndexCommand : Command, IScriptableCommand
+    internal class AddIndexCommand : Command, ITranslatableCommand
     {
         private readonly string _indexName;
         private readonly List<string> _columnNames = new List<string>();
@@ -22,7 +22,7 @@ namespace MigSharp.Core.Commands
             _columnNames.Add(columnName);
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             if (_columnNames.Count == 0)
             {

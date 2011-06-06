@@ -4,7 +4,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class CustomQueryCommand : Command, IScriptableCommand
+    internal class CustomQueryCommand : Command, ITranslatableCommand
     {
         private readonly string _query;
 
@@ -13,7 +13,7 @@ namespace MigSharp.Core.Commands
             _query = query;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             yield return _query;
         }

@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -58,6 +59,11 @@ namespace MigSharp.NUnit.Integration
             var migrator = new Migrator(ConnectionString, ProviderName, _options);
             migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
 
+            CheckResultsOfMigration1();
+        }
+
+        private void CheckResultsOfMigration1()
+        {
             // assert Versioning table was created
             DataTable versioningTable = GetTable(_options.VersioningTableName);
             Assert.IsNotNull(versioningTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", _options.VersioningTableName));
@@ -81,12 +87,135 @@ namespace MigSharp.NUnit.Integration
         }
 
         [Test]
-        public void TestMigration1SucceededByAllOtherMigrations()
+        public void TestScriptingAndExecutingMigration1()
+        {
+            DirectoryInfo targetDirectory = PrepareScriptingDirectory();
+            _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
+            _options.ExecuteAndScriptSqlTo(targetDirectory);
+            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
+
+            CheckResultsOfMigration1();
+
+            // assert that the script file was generated
+            FileInfo[] scriptFiles = targetDirectory.GetFiles(string.Format(CultureInfo.InvariantCulture, "Migration." + MigrationExportAttribute.DefaultModuleName + ".1.sql"));
+            Assert.AreEqual(1, scriptFiles.Length);
+
+            // delete script files
+            targetDirectory.Delete(true);
+        }
+
+        private static DirectoryInfo PrepareScriptingDirectory()
+        {
+            string tempPath = Path.GetTempPath();
+            string targetPath = Path.Combine(tempPath, "MigSharp");
+            var targetDirectory = new DirectoryInfo(targetPath);
+            if (!targetDirectory.Exists)
+            {
+                targetDirectory.Create();
+                targetDirectory = new DirectoryInfo(targetPath); // it seems that the Exists flag is not updated by the call to Create
+            }
+            return targetDirectory;
+        }
+
+        [Test]
+        public void TestScriptingAllMigrations()
+        {
+            InitializeAllMigrations(true);
+
+            DirectoryInfo targetDirectory = PrepareScriptingDirectory();
+            _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
+            _options.OnlyScriptSqlTo(targetDirectory);
+            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            migrator.MigrateAll(typeof(Migration1).Assembly);
+
+            // assert that all script files were generated
+            List<FileInfo> scriptFiles = targetDirectory.GetFiles(string.Format(CultureInfo.InvariantCulture, "Migration.*.*.sql"))
+                .OrderBy(f => int.Parse(Regex.Match(f.Name, @"Migration\..*\.(\d+)\.sql").Groups[1].Value, CultureInfo.InvariantCulture))
+                .ToList();
+            Assert.AreEqual(Migrations.Count, scriptFiles.Count);
+            Assert.AreEqual("Migration." + MigrationExportAttribute.DefaultModuleName + ".1.sql", scriptFiles[0].Name);
+            Assert.AreEqual("Migration." + Migration2.Module + ".2.sql", scriptFiles[1].Name);
+
+            // assert Versioning table was *not* created as we are scripting only
+            DataTable versioningTable = GetTable(_options.VersioningTableName);
+            Assert.IsNull(versioningTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was created altough ScriptingMode was ScriptOnly.", _options.VersioningTableName));
+
+            // assert Customer table was *not* created as we are scripting only
+            var migration1 = new Migration1();
+            DataTable customerTable = GetTable(migration1.Tables[0].Name);
+            Assert.IsNull(customerTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was created altough ScriptingMode was ScriptOnly.", migration1.Tables[0].Name));
+
+            // execute generated script files against database and recheck results
+            IProviderMetadata providerMetadata;
+            _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
+            var info = new ConnectionInfo(ConnectionString, providerMetadata.InvariantName, providerMetadata.SupportsTransactions);
+            var factory = new DbConnectionFactory();
+            using (IDbConnection connection = factory.OpenConnection(info))
+            {
+                foreach (FileInfo scriptFile in scriptFiles)
+                {
+                    Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Reading script '{0}':", scriptFile.FullName));
+                    string[] scriptLines = File.ReadAllLines(scriptFile.FullName);
+                    foreach (string line in scriptLines)
+                    {
+                        Trace.WriteLine(line);
+                    }
+
+                    // group all lines between empty lines into one command (some database platforms require DDL operations to
+                    // be executed in separated commands)
+                    Trace.WriteLine(Environment.NewLine + string.Format(CultureInfo.CurrentCulture, "Executing script '{0}':", scriptFile.FullName));
+                    string commandText = string.Empty;
+                    foreach (string line in scriptLines)
+                    {
+                        if (line.Trim().Length != 0)
+                        {
+                            commandText += line;
+                        }
+                        else
+                        {
+                            ExecuteCommand(commandText, connection);
+                            commandText = string.Empty;
+                        }
+                    }
+                    Assert.IsEmpty(commandText, "The script should end with an empty line.");
+                }
+            }
+            VerifyResultsOfAllMigrations();
+
+            // delete script files
+            targetDirectory.Delete(true);
+        }
+
+        private static void ExecuteCommand(string batch, IDbConnection connection)
+        {
+            IDbCommand command = connection.CreateCommand();
+            command.CommandText = batch;
+            Trace.WriteLine(command.CommandText);
+            command.ExecuteNonQuery();
+        }
+
+        private void InitializeAllMigrations(bool needScriptingSupport)
         {
             // initialize special-case migrations with additional runtime data
             IProviderMetadata providerMetadata;
             IProvider provider = _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
-            Migration8.Initialize(provider.GetSupportsAttributes());
+            IEnumerable<SupportsAttribute> supportsAttributes = provider.GetSupportsAttributes();
+            if (needScriptingSupport)
+            {
+                supportsAttributes = supportsAttributes.Where(a =>
+                                                              a.DbType != DbType.Binary &&
+                                                              a.DbType != DbType.Guid &&
+                                                              a.DbType != DbType.DateTime2 &&
+                                                              a.DbType != DbType.DateTimeOffset);
+            }
+            Migration8.Initialize(supportsAttributes);
+        }
+
+        [Test]
+        public void TestMigration1SucceededByAllOtherMigrations()
+        {
+            InitializeAllMigrations(false);
 
             // execute Migration1
             var migrator = new Migrator(ConnectionString, ProviderName, _options);
@@ -98,6 +227,11 @@ namespace MigSharp.NUnit.Integration
             migrator.MigrateAll(assemblyContainingMigrations);
             Assert.IsTrue(migrator.IsUpToDate(assemblyContainingMigrations));
 
+            VerifyResultsOfAllMigrations();
+        }
+
+        private void VerifyResultsOfAllMigrations()
+        {
             // FIXME: dr, are the column names being checked?
 
             // assert all tables have been created with the expected content

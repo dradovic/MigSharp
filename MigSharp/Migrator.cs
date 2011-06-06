@@ -124,8 +124,11 @@ namespace MigSharp
             List<MigrationInfo> migrations = CollectAllMigrationsForModule(assemblies, _options.ModuleSelector);
             Log.Verbose(LogCategory.Performance, "Collecting migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
+            // initialize command execution/scripting dispatching
+            ISqlDispatcher dispatcher = new SqlDispatcher(_options.ScriptingOptions, _provider, _providerMetadata);
+
             // initialize versioning component
-            IVersioning versioning = InitializeVersioning(assemblies);
+            IVersioning versioning = InitializeVersioning(assemblies, dispatcher);
 
             // filter applicable migrations)
             if (migrations.Count > 0)
@@ -151,8 +154,8 @@ namespace MigSharp
                 {
                     return new MigrationBatch(
 // ReSharper disable RedundantEnumerableCastCall
-                        applicableUpMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Up, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory)).Cast<IMigrationStep>(),
-                        applicableDownMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Down, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory)).Cast<IMigrationStep>(),
+                        applicableUpMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Up, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
+                        applicableDownMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Down, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
 // ReSharper restore RedundantEnumerableCastCall
                         versioning,
                         _options);
@@ -171,7 +174,7 @@ namespace MigSharp
             return FetchMigrations(assembly, additionalAssemblies).Count == 0;
         }
 
-        private IVersioning InitializeVersioning(IEnumerable<Assembly> assemblies)
+        private IVersioning InitializeVersioning(IEnumerable<Assembly> assemblies, ISqlDispatcher dispatcher)
         {
             IVersioning versioning;
             if (_customVersioning != null)
@@ -180,7 +183,7 @@ namespace MigSharp
             }
             else
             {
-                var v = new Versioning(_connectionInfo, _dbConnectionFactory, _provider, _providerMetadata, _options.VersioningTableName);
+                var v = new Versioning(_connectionInfo, _dbConnectionFactory, _provider, _providerMetadata, _options.VersioningTableName, dispatcher);
                 if (_customBootstrapper != null && !v.VersioningTableExists)
                 {
                     ApplyCustomBootstrapping(v, assemblies);

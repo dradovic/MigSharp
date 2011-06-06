@@ -4,11 +4,8 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 
-using MigSharp.Core;
 using MigSharp.Process;
 using MigSharp.Providers;
-
-using NUnit.Framework;
 
 namespace MigSharp.NUnit.Integration
 {
@@ -31,7 +28,7 @@ namespace MigSharp.NUnit.Integration
             { DbType.Int32, Int32.MaxValue },
             { DbType.Int64, Int64.MaxValue },
             { DbType.SByte, SByte.MinValue },
-            { DbType.Single, Single.MaxValue },
+            { DbType.Single, 2.71828182845904f },
             { DbType.String, "Irgendöppis" }, // FIXME: don, "Unicodović" should work as well (see Migration5) 
             { DbType.Time, DateTime.Parse("12/28/2010 19:25:21.9999", CultureInfo.InvariantCulture).TimeOfDay },
             { DbType.UInt16, UInt16.MinValue },
@@ -105,11 +102,7 @@ namespace MigSharp.NUnit.Integration
                         Tables[0].Name,
                         string.Join(", ", Columns.Keys.Select(c => "\"" + c + "\"").ToArray()),
                         string.Join(", ", command.Parameters.Cast<IDbDataParameter>().Select(p => context.ProviderMetadata.GetParameterSpecifier(p)).ToArray()));
-                    Log.Verbose(LogCategory.Sql, command.CommandText);
-
-                    //Trace.WriteLine("Migration8: executing: " + command.CommandText);
-                    int affectedRows = command.ExecuteNonQuery();
-                    Assert.AreEqual(1, affectedRows);
+                    context.CommandExecutor.ExecuteNonQuery(command);
                 });
 
             // create a table for each supported primary key data type

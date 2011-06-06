@@ -31,10 +31,10 @@ namespace MigSharp.SqlServer.NUnit
         {
             MigrationReport report = MigrationReport.Create(database, string.Empty);
             Assert.IsEmpty(report.Error);
-            var sqlScripter = new CommandScripter(sqlProvider);
-            var smoScripter = new CommandScripter(smoProvider);
+            var sqlTranslator = new CommandsToSqlTranslator(sqlProvider);
+            var smoTranslator = new CommandsToSqlTranslator(smoProvider);
             var context = MockRepository.GenerateStub<IRuntimeContext>();
-            ScriptComparer.AssertAreEqual(smoScripter.GetCommandTexts(database, context), sqlScripter.GetCommandTexts(database, context));
+            ScriptComparer.AssertAreEqual(smoTranslator.TranslateToSql(database, context), sqlTranslator.TranslateToSql(database, context));
         }
     }
 }

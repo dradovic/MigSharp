@@ -37,6 +37,16 @@ namespace MigSharp.Providers
             return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM DBC.TABLES WHERE DATABASENAME='{0}' AND TABLENAME='{1}'", databaseName, tableName);
         }
 
+        public string ConvertToSql(object value, DbType targetDbType)
+        {
+            if (targetDbType == DbType.DateTime)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "TIMESTAMP '{0}'",
+                    ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+            }
+            return SqlScriptingHelper.ToSql(value, targetDbType);
+        }
+
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
             string commandText = string.Empty;
@@ -231,10 +241,10 @@ namespace MigSharp.Providers
                     return "DECIMAL(3)"; // note: BYTEINT is signed and therefore cannot be used
                 case DbType.Boolean:
                     return "DECIMAL(1)";
-                //case DbType.Currency:
-                //    break;
-                //case DbType.Date:
-                //    break;
+                    //case DbType.Currency:
+                    //    break;
+                    //case DbType.Date:
+                    //    break;
                 case DbType.DateTime:
                     return "TIMESTAMP"; // note: DATE only denotes dates without a time component and therefore cannot be used
                 case DbType.Decimal:
@@ -249,12 +259,12 @@ namespace MigSharp.Providers
                     return "INTEGER";
                 case DbType.Int64:
                     return "BIGINT";
-                //case DbType.Object:
-                //    break;
-                //case DbType.SByte:
-                //    break;
-                //case DbType.Single:
-                //    break;
+                    //case DbType.Object:
+                    //    break;
+                    //case DbType.SByte:
+                    //    break;
+                    //case DbType.Single:
+                    //    break;
                 case DbType.AnsiString:
                 case DbType.String:
                     if (type.Size > 0)
@@ -262,32 +272,32 @@ namespace MigSharp.Providers
                         return string.Format(CultureInfo.InvariantCulture, "VARCHAR ({0})", type.Size);
                     }
                     return "CLOB";
-                //case DbType.Time:
-                //    break;
-                //case DbType.UInt16:
-                //    break;
-                //case DbType.UInt32:
-                //    break;
-                //case DbType.UInt64:
-                //    break;
-                //case DbType.VarNumeric:
-                //    break;
-                //case DbType.AnsiStringFixedLength:
-                //    break;
-                //case DbType.StringFixedLength:
-                //    break;
-                //case DbType.Xml:
-                //    break;
-                //case DbType.DateTime2:
-                //    break;
-                //case DbType.DateTimeOffset:
-                //    break;
+                    //case DbType.Time:
+                    //    break;
+                    //case DbType.UInt16:
+                    //    break;
+                    //case DbType.UInt32:
+                    //    break;
+                    //case DbType.UInt64:
+                    //    break;
+                    //case DbType.VarNumeric:
+                    //    break;
+                    //case DbType.AnsiStringFixedLength:
+                    //    break;
+                    //case DbType.StringFixedLength:
+                    //    break;
+                    //case DbType.Xml:
+                    //    break;
+                    //case DbType.DateTime2:
+                    //    break;
+                    //case DbType.DateTimeOffset:
+                    //    break;
                 default:
                     throw new ArgumentOutOfRangeException("type");
             }
         }
 
-        private static string GetColumnString(Column column, bool isIdentity)
+        private string GetColumnString(Column column, bool isIdentity)
         {
             string defaultConstraintClause = string.Empty;
             string commandText = string.Empty;
@@ -313,7 +323,7 @@ namespace MigSharp.Providers
             return commandText;
         }
 
-        private static string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value)
         {
             if (value is SpecialDefaultValue)
             {
@@ -325,12 +335,15 @@ namespace MigSharp.Providers
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            if (value is DateTime)
+            else if (value is DateTime)
             {
-                return string.Format(CultureInfo.InvariantCulture, "TIMESTAMP '{0}'",
-                    ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+                return ConvertToSql(value, DbType.DateTime);
             }
-            return value.ToString();
+            else if (value is string)
+            {
+                return ConvertToSql(value, DbType.String);
+            }
+            return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         private static string GetCsList(IEnumerable<string> columnNames)

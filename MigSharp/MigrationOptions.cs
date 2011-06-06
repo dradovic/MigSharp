@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 using MigSharp.Core;
+using MigSharp.Process;
 
 namespace MigSharp
 {
@@ -14,6 +16,7 @@ namespace MigSharp
     public class MigrationOptions
     {
         private string _versioningTableName = "MigSharp";
+
         /// <summary>
         /// Gets or sets the table name of the versioning table.
         /// </summary>
@@ -50,6 +53,9 @@ namespace MigSharp
 
         private readonly List<Suppression> _warningSuppressions = new List<Suppression>();
 
+        private ScriptingOptions _scriptingOptions = new ScriptingOptions(ScriptingMode.ExecuteOnly, null);
+        internal ScriptingOptions ScriptingOptions { get { return _scriptingOptions; } }
+
         /// <summary>
         /// Initializes an instance of default options.
         /// </summary>
@@ -74,12 +80,43 @@ namespace MigSharp
             _warningSuppressions.Add(new Suppression(providerName, type, condition));
         }
 
+        /// <summary>
+        /// Outputs the SQL used for the migrations to external files without affecting the database.
+        /// </summary>
+        public void OnlyScriptSqlTo(DirectoryInfo targetDirectory)
+        {
+            _scriptingOptions = new ScriptingOptions(ScriptingMode.ScriptOnly, targetDirectory);
+        }
+
+        /// <summary>
+        /// Outputs the SQL used for the migrations to external files without affecting the database.
+        /// </summary>
+        public void OnlyScriptSqlTo(string targetDirectory)
+        {
+            OnlyScriptSqlTo(new DirectoryInfo(targetDirectory));
+        }
+
+        /// <summary>
+        /// Outputs the SQL used for the migrations to external files while migrating the database.
+        /// </summary>
+        public void ExecuteAndScriptSqlTo(DirectoryInfo targetDirectory)
+        {
+            _scriptingOptions = new ScriptingOptions(ScriptingMode.ScriptAndExecute, targetDirectory);            
+        }
+
+        /// <summary>
+        /// Outputs the SQL used for the migrations to external files while migrating the database.
+        /// </summary>
+        public void ExecuteAndScriptSqlTo(string targetDirectory)
+        {
+            ExecuteAndScriptSqlTo(new DirectoryInfo(targetDirectory));
+        }
+
         internal bool IsWarningSuppressed(string providerName, DbType type, int size, int scale)
         {
             foreach (Suppression suppression in _warningSuppressions
                 .Where(s => s.ProviderName == providerName && s.Type == type))
             {
-
                 switch (suppression.Condition)
                 {
                     case SuppressCondition.WhenSpecifiedWithoutSize:

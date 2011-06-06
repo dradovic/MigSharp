@@ -6,7 +6,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class CreateTableCommand : Command, IScriptableCommand
+    internal class CreateTableCommand : Command, ITranslatableCommand
     {
         private readonly string _tableName;
         private readonly string _primaryKeyConstraintName;
@@ -20,7 +20,7 @@ namespace MigSharp.Core.Commands
             _primaryKeyConstraintName = primaryKeyConstraintName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             string effectivePkConstraintName = GetEffectivePkConstraintName();
             List<CreateColumnCommand> createColumnCommands = GetCreateColumnCommands().ToList();

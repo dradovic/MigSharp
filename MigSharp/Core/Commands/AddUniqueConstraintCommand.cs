@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace MigSharp.Core.Commands
 {
-    internal class AddUniqueConstraintCommand : Command, IScriptableCommand
+    internal class AddUniqueConstraintCommand : Command, ITranslatableCommand
     {
         private readonly string _constraintName;
         private readonly List<string> _columnNames = new List<string>();
@@ -24,7 +24,7 @@ namespace MigSharp.Core.Commands
             _columnNames.Add(columnName);
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             if (_columnNames.Count == 0)
             {

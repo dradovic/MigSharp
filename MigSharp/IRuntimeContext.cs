@@ -15,6 +15,12 @@ namespace MigSharp
         /// <summary>
         /// Gets the transaction which is used to perform the migration.
         /// </summary>
-        IDbTransaction Transaction { get; }        
+        IDbTransaction Transaction { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IDbCommandExecutor"/> that should be used to execute database modifying commands.
+        /// This ensures that they are logged and scripted consistently.
+        /// </summary>
+        IDbCommandExecutor CommandExecutor { get; }
     }
 }

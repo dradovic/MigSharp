@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 
 using MigSharp.NUnit.Integration;
-using MigSharp.Providers;
 
 using NUnit.Framework;
 

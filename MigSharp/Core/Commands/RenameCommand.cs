@@ -6,7 +6,7 @@ using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class RenameCommand : Command, IScriptableCommand
+    internal class RenameCommand : Command, ITranslatableCommand
     {
         private readonly string _newName;
 
@@ -16,7 +16,7 @@ namespace MigSharp.Core.Commands
             _newName = newName;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             AlterTableCommand parentAlterTableCommand;
             AlterColumnCommand parentAlterColumnCommand;

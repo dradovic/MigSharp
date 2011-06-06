@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MigSharp.Core.Commands
 {
-    internal class AddColumnCommand : Command, IScriptableCommand
+    internal class AddColumnCommand : Command, ITranslatableCommand
     {
         private readonly string _columnName;
         private readonly DbType _type;
@@ -32,7 +32,7 @@ namespace MigSharp.Core.Commands
             _isNullable = isNullable;
         }
 
-        public IEnumerable<string> Script(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
             if (IsNullable && DefaultValue != null)
             {
