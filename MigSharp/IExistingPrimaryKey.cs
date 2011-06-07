@@ -11,7 +11,7 @@
         void Drop();
 
         /// <summary>
-        /// Renames the primary key constraint.
+        /// Renames the primary key constraint and all associated resources (e.g. Oracle maintains an index along with the primary key which is renamed, too).
         /// </summary>
         /// <param name="newName"></param>
         void Rename(string newName);

@@ -253,7 +253,7 @@ namespace MigSharp.NUnit.Integration
                             Func<object, bool> evalValue = expectedValue as Func<object, bool>;
                             if (evalValue != null)
                             {
-                                Assert.IsTrue(evalValue(actualValue), string.Format(CultureInfo.CurrentCulture, "In {0}, the actual value of cell {1}/{2} of table {3} is wrong (the custom handler returned false).",
+                                Assert.IsTrue(evalValue(actualValue), string.Format(CultureInfo.CurrentCulture, "In '{0}', the actual value of cell {1}/{2} of table '{3}' is wrong (the custom handler returned false).",
                                     migration.GetType().Name,
                                     row,
                                     column,
@@ -261,7 +261,7 @@ namespace MigSharp.NUnit.Integration
                             }
                             else
                             {
-                                Assert.AreEqual(expectedValue, actualValue, string.Format(CultureInfo.CurrentCulture, "In {0}, the actual value of cell {1}/{2} of table {3} is wrong.",
+                                Assert.AreEqual(expectedValue, actualValue, string.Format(CultureInfo.CurrentCulture, "In '{0}', the actual value of cell {1}/{2} of table '{3}' is wrong.",
                                     migration.GetType().Name,
                                     row,
                                     column,
