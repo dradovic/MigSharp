@@ -12,6 +12,8 @@
 	  - BUG FIXES:
 	    - SQL Server 2005/2008:
 		  - rename default constraint along with the column (fixes the case when adding a new column with a default value which has the same name of a previously renamed column with a default value)
+		- Oracle:
+		  - rename identity sequence and trigger along with the table
 		- Teradata:
 		  - escape new name when renaming a table
 		  - removed MINVALUE and MAXVALUE for identity columns which is not needed and caused unexpected errors
