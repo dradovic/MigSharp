@@ -51,11 +51,12 @@ namespace MigSharp.NUnit.Integration
         {
             get
             {
+                int numberOfChars = IntegrationTestContext.IsScripting ? 1000 : 10000; // Oracle does not like too long text in SQL scripts (ORA-01704: string literal too long)
                 return new ExpectedTables
                 {
                     new ExpectedTable("Mig12", "Id", "Text", "AnsiText")
                     {
-                        { 1, new string('s', 10000), new string('a', 10000) },
+                        { 1, new string('s', numberOfChars), new string('a', numberOfChars) },
                     }
                 };
             }
