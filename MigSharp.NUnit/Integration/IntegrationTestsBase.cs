@@ -121,8 +121,6 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestScriptingAllMigrations()
         {
-            InitializeAllMigrations(true);
-
             DirectoryInfo targetDirectory = PrepareScriptingDirectory();
             _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
             _options.OnlyScriptSqlTo(targetDirectory);
@@ -195,28 +193,9 @@ namespace MigSharp.NUnit.Integration
             command.ExecuteNonQuery();
         }
 
-        private void InitializeAllMigrations(bool needScriptingSupport)
-        {
-            // initialize special-case migrations with additional runtime data
-            IProviderMetadata providerMetadata;
-            IProvider provider = _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
-            IEnumerable<SupportsAttribute> supportsAttributes = provider.GetSupportsAttributes();
-            if (needScriptingSupport)
-            {
-                supportsAttributes = supportsAttributes.Where(a =>
-                                                              a.DbType != DbType.Binary &&
-                                                              a.DbType != DbType.Guid &&
-                                                              a.DbType != DbType.DateTime2 &&
-                                                              a.DbType != DbType.DateTimeOffset);
-            }
-            Migration8.Initialize(supportsAttributes);
-        }
-
         [Test]
         public void TestMigration1SucceededByAllOtherMigrations()
         {
-            InitializeAllMigrations(false);
-
             // execute Migration1
             var migrator = new Migrator(ConnectionString, ProviderName, _options);
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
@@ -362,6 +341,11 @@ namespace MigSharp.NUnit.Integration
         {
             _options = new MigrationOptions();
             _options.SupportedProviders.Set(new[] { ProviderName }); // avoid validation errors/warnings from other providers
+
+            // initialize IntegrationTestContext
+            IProviderMetadata providerMetadata;
+            IProvider provider = _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
+            IntegrationTestContext.Initialize(_options, provider.GetSupportsAttributes());
         }
 
         [TearDown]

@@ -38,6 +38,11 @@ namespace MigSharp.Providers
         public string Warning { get; set; }
 
         /// <summary>
+        /// Indicates if the data type can be scripted.
+        /// </summary>
+        public bool IsScriptable { get { return SqlScriptingHelper.IsScriptable(_dbType); } }
+
+        /// <summary>
         /// Initializes a new instance.
         /// </summary>
         public SupportsAttribute(DbType dbType)

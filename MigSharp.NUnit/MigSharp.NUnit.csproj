@@ -95,6 +95,7 @@
     <Compile Include="Core\StringHelperTests.cs" />
     <Compile Include="Integration\ExpectedTable.cs" />
     <Compile Include="Integration\ExpectedTables.cs" />
+    <Compile Include="Integration\IntegrationTestContext.cs" />
     <Compile Include="Integration\Migration10.cs" />
     <Compile Include="Integration\IIntegrationTestMigration.cs" />
     <Compile Include="Integration\IntegrationTestsBase.cs" />

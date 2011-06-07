@@ -83,7 +83,7 @@ namespace MigSharp
         /// <summary>
         /// Outputs the SQL used for the migrations to external files without affecting the database.
         /// </summary>
-        public void OnlyScriptSqlTo(DirectoryInfo targetDirectory)
+        public void OnlyScriptSqlTo(DirectoryInfo targetDirectory) // signature used in Wiki Manual
         {
             _scriptingOptions = new ScriptingOptions(ScriptingMode.ScriptOnly, targetDirectory);
         }
@@ -91,7 +91,7 @@ namespace MigSharp
         /// <summary>
         /// Outputs the SQL used for the migrations to external files without affecting the database.
         /// </summary>
-        public void OnlyScriptSqlTo(string targetDirectory)
+        public void OnlyScriptSqlTo(string targetDirectory) // signature used in Wiki Manual
         {
             OnlyScriptSqlTo(new DirectoryInfo(targetDirectory));
         }
@@ -99,7 +99,7 @@ namespace MigSharp
         /// <summary>
         /// Outputs the SQL used for the migrations to external files while migrating the database.
         /// </summary>
-        public void ExecuteAndScriptSqlTo(DirectoryInfo targetDirectory)
+        public void ExecuteAndScriptSqlTo(DirectoryInfo targetDirectory) // signature used in Wiki Manual
         {
             _scriptingOptions = new ScriptingOptions(ScriptingMode.ScriptAndExecute, targetDirectory);            
         }
@@ -107,7 +107,7 @@ namespace MigSharp
         /// <summary>
         /// Outputs the SQL used for the migrations to external files while migrating the database.
         /// </summary>
-        public void ExecuteAndScriptSqlTo(string targetDirectory)
+        public void ExecuteAndScriptSqlTo(string targetDirectory) // signature used in Wiki Manual
         {
             ExecuteAndScriptSqlTo(new DirectoryInfo(targetDirectory));
         }

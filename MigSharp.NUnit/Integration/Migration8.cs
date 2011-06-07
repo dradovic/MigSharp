@@ -41,14 +41,6 @@ namespace MigSharp.NUnit.Integration
 
         private static readonly Dictionary<string, DbType> Columns = new Dictionary<string, DbType>();
         private static readonly List<object> Values = new List<object>();
-        private static IEnumerable<SupportsAttribute> _supports;
-
-        // CLEAN: this static information should be moved somewhere else (a integration test context class)
-        // where it is accessible to all migrations.
-        internal static void Initialize(IEnumerable<SupportsAttribute> supports)
-        {
-            _supports = supports;
-        }
 
         public void Up(IDatabase db)
         {
@@ -56,7 +48,8 @@ namespace MigSharp.NUnit.Integration
             ICreatedTable table = db.CreateTable(Tables[0].Name);
             Columns.Clear();
             int i = 1;
-            foreach (SupportsAttribute support in _supports
+            foreach (SupportsAttribute support in IntegrationTestContext.SupportsAttributes
+                .Where(s => !IntegrationTestContext.IsScripting || s.IsScriptable)
                 .OrderByDescending(s => s.MaximumSize)) // make sure the first column is not a LOB column as Teradata automatically adds an index to the first column and then would crash with: 'Cannot create index on LOB columns.'
             {
                 if (support.DbType == DbType.AnsiStringFixedLength || // skip fixed length character types as the table would grow too large
@@ -107,8 +100,8 @@ namespace MigSharp.NUnit.Integration
 
             // create a table for each supported primary key data type
             // (as combining them all into one table would be too much)
-            foreach (SupportsAttribute support in _supports
-                .Where(s => s.CanBeUsedAsPrimaryKey))
+            foreach (SupportsAttribute support in IntegrationTestContext.SupportsAttributes
+                .Where(s => (!IntegrationTestContext.IsScripting || s.IsScriptable) && s.CanBeUsedAsPrimaryKey))
             {
                 ICreatedTable pkTable = db.CreateTable(Tables[0].Name + "WithPkOf" + support.DbType + support.MaximumScale);
                 int maximumSize = support.MaximumSize;
