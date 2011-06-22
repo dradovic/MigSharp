@@ -26,7 +26,7 @@ namespace MigSharp.NUnit
                 scripter.GetCommandTexts(db, MockRepository.GenerateStub<IRuntimeContext>()));
         }
 
-        [Test]
+        [Test, Ignore("This test is not being updated on the branch.")]
         public void TestRenamingColumn()
         {
             IMigrationContext context = MockRepository.GenerateStub<IMigrationContext>();

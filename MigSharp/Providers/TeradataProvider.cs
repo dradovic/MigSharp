@@ -30,8 +30,6 @@ namespace MigSharp.Providers
         private const string Identity = @"GENERATED ALWAYS AS IDENTITY
                 (START WITH 1
                  INCREMENT BY 1
-                 MINVALUE -2147483647
-                 MAXVALUE 2147483647
                  NO CYCLE)";
 
         public virtual string ExistsTable(string databaseName, string tableName)
@@ -128,7 +126,7 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            yield return string.Format("rename table {0} to {1};", Escape(oldName), newName);
+            yield return string.Format("RENAME TABLE {0} TO {1};", Escape(oldName), Escape(newName));
         }
 
         public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)

@@ -19,7 +19,7 @@ namespace MigSharp.SqlServer.NUnit
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "expectedDataTypes", Justification = "This parameter is provided by the test source but used in a different test.")]
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "expectedPrimaryKeyDataTypes", Justification = "This parameter is provided by the test source but used in a different test.")]
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "expectedLongestName", Justification = "This parameter is provided by the test source but used in a different test.")]
-        [Test, TestCaseSource(typeof(TestCaseGenerator), "CreateDatabaseCases")]
+        [Test, TestCaseSource(typeof(TestCaseGenerator), "CreateDatabaseCases"), Ignore("This test is not being updated on the branch.")]
         public void TestDatabaseCases(IDatabase database, IEnumerable<DataType> expectedDataTypes, IEnumerable<DataType> expectedPrimaryKeyDataTypes, string expectedLongestName)
         {
             IProvider sqlProvider = new SqlServer2008Provider();

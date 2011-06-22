@@ -105,17 +105,22 @@ namespace MigSharp.Providers
             if (!String.IsNullOrEmpty(identityColumn))
             {
                 string sequenceName = GetSequenceName(tableName);
-                string createSequence = string.Format(CultureInfo.InvariantCulture, @"CREATE SEQUENCE ""{0}"" MINVALUE 1 START WITH 1 INCREMENT BY 1 CACHE 20", 
+                string createSequence = string.Format(CultureInfo.InvariantCulture, @"CREATE SEQUENCE ""{0}"" MINVALUE 1 START WITH 1 INCREMENT BY 1 CACHE 20 ORDER NOCYCLE",
                     sequenceName);
-                string createTrigger = string.Format(CultureInfo.InvariantCulture, @"CREATE TRIGGER ""{0}"" BEFORE INSERT ON {1} FOR EACH ROW BEGIN SELECT ""{3}"".NEXTVAL into :new.{2} FROM dual; END;", 
-                    GetTriggerName(tableName), 
-                    Escape(tableName), 
-                    Escape(identityColumn), 
-                    sequenceName);
+                string createTrigger = CreateTrigger(tableName, identityColumn, sequenceName);
                 comands = new List<string> { createSequence, commandText, createTrigger };
             }
 
             return comands;
+        }
+
+        private static string CreateTrigger(string tableName, string identityColumn, string sequenceName)
+        {
+            return string.Format(CultureInfo.InvariantCulture, @"CREATE TRIGGER ""{0}"" BEFORE INSERT ON {1} FOR EACH ROW BEGIN SELECT ""{3}"".NEXTVAL into :new.{2} FROM dual; END;",
+                GetTriggerName(tableName),
+                Escape(tableName),
+                Escape(identityColumn),
+                sequenceName);
         }
 
         private static string GetTriggerName(string tableName)
@@ -132,8 +137,8 @@ namespace MigSharp.Providers
         {
             yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}", Escape(tableName));
 
-            // drop associated SEQUENCE (if exists); the TRIGGER is dropped automatically by Oracle
-            //yield return string.Format(CultureInfo.InvariantCulture, @"BEGIN FOR i IN (SELECT * FROM USER_SEQUENCES WHERE SEQUENCE_NAME = '{0}') LOOP EXECUTE IMMEDIATE 'DROP SEQUENCE {0}'; END LOOP; END;",
+            // drop associated SEQUENCE (if it exists); the TRIGGER is dropped automatically by Oracle
+            // Oracle Database Error Code ORA-02289: sequence does not exist
             yield return string.Format(CultureInfo.InvariantCulture, @"BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE ""{0}""'; EXCEPTION WHEN OTHERS THEN IF SQLCODE = -2289 THEN NULL; ELSE RAISE; END IF; END;", // see: http://frankschmidt.blogspot.com/2009/12/drop-table-if-exists-or-sequence-or.html
                 GetSequenceName(tableName));
         }
@@ -197,7 +202,45 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME to {1}", Escape(oldName), Escape(newName));
+            // rename table
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME TO {1}", Escape(oldName), Escape(newName));
+
+            // rename sequence if it exists and drop, re-create trigger
+            string oldSequenceName = GetSequenceName(oldName);
+            string newSequenceName = GetSequenceName(newName);
+            string oldTriggerName = GetTriggerName(oldName);
+            yield return string.Format(CultureInfo.InvariantCulture,
+                @"DECLARE
+                    l_idColumn LONG;
+                    l_3rdQuotePos INTEGER;
+                    l_4thQuotePos INTEGER;
+                BEGIN
+                    /* try to rename the sequence - if it does not exists, it will throw 2289 */
+                    EXECUTE IMMEDIATE 'ALTER SEQUENCE {0} NOCACHE'; /* disable caching while renaming the sequence */
+                    EXECUTE IMMEDIATE 'RENAME {0} TO {1}';
+                    EXECUTE IMMEDIATE 'ALTER SEQUENCE {1} CACHE 20';
+
+                    /* drop and re-create the trigger */
+                    SELECT TRIGGER_BODY INTO l_idColumn
+                        FROM USER_TRIGGERS
+                        WHERE TRIGGER_NAME = '{4}';
+                    l_3rdQuotePos := INSTR(l_idColumn, '""', 1, 3);
+                    l_4thQuotePos := INSTR(l_idColumn, '""', 1, 4);
+                    l_idColumn := SUBSTR(l_idColumn, l_3rdQuotePos + 1, l_4thQuotePos - l_3rdQuotePos - 1);
+                    EXECUTE IMMEDIATE 'DROP TRIGGER {2}';
+                    EXECUTE IMMEDIATE '{3}';
+                    EXCEPTION WHEN OTHERS THEN IF SQLCODE = -2289 THEN 
+                        NULL;
+                    ELSE
+                        RAISE;
+                    END IF;
+                END;",
+                Escape(oldSequenceName),
+                Escape(newSequenceName),
+                Escape(oldTriggerName),
+                CreateTrigger(newName, "' || l_idColumn || '", newSequenceName),
+                oldTriggerName
+                ).Replace(Environment.NewLine, " ");
         }
 
         public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)

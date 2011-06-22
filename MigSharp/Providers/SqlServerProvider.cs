@@ -37,13 +37,17 @@ namespace MigSharp.Providers
         protected override IEnumerable<string> DropDefaultConstraint(string tableName, Column column, bool checkIfExists)
         {
             string constraintName = GetDefaultConstraintName(tableName, column.Name);
-            string commandText = string.Empty;
+            string commandText = DropConstraint(tableName, constraintName);
             if (checkIfExists)
             {
-                commandText += string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", constraintName);
+                commandText = PrefixIfObjectExists(constraintName, commandText);
             }
-            commandText += DropConstraint(tableName, constraintName);
             yield return commandText;
+        }
+
+        private static string PrefixIfObjectExists(string objectName, string commandTextToBePrefixed)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", objectName) + commandTextToBePrefixed;
         }
 
         public override IEnumerable<string> RenameTable(string oldName, string newName)
@@ -53,6 +57,9 @@ namespace MigSharp.Providers
 
         public override IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
         {
+            string defaultConstraintName = GetDefaultConstraintName(tableName, oldName);
+            string renameDefaultConstraintName = string.Format("EXEC dbo.sp_rename @objname = N'{0}', @newname = N'{1}', @objtype = N'OBJECT'", Escape(defaultConstraintName), GetDefaultConstraintName(tableName, newName));
+            yield return PrefixIfObjectExists(defaultConstraintName, renameDefaultConstraintName);
             yield return string.Format("EXEC dbo.sp_rename @objname=N'[dbo].{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", Escape(tableName), Escape(oldName), newName);
         }
 
