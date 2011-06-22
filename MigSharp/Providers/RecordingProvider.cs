@@ -13,16 +13,13 @@ namespace MigSharp.Providers
 {
     internal class RecordingProvider : IProvider, IRecordedMigration
     {
-        private readonly List<DataType> _dataTypes = new List<DataType>();
-        private readonly List<DataType> _primaryKeyDataTypes = new List<DataType>();
+        private readonly List<UsedDataType> _dataTypes = new List<UsedDataType>();
         private readonly List<string> _newObjectNames = new List<string>();
         private readonly HashSet<string> _methods = new HashSet<string>();
 
         #region IRecordedMigration
 
-        public IEnumerable<DataType> DataTypes { get { return _dataTypes; } }
-
-        public IEnumerable<DataType> PrimaryKeyDataTypes { get { return _primaryKeyDataTypes; } }
+        public IEnumerable<UsedDataType> DataTypes { get { return _dataTypes; } }
 
         public IEnumerable<string> NewObjectNames { get { return _newObjectNames; } }
 
@@ -55,14 +52,7 @@ namespace MigSharp.Providers
             AddNewObjectNames(columns.Select(c => c.UniqueConstraint).Where(name => !string.IsNullOrEmpty(name)));
             foreach (CreatedColumn column in columns)
             {
-                if (column.IsPrimaryKey)
-                {
-                    _primaryKeyDataTypes.Add(column.DataType);
-                }
-                else
-                {
-                    _dataTypes.Add(column.DataType);
-                }
+                _dataTypes.Add(new UsedDataType(column.DataType, column.IsPrimaryKey, column.IsIdentity));
             }
             return Enumerable.Empty<string>();
         }
@@ -79,7 +69,7 @@ namespace MigSharp.Providers
         {
             AddMethodName();
             AddNewObjectNames(column.Name);
-            _dataTypes.Add(column.DataType);
+            _dataTypes.Add(new UsedDataType(column.DataType, false, false));
             return Enumerable.Empty<string>();
         }
 
@@ -110,7 +100,7 @@ namespace MigSharp.Providers
         public IEnumerable<string> AlterColumn(string tableName, Column column)
         {
             AddMethodName();
-            _dataTypes.Add(column.DataType);
+            _dataTypes.Add(new UsedDataType(column.DataType, false, false));
             return Enumerable.Empty<string>();
         }
 

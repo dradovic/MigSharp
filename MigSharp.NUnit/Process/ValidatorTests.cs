@@ -27,8 +27,7 @@ namespace MigSharp.NUnit.Process
 
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.NewObjectNames).Return(new[] { longestName, longestName.Substring(1) });
-            migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<DataType>());
-            migration.Expect(m => m.PrimaryKeyDataTypes).Return(Enumerable.Empty<DataType>());
+            migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<UsedDataType>());
             migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             var report = new MigrationReport(MigrationName, "Some other validation error.", migration);
 
@@ -46,22 +45,22 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void VerifyUnsupportedDataTypesAreReported()
         {
-            var dataTypes = new List<DataType>
+            var dataTypes = new List<UsedDataType>
             {
-                new DataType(DbType.String, 255, 0), // ok
-                new DataType(DbType.Currency, 0, 0), // not supported
-                new DataType(DbType.Int32, 0, 0), // ok
-                new DataType(DbType.Decimal, 20, 10), // exceeds size and scale
-                new DataType(DbType.String, 0, 0), // ok (should not override the primary key status of this DbType)
-            };
-            var pkDataTypes = new List<DataType>
-            {
-                new DataType(DbType.String, 0, 0), // as primary key -> *not* ok w/o size
-                new DataType(DbType.String, 255, 0), // as primary key -> ok
+                new UsedDataType(new DataType(DbType.String, 255, 0), false, false), // ok
+                new UsedDataType(new DataType(DbType.Currency, 0, 0), false, false), // not supported
+                new UsedDataType(new DataType(DbType.Int32, 0, 0), false, false), // ok
+                new UsedDataType(new DataType(DbType.Decimal, 20, 10), false, false), // exceeds size and scale
+                new UsedDataType(new DataType(DbType.String, 0, 0), false, false), // ok (should not override the primary key status of this DbType)
+
+                new UsedDataType(new DataType(DbType.String, 0, 0), true, false), // as primary key -> *not* ok w/o size
+                new UsedDataType(new DataType(DbType.String, 255, 0), true, false), // as primary key -> ok
+
+                new UsedDataType(new DataType(DbType.Decimal, 8, 2), false, true), // as identity -> *not* ok with scale
+                new UsedDataType(new DataType(DbType.Decimal, 8, 0), false, true), // as identity -> ok without scale
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.PrimaryKeyDataTypes).Return(pkDataTypes);
             migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
@@ -69,12 +68,12 @@ namespace MigSharp.NUnit.Process
             string warnings;
             Validate(report, out errors, out warnings);
 
-            Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Currency, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum size of 10 supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum scale of 5 supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' as a primary key which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName),
-                errors);
+            string expected = string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Currency, ProviderName) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum size of 10 supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum scale of 5 supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' for a primary key which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(8,2)' for an identity column which is not supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName);
+            Assert.AreEqual(expected, errors);
         }
 
         [Test]
@@ -107,14 +106,13 @@ namespace MigSharp.NUnit.Process
 
         private static string GetWarnings(MigrationOptions options, out string warnings)
         {
-            var dataTypes = new List<DataType>
+            var dataTypes = new List<UsedDataType>
             {
-                new DataType(DbType.Guid, 0, 0),
-                new DataType(DbType.String, 0, 0),
+                new UsedDataType(new DataType(DbType.Guid, 0, 0), false, false),
+                new UsedDataType(new DataType(DbType.String, 0, 0), false, false),
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.PrimaryKeyDataTypes).Return(Enumerable.Empty<DataType>());
             migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
@@ -126,13 +124,12 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void VerifyWarningsForOdbc()
         {
-            var dataTypes = new List<DataType>
+            var dataTypes = new List<UsedDataType>
             {
-                new DataType(DbType.Int64, 0, 0),
+                new UsedDataType(new DataType(DbType.Int64, 0, 0), false, false),
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.PrimaryKeyDataTypes).Return(Enumerable.Empty<DataType>());
             migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
@@ -149,15 +146,14 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void VerifyWronglyUsedOfSizeAreReported()
         {
-            var dataTypes = new List<DataType>
+            var dataTypes = new List<UsedDataType>
             {
-                new DataType(DbType.Int32, 666, 0),
-                new DataType(DbType.String, 0, 666),
-                new DataType(DbType.Decimal, 0, 0),
+                new UsedDataType(new DataType(DbType.Int32, 666, 0), false, false),
+                new UsedDataType(new DataType(DbType.String, 0, 666), false, false),
+                new UsedDataType(new DataType(DbType.Decimal, 0, 0), false, false),
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.PrimaryKeyDataTypes).Return(Enumerable.Empty<DataType>());
             migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
@@ -178,7 +174,7 @@ namespace MigSharp.NUnit.Process
         {
             var provider = new ProviderStub();
             List<UnsupportedMethod> unsupportedMethods = provider.GetUnsupportedMethods().ToList();
-            
+
             UnsupportedMethod dropTable = unsupportedMethods.Find(m => m.Name == "DropTable");
             Assert.IsNotNull(dropTable, "DropTable should be one of the unsupported methods.");
             Assert.AreEqual(ProviderStub.NotSupportedMessageForDropTable, dropTable.Message);
@@ -190,8 +186,7 @@ namespace MigSharp.NUnit.Process
         public void VerifyUnsupportedMethodsAreReported()
         {
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
-            migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<DataType>());
-            migration.Expect(m => m.PrimaryKeyDataTypes).Return(Enumerable.Empty<DataType>());
+            migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<UsedDataType>());
             migration.Expect(m => m.Methods).Return(new[] { "CreateTable", "DropTable" });
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
@@ -232,7 +227,7 @@ namespace MigSharp.NUnit.Process
             IMigrationReporter reporter = MockRepository.GenerateStub<IMigrationReporter>();
             reporter.Expect(r => r.Report(null)).IgnoreArguments().Return(report);
             IMigrationReporter[] reporters = new[] { reporter };
-            validator.Validate(reporters, out errors, out warnings);            
+            validator.Validate(reporters, out errors, out warnings);
         }
 
         private static void Validate(IMigrationReport report, out string errors, out string warnings)
@@ -243,6 +238,7 @@ namespace MigSharp.NUnit.Process
         [Supports(DbType.Int32)]
         [Supports(DbType.Int64)]
         [Supports(DbType.Decimal, MaximumSize = 10, MaximumScale = 5)]
+        [Supports(DbType.Decimal, MaximumSize = 10, CanBeUsedAsIdentity = true)]
         [Supports(DbType.Guid, Warning = WarningMessage)]
         [Supports(DbType.String, MaximumSize = 2000, CanBeUsedAsPrimaryKey = true)]
         [Supports(DbType.String, Warning = WarningMessageWithoutSize)]

@@ -11,16 +11,16 @@ namespace MigSharp.Providers
     [Supports(DbType.AnsiString, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions.")]
     [Supports(DbType.Binary)]
-    [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
+    [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
     [Supports(DbType.Boolean, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
     [Supports(DbType.DateTime, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Decimal, MaximumSize = 22, MaximumScale = 18, CanBeUsedAsPrimaryKey = true)] // according to: http://forums.teradata.com/forum/training/number-data-type
-    [Supports(DbType.Decimal, MaximumSize = 22, CanBeUsedAsPrimaryKey = true)] // according to: http://forums.teradata.com/forum/training/number-data-type
+    [Supports(DbType.Decimal, MaximumSize = 22, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)] // according to: http://forums.teradata.com/forum/training/number-data-type
     [Supports(DbType.Double)]
     [Supports(DbType.Guid, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from a byte array (call Guid.ToByteArray(), Guid(byte[])) and the DbParameter.DbType must be set to DbType.Binary.")]
-    [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
+    [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
+    [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
+    [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
     [Supports(DbType.String, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions.")]
     internal class TeradataProvider : IProvider

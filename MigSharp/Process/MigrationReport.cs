@@ -12,7 +12,7 @@ namespace MigSharp.Process
     {
         private readonly string _migrationName;
         private readonly string _error;
-        private readonly Dictionary<DataType, bool> _dataTypes = new Dictionary<DataType, bool>();
+        private readonly List<UsedDataType> _dataTypes = new List<UsedDataType>();
         private readonly string _longestName;
         private readonly List<string> _methods = new List<string>();
 
@@ -20,9 +20,11 @@ namespace MigSharp.Process
 
         public string Error { get { return _error; } }
 
-        public IEnumerable<DataType> DataTypes { get { return _dataTypes.Keys; } }
+        public IEnumerable<DataType> DataTypes { get { return _dataTypes.GroupBy(d => d.DataType).Select(g => g.Key); } }
 
-        public IEnumerable<DataType> PrimaryKeyDataTypes { get { return _dataTypes.Where(p => p.Value).Select(p => p.Key); } }
+        public IEnumerable<DataType> PrimaryKeyDataTypes { get { return _dataTypes.Where(d => d.UsedAsPrimaryKey).GroupBy(d => d.DataType).Select(g => g.Key); } }
+
+        public IEnumerable<DataType> IdentityDataTypes { get { return _dataTypes.Where(d => d.UsedAsIdentity).GroupBy(d => d.DataType).Select(g => g.Key); } }
 
         public string LongestName { get { return _longestName; } }
 
@@ -33,14 +35,7 @@ namespace MigSharp.Process
             _migrationName = migrationName;
             _longestName = migration.NewObjectNames.Longest();
             _error = error;
-            foreach (DataType dataType in migration.DataTypes)
-            {
-                AddUsedDataType(dataType, false);
-            }
-            foreach (DataType dataType in migration.PrimaryKeyDataTypes)
-            {
-                AddUsedDataType(dataType, true);
-            }
+            _dataTypes.AddRange(migration.DataTypes);
             _methods.AddRange(migration.Methods);
         }
 
@@ -61,18 +56,6 @@ namespace MigSharp.Process
 
             // create MigrationReport
             return new MigrationReport(migrationName, error, recordingProvider);
-        }
-
-        private void AddUsedDataType(DataType dataType, bool usedAsPrimaryKey)
-        {
-            if (!_dataTypes.ContainsKey(dataType))
-            {
-                _dataTypes.Add(dataType, usedAsPrimaryKey);
-            }
-            else
-            {
-                _dataTypes[dataType] |= usedAsPrimaryKey;
-            }
         }
     }
 }

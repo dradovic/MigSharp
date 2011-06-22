@@ -83,8 +83,9 @@ namespace MigSharp.Process
                         providerMetadata.Name));
                     continue;
                 }
-
-                // the data type is supported, check if OfSize was specified correctly
+                // post-condition: the data type is supported
+                
+                // check if OfSize was specified correctly
                 bool sizeIsSpecified = dataType.Size > 0;
                 bool scaleIsSpecified = dataType.Scale > 0;
                 SupportsAttribute attribute = attributes.Find(a => !(a.MaximumSize > 0 ^ sizeIsSpecified) && !(a.MaximumScale > 0 ^ scaleIsSpecified));
@@ -99,12 +100,21 @@ namespace MigSharp.Process
                         providerMetadata.Name));
                     continue;
                 }
+                // post-condition: the data type is supported and OfSize was specified correctly
 
-                // the data type is supported and OfSize was specified correctly
+                // check other properties
                 if (report.PrimaryKeyDataTypes.Contains(dataType) && !attribute.CanBeUsedAsPrimaryKey)
                 {
                     errorMessages.Add(string.Format(CultureInfo.CurrentCulture,
-                        "Migration '{0}' uses the data type '{1}' as a primary key which is not supported by '{2}'.",
+                        "Migration '{0}' uses the data type '{1}' for a primary key which is not supported by '{2}'.",
+                        report.MigrationName,
+                        dataType,
+                        providerMetadata.Name));
+                }
+                if (report.IdentityDataTypes.Contains(dataType) && !attribute.CanBeUsedAsIdentity)
+                {
+                    errorMessages.Add(string.Format(CultureInfo.CurrentCulture,
+                        "Migration '{0}' uses the data type '{1}' for an identity column which is not supported by '{2}'.",
                         report.MigrationName,
                         dataType,
                         providerMetadata.Name));

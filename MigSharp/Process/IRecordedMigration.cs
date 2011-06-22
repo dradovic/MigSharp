@@ -1,20 +1,13 @@
 using System.Collections.Generic;
 
-using MigSharp.Providers;
-
 namespace MigSharp.Process
 {
     internal interface IRecordedMigration
     {
         /// <summary>
-        /// Gets a list of <see cref="DataType"/>s that were used to create new objects (excluding primary key columns).
+        /// Gets a list of <see cref="UsedDataType"/>s that were used to create new objects.
         /// </summary>
-        IEnumerable<DataType> DataTypes { get; }
-
-        /// <summary>
-        /// Gets a list of <see cref="DataType"/>s that were used to create primary key columns.
-        /// </summary>
-        IEnumerable<DataType> PrimaryKeyDataTypes { get; }
+        IEnumerable<UsedDataType> DataTypes { get; }
 
         /// <summary>
         /// Gets a list of names of any created objects.

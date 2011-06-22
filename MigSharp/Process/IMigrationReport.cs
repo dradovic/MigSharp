@@ -21,7 +21,7 @@ namespace MigSharp.Process
         string Error { get; }
 
         /// <summary>
-        /// Gets a list of <see cref="DataType"/>s that were used to create new objects (including primary key columns).
+        /// Gets a list of all <see cref="DataType"/>s that were used to create new objects.
         /// </summary>
         IEnumerable<DataType> DataTypes { get; }
 
@@ -29,6 +29,11 @@ namespace MigSharp.Process
         /// Gets a list of <see cref="DataType"/>s that were used to create primary key columns.
         /// </summary>
         IEnumerable<DataType> PrimaryKeyDataTypes { get; }
+
+        /// <summary>
+        /// Gets a list of <see cref="DataType"/>s that were used to create identity columns.
+        /// </summary>
+        IEnumerable<DataType> IdentityDataTypes { get; }
 
         /// <summary>
         /// Gets the longest name of any created objects.

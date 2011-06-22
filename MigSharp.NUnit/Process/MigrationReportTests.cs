@@ -18,7 +18,11 @@ namespace MigSharp.NUnit.Process
     public class MigrationReportTests
     {
         [Test, TestCaseSource(typeof(TestCaseGenerator), "CreateDatabaseCases")]
-        public void VerifyMigrationReportProps(IDatabase database, IEnumerable<DataType> expectedDataTypes, IEnumerable<DataType> expectedPrimaryKeyDataTypes, string expectedLongestName)
+        public void VerifyMigrationReportProps(IDatabase database, 
+            IEnumerable<DataType> expectedDataTypes,
+            IEnumerable<DataType> expectedPrimaryKeyDataTypes, 
+            IEnumerable<DataType> expectedIdentityDataTypes,
+            string expectedLongestName)
         {
             const string migrationName = "Test Migration";
             MigrationReport report = MigrationReport.Create((Database)database, migrationName);
@@ -26,6 +30,7 @@ namespace MigSharp.NUnit.Process
             Assert.IsEmpty(report.Error, "These cases should not have any errors.");
             CollectionAssert.AreEquivalent(expectedDataTypes.ToList(), report.DataTypes.ToList(), "The collection of used data types is wrong.");
             CollectionAssert.AreEquivalent(expectedPrimaryKeyDataTypes.ToList(), report.PrimaryKeyDataTypes.ToList(), "The collection of used data types for primary keys is wrong.");
+            CollectionAssert.AreEquivalent(expectedIdentityDataTypes.ToList(), report.IdentityDataTypes.ToList(), "The collection of used data types for identity columns is wrong.");
             Assert.AreEqual(expectedLongestName, report.LongestName, "The longest name is wrong.");
         }
 
@@ -74,11 +79,6 @@ namespace MigSharp.NUnit.Process
             db.Tables["Customers"]
                 .AddNullableColumn("Name", DbType.String).HavingTemporaryDefault("Unicorn");
             yield return new TestCaseData(db, "Adding nullable columns with default values is not supported: some database platforms (like SQL Server) leave missing values NULL and some update missing values to the default value. Consider adding the column first as not-nullable, and then altering it to nullable.", "").SetDescription("Default values nullable columns");
-
-            db = new Database(context);
-            db.CreateTable("Customers")
-                .WithNotNullableColumn("Name", DbType.Double).AsIdentity();
-            yield return new TestCaseData(db, "Identity is only allowed on Int32 and Int64 typed columns.", "").SetDescription("Identity on invalid data type");
         }
     }
 }

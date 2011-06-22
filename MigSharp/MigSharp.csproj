@@ -91,6 +91,7 @@
     <Compile Include="Core\Commands\AlterUniqueConstraintCommand.cs" />
     <Compile Include="Core\Commands\CallCommand.cs" />
     <Compile Include="Core\Commands\InvalidCommandException.cs" />
+    <Compile Include="Process\UsedDataType.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />
     <Compile Include="Core\Entities\AddedIndex.cs" />

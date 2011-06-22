@@ -10,7 +10,7 @@ namespace MigSharp.Providers
     [Supports(DbType.AnsiString, MaximumSize = int.MaxValue, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString)]
     [Supports(DbType.Binary)]
-    [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true)]
+    [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
     [Supports(DbType.Boolean, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
     [Supports(DbType.Date, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.DateTime, CanBeUsedAsPrimaryKey = true)]
@@ -18,16 +18,16 @@ namespace MigSharp.Providers
     [Supports(DbType.Decimal, MaximumSize = 28, CanBeUsedAsPrimaryKey = true)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
     [Supports(DbType.Double)]
     [Supports(DbType.Guid, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true)]
+    [Supports(DbType.Int16, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
+    [Supports(DbType.Int32, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
+    [Supports(DbType.Int64, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
     [Supports(DbType.SByte, CanBeUsedAsPrimaryKey = true)]
     //[Supports(DbType.Single)] throws a System.OverflowException in the SQLiteDataReader when trying to convert the data type to a decimal!?
     [Supports(DbType.String, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String)]
-    [Supports(DbType.UInt16, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.UInt32, CanBeUsedAsPrimaryKey = true)]
-    [Supports(DbType.UInt64, CanBeUsedAsPrimaryKey = true)]
+    [Supports(DbType.UInt16, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
+    [Supports(DbType.UInt32, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
+    [Supports(DbType.UInt64, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
     [Supports(DbType.VarNumeric)]
     [Supports(DbType.AnsiStringFixedLength, MaximumSize = int.MaxValue, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.StringFixedLength, MaximumSize = int.MaxValue, CanBeUsedAsPrimaryKey = true)]
@@ -82,8 +82,15 @@ namespace MigSharp.Providers
         private string GetColumnConstraint(Column column)
         {
             CreatedColumn createdColumn = column as CreatedColumn;
-            return string.Format(CultureInfo.InvariantCulture, "{0}{1}{2}",
-                createdColumn != null && createdColumn.IsIdentity && !createdColumn.IsPrimaryKey ? "AUTOINCREMENT" : string.Empty, // INTEGER column as PK is automatically AUTOINCREMENT: http://www.sqlite.org/autoinc.html
+
+            if (createdColumn != null && createdColumn.IsIdentity && !createdColumn.IsPrimaryKey)
+            {
+                // FEATURE: extend the validation that is uses the actual migration commands such that this exception can be caught by the validation
+                throw new NotSupportedException("Identity can only be used on primary key columns.");
+            }
+
+            // INTEGER column as PK is automatically AUTOINCREMENT: http://www.sqlite.org/autoinc.html
+            return string.Format(CultureInfo.InvariantCulture, "{0}{1}",
                 createdColumn != null && createdColumn.IsIdentity ? string.Empty : (column.IsNullable ? " NULL" : " NOT NULL"),
                 column.DefaultValue != null ? " DEFAULT " + GetDefaultValueAsString(column.DefaultValue) : string.Empty);
         }

@@ -62,7 +62,7 @@ namespace MigSharp.NUnit.Integration
 
                 string columnName = "Column" + i++;
                 ICreatedTableWithAddedColumn column = table.WithNullableColumn(columnName, support.DbType);
-                if (support.MaximumSize >= 0)
+                if (support.MaximumSize >= 0) // FIXME: dr, 11.2, equals?
                 {
                     if (support.MaximumScale >= 0)
                     {

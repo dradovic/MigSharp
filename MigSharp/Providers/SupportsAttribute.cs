@@ -32,6 +32,11 @@ namespace MigSharp.Providers
         public bool CanBeUsedAsPrimaryKey { get; set; }
 
         /// <summary>
+        /// Indicates if the data type can be used for identity columns. By default, this is false.
+        /// </summary>
+        public bool CanBeUsedAsIdentity { get; set; }
+
+        /// <summary>
         /// Gets or sets a warning message if there are any restrictions when using this <see cref="DbType"/>.
         /// The warning message is logged when executing a migration containing this data type.
         /// </summary>

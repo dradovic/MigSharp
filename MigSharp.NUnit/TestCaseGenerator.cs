@@ -32,13 +32,15 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.String, 0, 0), new DataType(DbType.AnsiString, 0, 0), new DataType(DbType.String, 128, 0), new DataType(DbType.Decimal, 10, 2), new DataType(DbType.StringFixedLength, 128, 0), new DataType(DbType.Int64, 0, 0) },
                 new[] { new DataType(DbType.Int32, 0, 0) },
+                Enumerable.Empty<DataType>(),
                 "1st Column Under Named Unique Constraint")
                 .SetDescription("CreateTable");
 
             db = new Database(context);
             db.Tables["Customers"].Drop();
-            yield return new TestCaseData(db, 
-                Enumerable.Empty<DataType>(), 
+            yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
                 .SetDescription("DropTable");
@@ -53,12 +55,14 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.Int64, 0, 0), new DataType(DbType.String, 100, 0), new DataType(DbType.DateTime, 0, 0) },
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "NewNonNullableColumnWithTempDflt7")
                 .SetDescription("AddNotNullableColumn");
 
             db = new Database(context);
             db.Tables["Customers"].Columns["Some Column"].Drop();
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
@@ -69,12 +73,14 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "Customer")
                 .SetDescription("RenameTable");
 
             db = new Database(context);
             db.Tables["Customers"].Columns["ColumnName"].Rename("LastName");
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 "LastName")
@@ -84,6 +90,7 @@ namespace MigSharp.NUnit
             db.Tables["Orders"].AddForeignKeyTo("Customers")
                 .Through("CustomerId", "Id");
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 "FK_Orders_Customers")
@@ -96,21 +103,25 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "MyFK")
                 .SetDescription("AddForeignKey with multiple columns and a custom constraint name");
 
             db = new Database(context);
             db.CreateTable("Table")
-                .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity();
+                .WithPrimaryKeyColumn("PK", DbType.Int32)
+                .WithNotNullableColumn("Id", DbType.Decimal).OfSize(12).AsIdentity();
             yield return new TestCaseData(db,
+                new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.Decimal, 12, 0) },
                 new[] { new DataType(DbType.Int32, 0, 0) },
-                new[] { new DataType(DbType.Int32, 0, 0) },
+                new[] { new DataType(DbType.Decimal, 12, 0) },
                 "PK_Table")
                 .SetDescription("Identity");
 
             db = new Database(context);
             db.Tables["Table"].UniqueConstraints["IX_Table_Id"].Drop();
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
@@ -123,6 +134,7 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "My Index")
                 .SetDescription("Add unique constraint");
 
@@ -133,6 +145,7 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "IX_Table_Id")
                 .SetDescription("Add unique constraint with default name");
 
@@ -141,12 +154,14 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 string.Empty)
                 .SetDescription("Drop primary key constraint");
 
             db = new Database(context);
             db.Tables["Table"].PrimaryKey().Drop();
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
@@ -159,12 +174,14 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "MyPK")
                 .SetDescription("Add primary key constraint");
 
             db = new Database(context);
             db.Tables["Table"].ForeignKeys["MyFK"].Drop();
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
@@ -176,6 +193,7 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.DateTime, 0, 0) },
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "MySystemTime")
                 .SetDescription("Add column with HavingCurrentDateTimeAsDefault");
 
@@ -184,6 +202,7 @@ namespace MigSharp.NUnit
                 .WithNotNullableColumn("MySystemTime", DbType.DateTime).HavingCurrentDateTimeAsDefault();
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.DateTime, 0, 0) },
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 "MySystemTime")
                 .SetDescription("Create column with HavingCurrentDateTimeAsDefault");
@@ -195,12 +214,14 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.AnsiString, 0, 0) },
                 new[] { new DataType(DbType.Int32, 0, 0) },
+                Enumerable.Empty<DataType>(),
                 "My custom PK constraint name")
                 .SetDescription("Create table with custom primary key constraint name");
 
             db = new Database(context);
             db.Tables["Customers"].Indexes["MyIndex"].Drop();
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty).SetDescription("Drop existing index");
@@ -212,6 +233,7 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 "MyIndex")
                 .SetDescription("Add an index");
 
@@ -219,6 +241,7 @@ namespace MigSharp.NUnit
             db.Tables["Table"].Columns["Column"].AlterToNotNullable(DbType.String);
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.String, 0, 0) },
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
                 .SetDescription("MakeNotNullable");
@@ -228,12 +251,14 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.String, 255, 0) },
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 string.Empty).SetDescription("MakeNullable OfSize");
 
             db = new Database(context);
             db.Tables["Table"].Columns["Column"].AlterToNotNullable(DbType.String).OfSize(255).HavingDefault("my default");
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.String, 255, 0) },
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
                 .SetDescription("MakeNullable OfSize");
@@ -243,12 +268,14 @@ namespace MigSharp.NUnit
             yield return new TestCaseData(db,
                 new[] { new DataType(DbType.String, 255, 0) },
                 Enumerable.Empty<DataType>(),
+                Enumerable.Empty<DataType>(),
                 string.Empty)
                 .SetDescription("MakeNullable OfSize");
 
             db = new Database(context);
             db.Tables["Table"].PrimaryKey().Rename("New PK Name");
             yield return new TestCaseData(db,
+                Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 "New PK Name")
