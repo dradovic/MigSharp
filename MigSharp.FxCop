@@ -21,7 +21,10 @@
   <IgnoreGeneratedCode>True</IgnoreGeneratedCode>
  </ProjectOptions>
  <Targets>
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
+   <AssemblyReferenceDirectories>
+     <Directory>$(ProjectDir)/MigSharp.SQLite.NUnit/lib/</Directory>
+   </AssemblyReferenceDirectories>
+   <Target Name="$(ProjectDir)/bin/Release/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
    <Modules AnalyzeAllChildren="False">
     <Module Name="migsharp.dll" Analyze="True" AnalyzeAllChildren="False">
      <Namespaces AnalyzeAllChildren="False">
@@ -38,6 +41,7 @@
   </Target>
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.Oracle.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
+  <Target Name="$(ProjectDir)/bin/Release/MigSharp.SQLite.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.SqlServer.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.SqlServerCe.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.Teradata.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />

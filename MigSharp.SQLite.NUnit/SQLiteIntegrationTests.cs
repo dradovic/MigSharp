@@ -4,14 +4,13 @@ using System.Globalization;
 using System.IO;
 
 using MigSharp.NUnit.Integration;
-using MigSharp.Providers;
 
 using NUnit.Framework;
 
 namespace MigSharp.SQLite.NUnit
 {
     [TestFixture, Category("SQLite")]
-    internal class SQLiteIntegrationTests : IntegrationTestsBase
+    public class SQLiteIntegrationTests : IntegrationTestsBase
     {
         private string _dataFile;
 
