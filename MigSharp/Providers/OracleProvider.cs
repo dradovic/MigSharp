@@ -209,8 +209,8 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME TO {1}", Escape(oldName), Escape(newName));
 
             // rename sequence if it exists and drop, re-create trigger
-            string oldSequnceName = GetSequenceName(oldName);
-            string newSequnceName = GetSequenceName(newName);
+            string oldSequenceName = GetSequenceName(oldName);
+            string newSequenceName = GetSequenceName(newName);
             string oldTriggerName = GetTriggerName(oldName);
             yield return string.Format(CultureInfo.InvariantCulture,
                 @"DECLARE
@@ -238,10 +238,10 @@ namespace MigSharp.Providers
                         RAISE;
                     END IF;
                 END;",
-                Escape(oldSequnceName),
-                Escape(newSequnceName),
+                Escape(oldSequenceName),
+                Escape(newSequenceName),
                 Escape(oldTriggerName),
-                CreateTrigger(newName, "' || l_idColumn || '", newSequnceName),
+                CreateTrigger(newName, "' || l_idColumn || '", newSequenceName),
                 oldTriggerName
                 ).Replace(Environment.NewLine, " ");
         }

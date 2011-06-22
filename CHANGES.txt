@@ -11,7 +11,7 @@
 	    more flexibility to report what they support and what not
       - Teradata:
 	    - raise validation error on adding/dropping primary keys (Teradata does not support that)
-	  - BUG FIXES:
+1.0.2 - BUG FIXES:
 	    - SQL Server 2005/2008:
 		  - rename default constraint along with the column (fixes the case when adding a new column with a default value which has the same name of a previously renamed column with a default value)
 		- Oracle:
