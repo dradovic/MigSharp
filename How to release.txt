@@ -35,6 +35,7 @@ Post-actions:
 - Increment AssemblyVersion in AssemblyInfo.cs and MigSharp.nuspec
 - Announce
   - CSA.NET
+- Close all issues related to the released milestone
 
 To branch a release for patches:
 --------------------------------
