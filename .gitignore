@@ -23,6 +23,7 @@ Thumbs.db
 [Dd]ebug*/
 *.lib
 *.sbr
+*.nupkg
 *.patch
 obj/
 [Rr]elease*/
