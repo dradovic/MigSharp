@@ -17,6 +17,18 @@ Releasing:
   - Pin the build on TeamCity
 - Verify downloads are okay (extracting the zip file works)
 - Publish NuGet package using the MigSharp.nuspec (see: http://docs.nuget.org/)
+  - Open nuget/MigSharp.nuspec in the NuGet Package Explorer
+  - Adjust package metadata as required
+  - Remove the .svn folder from the package content
+  - Add content using the following structure:
+    lib/
+	  net35/
+	    MigSharp.dll
+		MigSharp.xml
+      net40/
+	    MigSharp.dll
+		MigSharp.xml
+  - File > Publish...
 
 Post-actions:
 -------------
