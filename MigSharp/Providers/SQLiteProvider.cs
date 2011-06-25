@@ -56,7 +56,6 @@ namespace MigSharp.Providers
                 .Where(c => !string.IsNullOrEmpty(c.UniqueConstraint))
                 .GroupBy(c => c.UniqueConstraint))
             {
-                // FIXME: is okay to implement uniqueness using unique indexes insted of the UNIQUE key word at the column definition?
                 yield return AddIndex(tableName, uniqueColumns.Select(c => c.Name), uniqueColumns.Key, true);
             }
         }
