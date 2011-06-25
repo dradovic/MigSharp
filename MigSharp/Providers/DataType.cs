@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Globalization;
 
 namespace MigSharp.Providers
@@ -6,12 +7,15 @@ namespace MigSharp.Providers
     /// <summary>
     /// Represents a SQL data type.
     /// </summary>
-    public struct DataType // FIXME: dr, 11.2, add : IEquatable<DataType>
+    public struct DataType : IEquatable<DataType>
     {
         private readonly DbType _dbType;
         private readonly int _size;
         private readonly int _scale;
 
+        /// <summary>
+        /// Gets the associated <see cref="DbType"/>.
+        /// </summary>
         public DbType DbType { get { return _dbType; } }
 
         /// <summary>
@@ -49,7 +53,9 @@ namespace MigSharp.Providers
             return (this == (DataType)obj);
         }
 
+#pragma warning disable 1591
         public static bool operator ==(DataType left, DataType right)
+#pragma warning restore 1591
         {
             return
                 left._dbType == right._dbType &&
@@ -57,7 +63,9 @@ namespace MigSharp.Providers
                 left._scale == right._scale;
         }
 
+#pragma warning disable 1591
         public static bool operator !=(DataType left, DataType right)
+#pragma warning restore 1591
         {
             return !(left == right);
         }
