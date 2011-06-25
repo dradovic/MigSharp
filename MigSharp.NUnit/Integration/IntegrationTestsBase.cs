@@ -211,8 +211,6 @@ namespace MigSharp.NUnit.Integration
 
         private void VerifyResultsOfAllMigrations()
         {
-            // FIXME: dr, are the column names being checked?
-
             // assert all tables have been created with the expected content
             foreach (IIntegrationTestMigration migration in Migrations.OfType<IIntegrationTestMigration>())
             {
@@ -225,6 +223,11 @@ namespace MigSharp.NUnit.Integration
                     Assert.AreEqual(expectedTable.Count, table.Rows.Count, "The actual number of rows is wrong.");
                     for (int column = 0; column < expectedTable.Columns.Count; column++)
                     {
+                        // check column name
+                        Assert.AreEqual(expectedTable.Columns[column], table.Columns[column].ColumnName, 
+                            string.Format(CultureInfo.CurrentCulture, "A column name of table '{0}' is wrong.", expectedTable.Name));
+
+                        // check content
                         for (int row = 0; row < expectedTable.Count; row++)
                         {
                             object expectedValue = expectedTable.Value(row, column);
