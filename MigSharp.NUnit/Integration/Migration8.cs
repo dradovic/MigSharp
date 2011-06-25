@@ -39,14 +39,16 @@ namespace MigSharp.NUnit.Integration
             { DbType.DateTime2, DateTime.Parse("12/28/2010 19:25:21.9999", CultureInfo.InvariantCulture) },
         };
 
-        private static readonly Dictionary<string, DbType> Columns = new Dictionary<string, DbType>();
-        private static readonly List<object> Values = new List<object>();
+        private static readonly ExpectedTables ExpectedTables = new ExpectedTables();
 
         public void Up(IDatabase db)
         {
+            const string tableName = "Mig8";
+            ExpectedTables.Clear();
+
             // create a table that contains columns for all supported data types
-            ICreatedTable table = db.CreateTable(Tables[0].Name);
-            Columns.Clear();
+            ICreatedTable table = db.CreateTable(tableName);
+            Dictionary<string, DbType> columns = new Dictionary<string, DbType>();
             int i = 1;
             foreach (SupportsAttribute support in IntegrationTestContext.SupportsAttributes
                 .Where(s => !IntegrationTestContext.IsScripting || s.IsScriptable)
@@ -62,7 +64,7 @@ namespace MigSharp.NUnit.Integration
 
                 string columnName = "Column" + i++;
                 table.WithNullableColumn(columnName, support.DbType).OfSize(support.MaximumSize, support.MaximumScale);
-                Columns.Add(columnName, support.DbType);
+                columns.Add(columnName, support.DbType);
             }
 
             db.Execute(context =>
@@ -70,28 +72,33 @@ namespace MigSharp.NUnit.Integration
                     IDbCommand command = context.Connection.CreateCommand();
                     command.Transaction = context.Transaction;
 
-                    Values.Clear();
-                    foreach (var column in Columns)
+                    ExpectedTables[0].Clear();
+                    var values = new List<object>();
+                    foreach (var column in columns)
                     {
                         DbType dbType;
                         object value = GetTestValue(column, db, out dbType);
                         command.AddParameter("@" + column.Key, (dbType == DbType.AnsiString && db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4) ? DbType.String : dbType, value);
-                        Values.Add(value);
+                        values.Add(value);
                     }
+                    ExpectedTables[0].Add(values.ToArray());
 
                     command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" ({1}) VALUES ({2})",
                         Tables[0].Name,
-                        string.Join(", ", Columns.Keys.Select(c => "\"" + c + "\"").ToArray()),
+                        string.Join(", ", columns.Keys.Select(c => "\"" + c + "\"").ToArray()),
                         string.Join(", ", command.Parameters.Cast<IDbDataParameter>().Select(p => context.ProviderMetadata.GetParameterSpecifier(p)).ToArray()));
                     context.CommandExecutor.ExecuteNonQuery(command);
                 });
+
+            ExpectedTables.Add(new ExpectedTable(tableName, columns.Keys));
 
             // create a table for each supported primary key data type
             // (as combining them all into one table would be too much)
             foreach (SupportsAttribute support in IntegrationTestContext.SupportsAttributes
                 .Where(s => (!IntegrationTestContext.IsScripting || s.IsScriptable) && s.CanBeUsedAsPrimaryKey))
             {
-                ICreatedTable pkTable = db.CreateTable(Tables[0].Name + "WithPkOf" + support.DbType + support.MaximumScale);
+                string pkTableName = Tables[0].Name + "WithPkOf" + support.DbType + support.MaximumScale;
+                ICreatedTable pkTable = db.CreateTable(pkTableName);
                 int maximumSize = support.MaximumSize;
                 if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005 ||
                     db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005Odbc ||
@@ -108,6 +115,7 @@ namespace MigSharp.NUnit.Integration
                     }
                 }
                 pkTable.WithPrimaryKeyColumn("Id", support.DbType).OfSize(maximumSize, support.MaximumScale);
+                ExpectedTables.Add(new ExpectedTable(pkTableName, "Id"));
             }
         }
 
@@ -145,20 +153,6 @@ namespace MigSharp.NUnit.Integration
             return result;
         }
 
-        // FIXME: dr, add PK tables
-        public ExpectedTables Tables
-        {
-            get
-            {
-                IEnumerable<string> columnNames = Columns.Keys;
-                return new ExpectedTables
-                {
-                    new ExpectedTable("Mig8", columnNames.FirstOrDefault(), columnNames.Skip(1).ToArray())
-                    {
-                        Values.ToArray()
-                    }
-                };
-            }
-        }
+        public ExpectedTables Tables { get { return ExpectedTables; } }
     }
 }

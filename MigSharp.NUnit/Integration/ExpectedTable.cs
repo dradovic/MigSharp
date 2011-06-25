@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MigSharp.NUnit.Integration
@@ -11,14 +12,21 @@ namespace MigSharp.NUnit.Integration
         public string Name { get { return _name; } }
         public List<string> Columns { get { return _columns; } }
 
-        public ExpectedTable(string name, string columnName1, params string[] columnNames)
+        public ExpectedTable(string name, IEnumerable<string> columnNames)
         {
             _name = name;
-            _columns = new List<string>(new[] { columnName1 }.Concat(columnNames));
+            _columns = new List<string>(columnNames);
+        }
+
+        public ExpectedTable(string name, string columnName1, params string[] columnNames)
+            : this(name, new[] { columnName1 }.Concat(columnNames))
+        {
         }
 
         public new void Add(params object[] values)
         {
+            if (values.Length != Columns.Count) throw new ArgumentException("The provided number of values does not match number of columns.");
+
             base.Add(values);
         }
 

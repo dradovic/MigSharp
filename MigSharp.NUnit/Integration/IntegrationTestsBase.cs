@@ -218,7 +218,7 @@ namespace MigSharp.NUnit.Integration
                 {
                     DataTable table = GetTable(expectedTable.Name);
 
-                    Assert.IsNotNull(table, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", expectedTable.Name));
+                    Assert.IsNotNull(table, string.Format(CultureInfo.CurrentCulture, "The table '{0}' was not created.", expectedTable.Name));
                     Assert.AreEqual(expectedTable.Columns.Count, table.Columns.Count, "The actual number of columns is wrong.");
                     Assert.AreEqual(expectedTable.Count, table.Rows.Count, "The actual number of rows is wrong.");
                     for (int column = 0; column < expectedTable.Columns.Count; column++)
