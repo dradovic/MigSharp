@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -248,24 +246,13 @@ namespace MigSharp
                 catalog.Catalogs.Add(new AssemblyCatalog(assembly));
             } 
             var container = new CompositionContainer(catalog);
-            var migrationImporter = new MigrationImporter();
-            container.ComposeParts(migrationImporter);
+            IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> migrations = container.GetExports<IMigration, IMigrationExportMetadata>();
             List<MigrationInfo> result =
-                new List<MigrationInfo>(
-                    migrationImporter.Migrations
+                new List<MigrationInfo>(migrations
                         .Where(l => includeModule(l.Metadata.ModuleName))
                         .Select(l => new MigrationInfo(l.Value, new MigrationMetadata(l.Metadata.Tag, l.Metadata.ModuleName, l.Value.GetType().GetTimestamp()))));
             Log.Info("Found {0} migration(s) in total", result.Count);
             return result;
-        }
-
-        private class MigrationImporter
-        {
-// ReSharper disable UnusedAutoPropertyAccessor.Local
-            [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-            [ImportMany]
-            public IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> Migrations { get; set; } // set by MEF
-// ReSharper restore UnusedAutoPropertyAccessor.Local
         }
 
         private class MigrationMetadata : IMigrationMetadata
