@@ -15,7 +15,9 @@ namespace MigSharp
     /// </summary>
     public class MigrationOptions
     {
-        private string _versioningTableName = "MigSharp";
+        public const string DefaultVersioningTableName = "MigSharp";
+
+        private string _versioningTableName = DefaultVersioningTableName;
 
         /// <summary>
         /// Gets or sets the table name of the versioning table.
@@ -69,6 +71,8 @@ namespace MigSharp
         /// <param name="moduleName">The name of the selected module. Only migrations for this module will be executed.</param>
         public MigrationOptions(string moduleName)
         {
+            if (string.IsNullOrEmpty(moduleName)) throw new ArgumentException("Empty moduleName.", "moduleName");
+
             ModuleSelector = n => n == moduleName;
         }
 

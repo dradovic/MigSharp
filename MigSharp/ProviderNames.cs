@@ -5,6 +5,7 @@
     /// </summary>
     public static class ProviderNames
     {
+#pragma warning disable 1591
         public const string Oracle = "Oracle";
         public const string OracleOdbc = "OracleOdbc";
         public const string SQLite = "SQLite";
@@ -14,5 +15,6 @@
         public const string SqlServerCe4 = "SqlServerCe4";
         public const string Teradata = "Teradata";
         public const string TeradataOdbc = "TeradataOdbc";
+#pragma warning restore 1591
     }
 }

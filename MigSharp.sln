@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.SqlServerCe.NUnit"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.SQLite.NUnit", "MigSharp.SQLite.NUnit\MigSharp.SQLite.NUnit.csproj", "{B7C9C7E2-3199-436C-ADF6-8B63B751696C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migrate", "Migrate\Migrate.csproj", "{4100DFDA-C758-4177-8478-116CBEC6E19A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{B7C9C7E2-3199-436C-ADF6-8B63B751696C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7C9C7E2-3199-436C-ADF6-8B63B751696C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7C9C7E2-3199-436C-ADF6-8B63B751696C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4100DFDA-C758-4177-8478-116CBEC6E19A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4100DFDA-C758-4177-8478-116CBEC6E19A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4100DFDA-C758-4177-8478-116CBEC6E19A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4100DFDA-C758-4177-8478-116CBEC6E19A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -115,6 +115,9 @@
     <Compile Include="Integration\Migration7.cs" />
     <Compile Include="Integration\Migration8.cs" />
     <Compile Include="Integration\Migration9.cs" />
+    <Compile Include="Migrate\CommandLineParsingTests.cs" />
+    <Compile Include="Migrate\MigrateProcess.cs" />
+    <Compile Include="Migrate\ConsoleTests.cs" />
     <Compile Include="MigrationOptionTests.cs" />
     <Compile Include="MigratorTests.cs" />
     <Compile Include="Process\MigrationBatchTests.cs" />
@@ -130,6 +133,10 @@
     <Compile Include="Process\MigrationReportTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Migrate\Migrate.csproj">
+      <Project>{4100DFDA-C758-4177-8478-116CBEC6E19A}</Project>
+      <Name>Migrate</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MigSharp\MigSharp.csproj">
       <Project>{EAFA7470-A919-449C-9142-3D515DAB52AD}</Project>
       <Name>MigSharp</Name>

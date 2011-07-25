@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.Data;
 using System.Linq;
 using System.Reflection;
@@ -116,17 +117,37 @@ namespace MigSharp
         /// <param name="additionalAssemblies">Optional assemblies that hold additional migrations.</param>
         public IMigrationBatch FetchMigrationsTo(Assembly assembly, long timestamp, params Assembly[] additionalAssemblies)
         {
+            IEnumerable<Assembly> assemblies = new[] { assembly }.Concat(additionalAssemblies);
+            ComposablePartCatalog catalog = CreateCatalog(assemblies, a => new AssemblyCatalog(a), a => a.FullName);
+            return FetchMigrationsTo(catalog, timestamp);
+        }
+
+        /// <summary>
+        /// Retrieves all required migrations to reach <paramref name="timestamp"/>.
+        /// </summary>
+        /// <param name="assemblyPath">Path to the assembly that contains the migrations.</param>
+        /// <param name="timestamp">The timestamp to migrate to.</param>
+        /// <exception cref="IrreversibleMigrationException">When the migration path would require downgrading a migration which is not reversible.</exception>
+        /// <param name="additionalAssemblyPaths">Paths to optional assemblies that hold additional migrations.</param>
+        public IMigrationBatch FetchMigrationsTo(string assemblyPath, long timestamp, params string[] additionalAssemblyPaths)
+        {
+            IEnumerable<string> assemblyPaths = new[] { assemblyPath }.Concat(additionalAssemblyPaths);
+            ComposablePartCatalog catalog = CreateCatalog(assemblyPaths, p => new AssemblyCatalog(p), p => p);
+            return FetchMigrationsTo(catalog, timestamp);
+        }
+
+        private IMigrationBatch FetchMigrationsTo(ComposablePartCatalog catalog, long timestamp)
+        {
             // collect all migrations
             DateTime start = DateTime.Now;
-            IEnumerable<Assembly> assemblies = new[] { assembly }.Concat(additionalAssemblies);
-            List<MigrationInfo> migrations = CollectAllMigrationsForModule(assemblies, _options.ModuleSelector);
+            List<MigrationInfo> migrations = CollectAllMigrationsForModule(catalog, _options.ModuleSelector);
             Log.Verbose(LogCategory.Performance, "Collecting migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
             // initialize command execution/scripting dispatching
             ISqlDispatcher dispatcher = new SqlDispatcher(_options.ScriptingOptions, _provider, _providerMetadata);
 
             // initialize versioning component
-            IVersioning versioning = InitializeVersioning(assemblies, dispatcher);
+            IVersioning versioning = InitializeVersioning(catalog, dispatcher);
 
             // filter applicable migrations)
             if (migrations.Count > 0)
@@ -172,7 +193,7 @@ namespace MigSharp
             return FetchMigrations(assembly, additionalAssemblies).Count == 0;
         }
 
-        private IVersioning InitializeVersioning(IEnumerable<Assembly> assemblies, ISqlDispatcher dispatcher)
+        private IVersioning InitializeVersioning(ComposablePartCatalog catalog, ISqlDispatcher dispatcher)
         {
             IVersioning versioning;
             if (_customVersioning != null)
@@ -184,14 +205,14 @@ namespace MigSharp
                 var v = new Versioning(_connectionInfo, _dbConnectionFactory, _provider, _providerMetadata, _options.VersioningTableName, dispatcher);
                 if (_customBootstrapper != null && !v.VersioningTableExists)
                 {
-                    ApplyCustomBootstrapping(v, assemblies);
+                    ApplyCustomBootstrapping(v, catalog);
                 }
                 versioning = v;
             }
             return versioning;
         }
 
-        private void ApplyCustomBootstrapping(Versioning versioning, IEnumerable<Assembly> assemblies)
+        private void ApplyCustomBootstrapping(Versioning versioning, ComposablePartCatalog catalog)
         {
             using (IDbConnection connection = _dbConnectionFactory.OpenConnection(_connectionInfo))
             {
@@ -200,7 +221,7 @@ namespace MigSharp
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var allMigrations = CollectAllMigrationsForModule(assemblies, s => true)
+                    var allMigrations = CollectAllMigrationsForModule(catalog, s => true)
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = from m in allMigrations
                                                              where _customBootstrapper.IsContained(m)
@@ -237,21 +258,27 @@ namespace MigSharp
             _customBootstrapper = customBootstrapper;
         }
 
-        private static List<MigrationInfo> CollectAllMigrationsForModule(IEnumerable<Assembly> assemblies, Predicate<string> includeModule)
+        private static ComposablePartCatalog CreateCatalog<T>(IEnumerable<T> assemblies, Func<T, ComposablePartCatalog> createCatalogFor, Func<T, string> getAssemblyName)
         {
             var catalog = new AggregateCatalog();
-            foreach (var assembly in assemblies)
-            { 
-                Log.Info("Collecting all migrations from assembly {0}...", assembly.FullName);
-                catalog.Catalogs.Add(new AssemblyCatalog(assembly));
-            } 
+            foreach (T assembly in assemblies)
+            {
+                Log.Info("Including migrations from assembly '{0}'", getAssemblyName(assembly));
+                catalog.Catalogs.Add(createCatalogFor(assembly));
+            }
+            return catalog;            
+        }
+
+        private static List<MigrationInfo> CollectAllMigrationsForModule(ComposablePartCatalog catalog, Predicate<string> includeModule)
+        {
+            Log.Info("Collecting migrations...");
             var container = new CompositionContainer(catalog);
             IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> migrations = container.GetExports<IMigration, IMigrationExportMetadata>();
             List<MigrationInfo> result =
                 new List<MigrationInfo>(migrations
                         .Where(l => includeModule(l.Metadata.ModuleName))
                         .Select(l => new MigrationInfo(l.Value, new MigrationMetadata(l.Metadata.Tag, l.Metadata.ModuleName, l.Value.GetType().GetTimestamp()))));
-            Log.Info("Found {0} migration(s) in total", result.Count);
+            Log.Info("Found {0} migration(s) for selected modules", result.Count);
             return result;
         }
 

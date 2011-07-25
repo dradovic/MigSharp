@@ -21,10 +21,21 @@
   <IgnoreGeneratedCode>True</IgnoreGeneratedCode>
  </ProjectOptions>
  <Targets>
-   <AssemblyReferenceDirectories>
-     <Directory>$(ProjectDir)/MigSharp.SQLite.NUnit/lib/</Directory>
-   </AssemblyReferenceDirectories>
-   <Target Name="$(ProjectDir)/bin/Release/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
+  <AssemblyReferenceDirectories>
+   <Directory>$(ProjectDir)/MigSharp.SQLite.NUnit/lib/</Directory>
+  </AssemblyReferenceDirectories>
+  <Target Name="$(ProjectDir)/bin/Release/Migrate.exe" Analyze="True" AnalyzeAllChildren="False">
+   <Modules AnalyzeAllChildren="False">
+    <Module Name="migrate.exe" Analyze="True" AnalyzeAllChildren="False">
+     <Namespaces AnalyzeAllChildren="False">
+      <Namespace Name="" Analyze="True" AnalyzeAllChildren="True" />
+      <Namespace Name="MigSharp.Migrate" Analyze="True" AnalyzeAllChildren="True" />
+     </Namespaces>
+     <Resources AnalyzeAllChildren="True" />
+    </Module>
+   </Modules>
+  </Target>
+  <Target Name="$(ProjectDir)/bin/Release/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
    <Modules AnalyzeAllChildren="False">
     <Module Name="migsharp.dll" Analyze="True" AnalyzeAllChildren="False">
      <Namespaces AnalyzeAllChildren="False">

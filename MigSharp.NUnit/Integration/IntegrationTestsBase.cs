@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
+using MigSharp.NUnit.Migrate;
 using MigSharp.Process;
 using MigSharp.Providers;
 
@@ -116,6 +117,13 @@ namespace MigSharp.NUnit.Integration
                 targetDirectory = new DirectoryInfo(targetPath); // it seems that the Exists flag is not updated by the call to Create
             }
             return targetDirectory;
+        }
+
+        protected void TestMigration1UsingMigrate()
+        {
+            int exitCode = MigrateProcess.Execute(ConnectionString, ProviderName, typeof(Migration1).Assembly, Timestamps[0]);
+            Assert.AreEqual(0, exitCode, "Migrate.exe failed.");
+            CheckResultsOfMigration1();
         }
 
         [Test]

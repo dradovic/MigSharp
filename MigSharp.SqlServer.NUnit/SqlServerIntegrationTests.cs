@@ -6,6 +6,8 @@ using Microsoft.SqlServer.Management.Smo;
 
 using MigSharp.NUnit.Integration;
 
+using NUnit.Framework;
+
 namespace MigSharp.SqlServer.NUnit
 {
     public abstract class SqlServerIntegrationTests : IntegrationTestsBase
@@ -14,6 +16,12 @@ namespace MigSharp.SqlServer.NUnit
         protected const string TestDbName = "MigSharp_TestDb";
 
         private Database _database;
+
+        [Test]
+        public void TestMigration1UsingConsoleApp()
+        {
+            TestMigration1UsingMigrate();
+        }
 
         public override void Setup()
         {
