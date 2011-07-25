@@ -2,7 +2,10 @@ Pre-conditions:
 ---------------
 - Build environment is green
 - No FIXME or NotImplementedException left in source code
-- AssemblyVersion is correct both in AssemblyInfo.cs and MigSharp.nuspec
+- All versions are up-to-date:
+  - MigSharp\AssemblyInfo.cs
+  - Migrate\AssemblyInfo.cs
+  - nuget\MigSharp.nuspec
 - CHANGES.txt is up-to-date
 - All changes pushed to GitHub
 - Wiki on GitHub reflects new features and changes
