@@ -36,18 +36,7 @@ namespace MigSharp.Providers
 
         protected override IEnumerable<string> DropDefaultConstraint(string tableName, Column column, bool checkIfExists)
         {
-            string constraintName = GetDefaultConstraintName(tableName, column.Name);
-            string commandText = DropConstraint(tableName, constraintName);
-            if (checkIfExists)
-            {
-                commandText = PrefixIfObjectExists(constraintName, commandText);
-            }
-            yield return commandText;
-        }
-
-        private static string PrefixIfObjectExists(string objectName, string commandTextToBePrefixed)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", objectName) + commandTextToBePrefixed;
+            return DropDefaultConstraint(tableName, column.Name, checkIfExists);
         }
 
         public override IEnumerable<string> RenameTable(string oldName, string newName)
