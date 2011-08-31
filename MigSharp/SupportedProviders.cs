@@ -22,6 +22,7 @@ namespace MigSharp
             ProviderNames.SqlServer2005,
             ProviderNames.SqlServer2005Odbc,
             ProviderNames.SqlServer2008,
+            ProviderNames.SqlServerCe35,
             ProviderNames.SqlServerCe4,
             ProviderNames.Teradata,
             ProviderNames.TeradataOdbc,

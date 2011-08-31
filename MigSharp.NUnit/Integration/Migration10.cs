@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -44,9 +43,12 @@ namespace MigSharp.NUnit.Integration
                             command.ExecuteNonQuery();
                             Assert.Fail("The previous query should have failed.");
                         }
-                        catch (DbException)
+                        catch (Exception ex)
                         {
                             // this is expected
+                            if (db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 && !(ex is DbException))
+                                throw;
+                            // for the case of a SqlServer35 the SqlCeException is not derived from DbException
                         }
                     });
             }

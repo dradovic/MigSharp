@@ -19,15 +19,16 @@ namespace MigSharp.NUnit.Integration
             db.Execute(string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" (\"{1}\") VALUES ('{2}')", Tables[0].Name, Tables[0].Columns[1], Tables[1].Value(1, 1)));
 
             if (db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 &&
+                db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 &&
                 db.Context.ProviderMetadata.Name != ProviderNames.SQLite &&
                 !db.Context.ProviderMetadata.Name.Contains("Teradata"))
             {
                 db.Tables[Tables[0].Name].PrimaryKey().Rename("PK_" + NewTableName);
             }
-            else if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4)
+            else if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4 || db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe35)
             {
                 // this code is actually not required for the test but we still execute it because it is what the recommendation
-                // of the SqlServerCe4 is in the NotSupportedException for the primary key renaming
+                // of the SqlServerCe4 and SqlServerCe35 is in the NotSupportedException for the primary key renaming
                 db.Tables[Tables[0].Name].PrimaryKey().Drop();
                 db.Tables[Tables[0].Name].AddPrimaryKey("PK_" + NewTableName)
                     .OnColumn(Tables[0].Columns[0]);
