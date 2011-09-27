@@ -78,7 +78,7 @@ namespace MigSharp.NUnit.Integration
                     {
                         DbType dbType;
                         object value = GetTestValue(column, db, out dbType);
-                        command.AddParameter("@" + column.Key, (dbType == DbType.AnsiString && db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4) ? DbType.String : dbType, value);
+                        command.AddParameter("@" + column.Key, (dbType == DbType.AnsiString && (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe35 || db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4)) ? DbType.String : dbType, value);
                         values.Add(value);
                     }
                     ExpectedTables[0].Add(values.ToArray());

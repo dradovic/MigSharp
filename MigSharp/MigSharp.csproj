@@ -140,6 +140,7 @@
     <Compile Include="Process\ScriptingMode.cs" />
     <Compile Include="Process\SqlDispatcher.cs" />
     <Compile Include="Providers\SQLiteProvider.cs" />
+    <Compile Include="Providers\SqlServerCe35Provider.cs" />
     <Compile Include="Providers\UnsupportedMethod.cs" />
     <Compile Include="Process\ValidationWarning.cs" />
     <Compile Include="Process\Validator.cs" />
