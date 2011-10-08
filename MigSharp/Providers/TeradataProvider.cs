@@ -172,7 +172,7 @@ namespace MigSharp.Providers
             sourceCols = sourceCols.TrimEnd(',');
             targetCols = targetCols.TrimEnd(',');
 
-            yield return string.Format("{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3}({4})", AlterTable(tableName), Escape(constraintName), sourceCols, referencedTableName, targetCols);
+            yield return string.Format("{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES WITH CHECK OPTION {3}({4})", AlterTable(tableName), Escape(constraintName), sourceCols, referencedTableName, targetCols);
         }
 
         public IEnumerable<string> DropForeignKey(string tableName, string constraintName)

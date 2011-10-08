@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 using System.Globalization;
 
@@ -13,10 +12,11 @@ namespace MigSharp.NUnit.Integration
     internal class Migration13 : IIntegrationTestMigration
     {
         private const string Other = "Other";
+        private const string TmpPrefix = "tmp";
 
         public void Up(IDatabase db)
         {
-            db.CreateTable(Tables[0].Name)
+            db.CreateTable(Tables[0].Name, "first")
                 .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
                 .WithNotNullableColumn(Tables[0].Columns[1], DbType.Int32); // FK to 'other'
 
@@ -30,7 +30,17 @@ namespace MigSharp.NUnit.Integration
             db.Execute(GetDeleteStatementForOther()); // removing the row from Other should not be a problem since it is not referenced
             db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"") VALUES ('{2}')", Other, otherName, "Referenced"));
 
-            db.Tables[Tables[0].Name].AddForeignKeyTo(Other)
+            // testing to see that if we drop an index rename the table create a copy of the table with the same old fk it should work (TD issue in security)
+            db.Tables[Tables[0].Name].AddForeignKeyTo(Other, "test")
+                .Through(Tables[0].Columns[1], otherId);
+            db.Tables[Tables[0].Name].ForeignKeys["test"].Drop();
+            db.Tables[Tables[0].Name].Rename(TmpPrefix + Tables[0].Name);
+
+            db.CreateTable(Tables[0].Name)
+                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+                .WithNotNullableColumn(Tables[0].Columns[1], DbType.Int32); // FK to 'other
+
+            db.Tables[Tables[0].Name].AddForeignKeyTo(Other, "test")
                 .Through(Tables[0].Columns[1], otherId);
 
             // insert a row that references a row from Other
