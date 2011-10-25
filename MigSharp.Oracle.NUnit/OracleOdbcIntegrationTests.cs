@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data;
+using System.Data.Common;
 using System.Data.Odbc;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -64,25 +64,11 @@ namespace MigSharp.Oracle.NUnit
             CreateDatabase(TestDbName);
         }
 
-        protected override DataTable GetTable(string tableName)
+        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
         {
-            var table = new DataTable(tableName) { Locale = new CultureInfo("en-US", true) };
-
-            try
-            {
-                using (
-                    var adapter = new OdbcDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName),
-                        OdbcConnectionString))
-                {
-                    adapter.Fill(table);
-                }
-            }
-            catch (OdbcException)
-            {
-                table = null;
-            }
-
-            return table;
+            var adapter = new OdbcDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), OdbcConnectionString);
+            builder = new OdbcCommandBuilder(adapter);
+            return adapter;
         }
 
         protected static string MasterConnectionString { get { return string.Format(CultureInfo.InvariantCulture, "Driver={{Oracle in OraClient11g_home1}};Dbq={0};Uid={1};Pwd={2};", Server, "system", Password); } }

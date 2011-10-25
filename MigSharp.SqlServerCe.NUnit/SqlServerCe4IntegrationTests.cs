@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 using System.Data.SqlServerCe;
 using System.Globalization;
 using System.IO;
@@ -29,21 +29,11 @@ namespace MigSharp.SqlServerCe.NUnit
             }
         }
 
-        protected override DataTable GetTable(string tableName)
+        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
         {
-            var table = new DataTable(tableName) { Locale = CultureInfo.InvariantCulture };
-            try
-            {
-                using (var adapter = new SqlCeDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString))
-                {
-                    adapter.Fill(table);
-                }
-            }
-            catch (SqlCeException)
-            {
-                table = null;
-            }
-            return table;
+            var adapter = new SqlCeDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString);
+            builder = new SqlCeCommandBuilder(adapter);
+            return adapter;
         }
 
         protected override string ConnectionString

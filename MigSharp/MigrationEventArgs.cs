@@ -1,7 +1,5 @@
 using System;
 
-using MigSharp.Process;
-
 namespace MigSharp
 {
     /// <summary>
@@ -9,26 +7,19 @@ namespace MigSharp
     /// </summary>
     public class MigrationEventArgs : EventArgs
     {
-        private readonly IMigrationMetadata _metadata;
-        private readonly MigrationDirection _direction;
+        private readonly IScheduledMigrationMetadata _metadata;
 
         /// <summary>
         /// Gets the associated metadata.
         /// </summary>
-        public IMigrationMetadata Metadata { get { return _metadata; } }
-
-        /// <summary>
-        /// Gets the direction of the migration step.
-        /// </summary>
-        public MigrationDirection Direction { get { return _direction; } }
+        public IScheduledMigrationMetadata Metadata { get { return _metadata; } } // FIXME: dr, test of ref. eq. of this with the instance contained in Batch.ScheduledMigs?
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        public MigrationEventArgs(IMigrationMetadata metadata, MigrationDirection direction)
+        public MigrationEventArgs(IScheduledMigrationMetadata metadata)
         {
             _metadata = metadata;
-            _direction = direction;
         }
     }
 }

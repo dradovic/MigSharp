@@ -1,4 +1,4 @@
-namespace MigSharp.Process
+namespace MigSharp
 {
     public enum MigrationDirection
     {

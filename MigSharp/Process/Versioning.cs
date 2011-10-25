@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 
 using MigSharp.Core;
 using MigSharp.Providers;
@@ -98,20 +99,23 @@ namespace MigSharp.Process
 
         #region Implementation of IVersioning
 
-        public bool IsContained(IMigrationMetadata metadata)
+        public IEnumerable<IMigrationMetadata> ExecutedMigrations
         {
-            if (!_versioningTableExists.Value)
+            get
             {
-                return false;
+                if (!_versioningTableExists.Value)
+                {
+                    return Enumerable.Empty<IMigrationMetadata>();
+                }
+                PersistedVersioning versioning = GetPersistedVersioning(null, null, null);
+                return versioning.ExecutedMigrations;
             }
-            PersistedVersioning versioning = GetPersistedVersioning(null, null, null);
-            return versioning.IsContained(metadata);
         }
 
-        public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor)
+        public void Update(IScheduledMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor commandExecutor)
         {
             PersistedVersioning versioning = GetPersistedVersioning(connection, transaction, commandExecutor);
-            versioning.Update(metadata, connection, transaction, direction, commandExecutor);
+            versioning.Update(metadata, connection, transaction, commandExecutor);
         }
 
         #endregion

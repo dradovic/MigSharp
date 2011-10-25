@@ -140,57 +140,60 @@ namespace MigSharp
         {
             // collect all migrations
             DateTime start = DateTime.Now;
-            List<MigrationInfo> migrations = CollectAllMigrationsForModule(catalog, _options.ModuleSelector);
+            IEnumerable<Migration> availableMigrations = CollectAllMigrations(catalog);
             Log.Verbose(LogCategory.Performance, "Collecting migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
             // initialize command execution/scripting dispatching
             ISqlDispatcher dispatcher = new SqlDispatcher(_options.ScriptingOptions, _provider, _providerMetadata);
 
-            // initialize versioning component
+            // initialize versioning component and get executed migrations
             IVersioning versioning = InitializeVersioning(catalog, dispatcher);
+            var executedMigrations = new List<IMigrationMetadata>(versioning.ExecutedMigrations);
 
-            // filter applicable migrations)
-            if (migrations.Count > 0)
+            // filter applicable migrations
+            var applicableUpMigrations = new List<Migration>(
+                from m in availableMigrations
+                where _options.ModuleSelector(m.Metadata.ModuleName) &&
+                      m.Metadata.Timestamp <= timestamp &&
+                      !executedMigrations.Any(x => x.ModuleName == m.Metadata.ModuleName &&
+                                                   x.Timestamp == m.Metadata.Timestamp)
+                orderby m.Metadata.Timestamp ascending
+                select m);
+            var applicableDownMigrations = new List<Migration>(
+                from m in availableMigrations
+                where _options.ModuleSelector(m.Metadata.ModuleName) &&
+                      m.Metadata.Timestamp > timestamp &&
+                      executedMigrations.Any(x => x.ModuleName == m.Metadata.ModuleName &&
+                                                  x.Timestamp == m.Metadata.Timestamp)
+                orderby m.Metadata.Timestamp descending
+                select m);
+            if (applicableDownMigrations.Any(m => !(m.Implementation is IReversibleMigration)))
             {
-                List<MigrationInfo> applicableUpMigrations = new List<MigrationInfo>(
-                    from m in migrations
-                    where m.Metadata.Timestamp <= timestamp && !versioning.IsContained(m.Metadata)
-                    orderby m.Metadata.Timestamp ascending
-                    select m);
-                List<MigrationInfo> applicableDownMigrations = new List<MigrationInfo>(
-                    from m in migrations
-                    where m.Metadata.Timestamp > timestamp && versioning.IsContained(m.Metadata)
-                    orderby m.Metadata.Timestamp descending
-                    select m);
-                if (applicableDownMigrations.Any(m => !(m.Migration is IReversibleMigration)))
-                {
-                    throw new IrreversibleMigrationException();
-                }
-                int countUp = applicableUpMigrations.Count;
-                int countDown = applicableDownMigrations.Count;
-                Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);
-                if (countUp + countDown > 0)
-                {
-                    return new MigrationBatch(
-// ReSharper disable RedundantEnumerableCastCall
-                        applicableUpMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Up, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
-                        applicableDownMigrations.Select(l => new MigrationStep(l.Migration, l.Metadata, MigrationDirection.Down, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
-// ReSharper restore RedundantEnumerableCastCall
-                        versioning,
-                        _options);
-                }
+                throw new IrreversibleMigrationException();
             }
-            return MigrationBatch.Empty;
-        }
+            int countUp = applicableUpMigrations.Count;
+            int countDown = applicableDownMigrations.Count;
+            Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);
 
-        /// <summary>
-        /// Checks if any migrations are pending to be performed.
-        /// </summary>
-        /// <param name="assembly">The assembly that contains the migrations.</param>
-        /// <param name="additionalAssemblies">Optional assemblies that hold additional migrations.</param>
-        public bool IsUpToDate(Assembly assembly, params Assembly[] additionalAssemblies)
-        {
-            return FetchMigrations(assembly, additionalAssemblies).Count == 0;
+            var unidentifiedMigrations = new List<IMigrationMetadata>(
+                from m in executedMigrations
+                where !availableMigrations.Any(a => a.Metadata.ModuleName == m.ModuleName &&
+                                                    a.Metadata.Timestamp == m.Timestamp)
+                orderby m.Timestamp
+                select m);
+            if (unidentifiedMigrations.Count > 0)
+            {
+                Log.Warning("Found {0} migration(s) that were executed in the database but are not contained in the application.", unidentifiedMigrations.Count);
+            }
+
+            return new MigrationBatch(
+// ReSharper disable RedundantEnumerableCastCall
+                applicableUpMigrations.Select(m => new MigrationStep(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Up), _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
+                applicableDownMigrations.Select(m => new MigrationStep(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Down), _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
+// ReSharper restore RedundantEnumerableCastCall
+                unidentifiedMigrations,
+                versioning,
+                _options);
         }
 
         private IVersioning InitializeVersioning(ComposablePartCatalog catalog, ISqlDispatcher dispatcher)
@@ -221,7 +224,7 @@ namespace MigSharp
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var allMigrations = CollectAllMigrationsForModule(catalog, s => true)
+                    var allMigrations = CollectAllMigrations(catalog)
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = from m in allMigrations
                                                              where _customBootstrapper.IsContained(m)
@@ -266,51 +269,32 @@ namespace MigSharp
                 Log.Info("Including migrations from assembly '{0}'", getAssemblyName(assembly));
                 catalog.Catalogs.Add(createCatalogFor(assembly));
             }
-            return catalog;            
+            return catalog;
         }
 
-        private static List<MigrationInfo> CollectAllMigrationsForModule(ComposablePartCatalog catalog, Predicate<string> includeModule)
+        private static IEnumerable<Migration> CollectAllMigrations(ComposablePartCatalog catalog)
         {
             Log.Info("Collecting migrations...");
             var container = new CompositionContainer(catalog);
             IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> migrations = container.GetExports<IMigration, IMigrationExportMetadata>();
-            List<MigrationInfo> result =
-                new List<MigrationInfo>(migrations
-                        .Where(l => includeModule(l.Metadata.ModuleName))
-                        .Select(l => new MigrationInfo(l.Value, new MigrationMetadata(l.Metadata.Tag, l.Metadata.ModuleName, l.Value.GetType().GetTimestamp()))));
-            Log.Info("Found {0} migration(s) for selected modules", result.Count);
+            List<Migration> result =
+                new List<Migration>(migrations
+                    .Select(l => new Migration(l.Value, new MigrationMetadata(l.Value.GetType().GetTimestamp(), l.Metadata.ModuleName, l.Metadata.Tag))));
+            Log.Info("Found {0} migration(s)", result.Count);
             return result;
         }
 
-        private class MigrationMetadata : IMigrationMetadata
+        private class Migration
         {
-            private readonly string _tag;
-            private readonly string _moduleName;
-            private readonly long _timestamp;
-
-            public string Tag { get { return _tag; } }
-            public string ModuleName { get { return _moduleName; } }
-            public long Timestamp { get { return _timestamp; } }
-
-            public MigrationMetadata(string tag, string moduleName, long timestamp)
-            {
-                _tag = tag;
-                _timestamp = timestamp;
-                _moduleName = moduleName;
-            }
-        }
-
-        private class MigrationInfo
-        {
-            private readonly IMigration _migration;
+            private readonly IMigration _implementation;
             private readonly IMigrationMetadata _metadata;
 
-            public IMigration Migration { get { return _migration; } }
+            public IMigration Implementation { get { return _implementation; } }
             public IMigrationMetadata Metadata { get { return _metadata; } }
 
-            public MigrationInfo(IMigration migration, IMigrationMetadata metadata)
+            public Migration(IMigration implementation, IMigrationMetadata metadata)
             {
-                _migration = migration;
+                _implementation = implementation;
                 _metadata = metadata;
             }
         }

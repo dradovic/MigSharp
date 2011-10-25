@@ -26,7 +26,7 @@ namespace MigSharp.NUnit.Process
                 step,
             };
             IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            MigrationBatch batch = new MigrationBatch(steps, steps, versioning, new MigrationOptions());
+            MigrationBatch batch = new MigrationBatch(steps, steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
 
             batch.Execute();
         }
@@ -42,7 +42,7 @@ namespace MigSharp.NUnit.Process
                 step,
             };
             IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            MigrationBatch batch = new MigrationBatch(steps, steps, versioning, new MigrationOptions());
+            MigrationBatch batch = new MigrationBatch(steps, steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
             int count = 0;
             batch.StepExecuting += (sender, args) => count++;
 
@@ -62,7 +62,7 @@ namespace MigSharp.NUnit.Process
                 step,
             };
             IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            MigrationBatch batch = new MigrationBatch(steps, steps, versioning, new MigrationOptions());
+            MigrationBatch batch = new MigrationBatch(steps, steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
             int count = 0;
             batch.StepExecuted += (sender, args) => count++;
 
@@ -80,11 +80,12 @@ namespace MigSharp.NUnit.Process
             return report;
         }
 
-        private class Metadata1 : IMigrationMetadata
+        private class Metadata1 : IScheduledMigrationMetadata
         {
             public string Tag { get { return null; } }
             public string ModuleName { get { return string.Empty; } }
             public long Timestamp { get { return 1; } }
+            public MigrationDirection Direction { get { return MigrationDirection.Up; } }
         }
     }
 }

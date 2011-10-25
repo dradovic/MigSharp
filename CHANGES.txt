@@ -1,6 +1,13 @@
-2.0.0 - BUG FIXES:
-      - Teradata:
-	    - stop creating *_0 tables when adding foreign keys
+2.0.0 - API:
+        - IMigrationBatch lists:
+		  - migrations scheduled for execution
+		  - migrations executed server-side but unknown to the application
+        - Removed Migrator.IsUpToDate as it is ambiguous and incurs an extra round-trip to the database (use FetchMigrations instead)
+		- IVersionig: implementors need to return all executed migrations instead of answering Contains(...)
+		- IVersionig and MigrationEventArgs: use the new IScheduledMigrationMetadata interface which contains the direction
+      - BUG FIXES:
+        - Teradata:
+	      - stop creating *_0 tables when adding foreign keys
 1.1.0 - Added support for SQLite (without foreign keys)
       - Added support for SQL scripting: instead of executing migrations against a database, they can be scripted into files
 	  - Added command-line interface: Migrate.exe, a console application

@@ -99,24 +99,11 @@ namespace MigSharp.Teradata.NUnit
                 "Teradata.Client.Provider.TdFactory, Teradata.Client.Provider, Version=13.1.0.4, Culture=neutral, PublicKeyToken=76b417ee2e04956c");
         }
 
-        protected override DataTable GetTable(string tableName)
+        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
         {
-            var table = new DataTable(tableName) { Locale = CultureInfo.InvariantCulture };
-            try
-            {
-                using (
-                    var adapter = new OdbcDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\" order by 1", tableName),
-                        OdbcConnectionString))
-                {
-                    adapter.Fill(table);
-                }
-            }
-            catch (OdbcException)
-            {
-                table = null;
-            }
-
-            return table;
+            var adapter = new OdbcDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\" ORDER BY 1", tableName), OdbcConnectionString);
+            builder = new OdbcCommandBuilder(adapter);
+            return adapter;
         }
 
         protected string OdbcConnectionString { get { return string.Format(CultureInfo.InvariantCulture, "Driver={{Teradata}}; DBCName={0} ; Uid={1} ; Pwd={2} ; Database={3};USENATIVELOBSUPPORT=YES;", Server, User, Password, _databaseName); } }

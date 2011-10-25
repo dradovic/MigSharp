@@ -11,23 +11,19 @@ namespace MigSharp.Process
 {
     internal class MigrationStep : BootstrapMigrationStep, IMigrationStep
     {
-        private readonly IMigrationMetadata _metadata;
-        private readonly MigrationDirection _direction;
+        private readonly IScheduledMigrationMetadata _metadata;
         private readonly ConnectionInfo _connectionInfo;
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ISqlDispatcher _sqlDispatcher;
 
         private string MigrationName { get { return Migration.GetType().FullName; } }
 
-        public IMigrationMetadata Metadata { get { return _metadata; } }
+        public IScheduledMigrationMetadata Metadata { get { return _metadata; } }
 
-        public MigrationDirection Direction { get { return _direction; } }
-
-        public MigrationStep(IMigration migration, IMigrationMetadata metadata, MigrationDirection direction, ConnectionInfo connectionInfo, IProvider provider, IProviderMetadata providerMetadata, IDbConnectionFactory connectionFactory, ISqlDispatcher sqlDispatcher)
+        public MigrationStep(IMigration migration, IScheduledMigrationMetadata metadata, ConnectionInfo connectionInfo, IProvider provider, IProviderMetadata providerMetadata, IDbConnectionFactory connectionFactory, ISqlDispatcher sqlDispatcher)
             : base(migration, provider, providerMetadata)
         {
             _metadata = metadata;
-            _direction = direction;
             _connectionInfo = connectionInfo;
             _connectionFactory = connectionFactory;
             _sqlDispatcher = sqlDispatcher;
@@ -35,7 +31,7 @@ namespace MigSharp.Process
 
         public IMigrationReport Report(IMigrationContext context)
         {
-            Database database = GetDatabaseContainingMigrationChanges(_direction, context);
+            Database database = GetDatabaseContainingMigrationChanges(_metadata.Direction, context);
             return MigrationReport.Create(database, MigrationName);
         }
 
@@ -57,11 +53,10 @@ namespace MigSharp.Process
                     IDbCommandExecutor executor;
                     using ((executor = _sqlDispatcher.CreateExecutor(string.Format(CultureInfo.InvariantCulture, "Migration.{0}.{1}", _metadata.ModuleName, _metadata.Timestamp))) as IDisposable)
                     {
-                        Execute(connection, transaction, _direction, executor);
+                        Execute(connection, transaction, _metadata.Direction, executor);
 
                         // update versioning
-                        versioning.Update(_metadata, connection, transaction, _direction, executor);
-                        Debug.Assert(versioning.IsContained(_metadata) == (_direction == MigrationDirection.Up), "The post-condition of IVersioning.Update is violated.");
+                        versioning.Update(_metadata, connection, transaction, executor);
                     }
 
                     if (transaction != null)

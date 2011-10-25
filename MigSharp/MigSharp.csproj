@@ -91,6 +91,10 @@
     <Compile Include="Core\Commands\AlterUniqueConstraintCommand.cs" />
     <Compile Include="Core\Commands\CallCommand.cs" />
     <Compile Include="Core\Commands\InvalidCommandException.cs" />
+    <Compile Include="IMigrationMetadata.cs" />
+    <Compile Include="Core\MigrationMetadata.cs" />
+    <Compile Include="IScheduledMigrationMetadata.cs" />
+    <Compile Include="Core\ScheduledMigrationMetadata.cs" />
     <Compile Include="Process\UsedDataType.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />
@@ -164,7 +168,6 @@
     <Compile Include="Process\DbConnectionFactory.cs" />
     <Compile Include="Process\IDbConnectionFactory.cs" />
     <Compile Include="Process\IMigrationExportMetadata.cs" />
-    <Compile Include="Process\IMigrationMetaData.cs" />
     <Compile Include="MigrationExportAttribute.cs" />
     <Compile Include="Process\PersistedVersioning.cs" />
     <Compile Include="Core\ITranslatableCommand.cs" />
@@ -190,7 +193,7 @@
     <Compile Include="Process\IVersioning.cs" />
     <Compile Include="Process\IMigrationStep.cs" />
     <Compile Include="Process\RuntimeContext.cs" />
-    <Compile Include="Process\MigrationDirection.cs" />
+    <Compile Include="MigrationDirection.cs" />
     <Compile Include="Process\MigrationExtensions.cs" />
     <Compile Include="Providers\DataType.cs" />
     <Compile Include="Process\IRecordedMigration.cs" />

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 
 namespace MigSharp
 {
@@ -18,13 +19,24 @@ namespace MigSharp
         event EventHandler<MigrationEventArgs> StepExecuted;
 
         /// <summary>
-        /// Gets the number of migrations in this batch.
+        /// Gets a list of migrations which are pending and will be executed
+        /// when calling <see cref="Execute"/>.
         /// </summary>
-        int Count { get; }
+        ReadOnlyCollection<IScheduledMigrationMetadata> ScheduledMigrations { get; }
+
+        /// <summary>
+        /// Gets a list of migrations which were executed server-side but
+        /// are not found in the application.
+        /// <para>
+        /// Use this property to find out if the application is out-of-date
+        /// compared to the actual schema of the database.
+        /// </para>
+        /// </summary>
+        ReadOnlyCollection<IMigrationMetadata> UnidentifiedMigrations { get; }
 
         /// <summary>
         /// Performs the migrations contained in this batch.
         /// </summary>
-        void Execute();
+        void Execute(); // FIXME: dr, 12.1, prevent multiple calls to Execute?
     }
 }

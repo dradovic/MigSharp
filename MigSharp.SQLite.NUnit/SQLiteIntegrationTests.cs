@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
@@ -14,21 +14,11 @@ namespace MigSharp.SQLite.NUnit
     {
         private string _dataFile;
 
-        protected override DataTable GetTable(string tableName)
+        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
         {
-            var table = new DataTable(tableName) { Locale = CultureInfo.InvariantCulture };
-            try
-            {
-                using (var adapter = new SQLiteDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString))
-                {
-                    adapter.Fill(table);
-                }
-            }
-            catch (SQLiteException)
-            {
-                table = null;
-            }
-            return table;
+            var adapter = new SQLiteDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString);
+            builder = new SQLiteCommandBuilder(adapter);
+            return adapter;
         }
 
         protected override string ConnectionString

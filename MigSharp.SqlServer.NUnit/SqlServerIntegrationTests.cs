@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 
@@ -39,13 +39,11 @@ namespace MigSharp.SqlServer.NUnit
             _database.Create();
         }
 
-        protected override DataTable GetTable(string tableName)
+        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
         {
-            if (_database.Tables[tableName] != null) // the table exists
-            {
-                return _database.ExecuteWithResults(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}]", tableName)).Tables["Table"];
-            }
-            return null;
+            var adapter = new SqlDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}]", tableName), ConnectionString);
+            builder = new SqlCommandBuilder(adapter);
+            return adapter;
         }
 
         protected override string ConnectionString

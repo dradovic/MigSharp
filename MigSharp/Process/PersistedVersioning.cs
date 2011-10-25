@@ -13,23 +13,19 @@ namespace MigSharp.Process
             _history = history;
         }
 
-        public bool IsContained(IMigrationMetadata metadata)
-        {
-            return _history.Contains(metadata.Timestamp, metadata.ModuleName);
-        }
+        public IEnumerable<IMigrationMetadata> ExecutedMigrations { get { return _history.GetMigrations(); } }
 
-        public void Update(IMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor)
+        public void Update(IScheduledMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor commandExecutor)
         {
             Debug.Assert(!(metadata is BootstrapMetadata));
 
-            if (direction == MigrationDirection.Up)
+            if (metadata.Direction == MigrationDirection.Up)
             {
                 _history.Insert(metadata.Timestamp, metadata.ModuleName, metadata.Tag);
             }
             else
             {
-                Debug.Assert(direction == MigrationDirection.Down);
-                Debug.Assert(_history.Contains(metadata.Timestamp, metadata.ModuleName), "Only migrations that were applied previously are being undone.");
+                Debug.Assert(metadata.Direction == MigrationDirection.Down);
                 _history.Delete(metadata.Timestamp, metadata.ModuleName);
             }
 
