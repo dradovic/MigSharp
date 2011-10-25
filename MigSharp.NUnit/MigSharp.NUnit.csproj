@@ -115,6 +115,7 @@
     <Compile Include="Integration\Migration7.cs" />
     <Compile Include="Integration\Migration8.cs" />
     <Compile Include="Integration\Migration9.cs" />
+    <Compile Include="Integration\M_2011_10_08_2335_AddedUserTable.cs" />
     <Compile Include="Migrate\CommandLineParsingTests.cs" />
     <Compile Include="Migrate\MigrateProcess.cs" />
     <Compile Include="Migrate\ConsoleTests.cs" />
