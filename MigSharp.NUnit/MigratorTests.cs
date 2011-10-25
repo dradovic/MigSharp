@@ -46,6 +46,7 @@ namespace MigSharp.NUnit
                 .Returns(1);
         }
 
+
         [Test]
         public void VerifyPendingMigrationsAreFoundForSpecificModule()
         {
@@ -67,6 +68,13 @@ namespace MigSharp.NUnit
             Migrator migrator = new Migrator("", ProviderNames.SqlServer2008);
             migrator.UseCustomVersioning(versioning);
             migrator.FetchMigrationsTo(typeof(Migration1).Assembly, timestamp2); // should throw an IrreversibleMigrationException as Migration3 is irreversible
+        }
+
+        [Test]
+        public void TestCanReadFancyTimestamp()
+        {
+            long timestamp = typeof(M_2011_10_08_2335_AddedUserTable).GetTimestamp();
+            Assert.AreEqual(201110082335, timestamp);
         }
 
 
