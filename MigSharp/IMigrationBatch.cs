@@ -35,8 +35,14 @@ namespace MigSharp
         ReadOnlyCollection<IMigrationMetadata> UnidentifiedMigrations { get; }
 
         /// <summary>
-        /// Performs the migrations contained in this batch.
+        /// Performs the migrations contained in this batch. This method can only be
+        /// called once (when IsExecuted is false).
         /// </summary>
-        void Execute(); // FIXME: dr, 12.1, prevent multiple calls to Execute?
+        void Execute();
+
+        /// <summary>
+        /// Indicates if <see cref="Execute"/> was already called.
+        /// </summary>
+        bool IsExecuted { get; }
     }
 }

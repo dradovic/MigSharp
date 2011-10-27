@@ -26,49 +26,54 @@ namespace MigSharp.NUnit.Process
                 step,
             };
             IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            MigrationBatch batch = new MigrationBatch(steps, steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
+            MigrationBatch batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
 
             batch.Execute();
+            Assert.IsTrue(batch.IsExecuted);
         }
 
         [Test]
-        public void VerifyStepExecutingIsRaised()
+        public void VerifyStepExecutedAndStepExecutingAreRaised()
         {
             IMigrationStep step = MockRepository.GenerateStub<IMigrationStep>();
-            step.Expect(s => s.Metadata).Return(new Metadata1());
+            var metadata = new Metadata1();
+            step.Expect(s => s.Metadata).Return(metadata);
             step.Expect(s => s.Report(null)).IgnoreArguments().Return(CreateMigrationReport());
             IMigrationStep[] steps = new[]
             {
                 step,
             };
             IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            MigrationBatch batch = new MigrationBatch(steps, steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
-            int count = 0;
-            batch.StepExecuting += (sender, args) => count++;
+            var batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
+            Assert.AreSame(metadata, batch.ScheduledMigrations[0], "The batch should expose the metadata of the step."); // this is tested to allow for the undocumented feature test below
+            int countExecutingEvent = 0;
+            int countExecutedEvent = 0;
+            batch.StepExecuting += (sender, args) =>
+                {
+                    // note: the following assertion tests an undocumented feature
+                    Assert.AreSame(metadata, args.Metadata, "The event should carry the same metadata that is in the ScheduleMigrations collection.");
+                    countExecutingEvent++;
+                };
+            batch.StepExecuted += (sender, args) =>
+            {
+                // note: the following assertion tests an undocumented feature
+                Assert.AreSame(metadata, args.Metadata, "The event should carry the same metadata that is in the ScheduleMigrations collection.");
+                countExecutedEvent++;
+            };
 
             batch.Execute();
 
-            Assert.AreEqual(2 * steps.Length, count);
+            Assert.IsTrue(batch.IsExecuted);
+            Assert.AreEqual(steps.Length, countExecutingEvent);
+            Assert.AreEqual(steps.Length, countExecutedEvent);
         }
 
-        [Test]
-        public void VerifyStepExecutedIsRaised()
+        [Test, ExpectedException(typeof(InvalidOperationException))]
+        public void VerifyCallingExecuteTwiceThrows()
         {
-            IMigrationStep step = MockRepository.GenerateStub<IMigrationStep>();
-            step.Expect(s => s.Metadata).Return(new Metadata1());
-            step.Expect(s => s.Report(null)).IgnoreArguments().Return(CreateMigrationReport());
-            IMigrationStep[] steps = new[]
-            {
-                step,
-            };
-            IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            MigrationBatch batch = new MigrationBatch(steps, steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
-            int count = 0;
-            batch.StepExecuted += (sender, args) => count++;
-
+            var batch = new MigrationBatch(Enumerable.Empty<IMigrationStep>(), Enumerable.Empty<IMigrationMetadata>(), MockRepository.GenerateStub<IVersioning>(), new MigrationOptions());
             batch.Execute();
-
-            Assert.AreEqual(2 * steps.Length, count);
+            batch.Execute();
         }
 
         private static IMigrationReport CreateMigrationReport()

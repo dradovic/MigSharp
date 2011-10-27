@@ -12,7 +12,7 @@ namespace MigSharp
         /// <summary>
         /// Gets the associated metadata.
         /// </summary>
-        public IScheduledMigrationMetadata Metadata { get { return _metadata; } } // FIXME: dr, test of ref. eq. of this with the instance contained in Batch.ScheduledMigs?
+        public IScheduledMigrationMetadata Metadata { get { return _metadata; } }
 
         /// <summary>
         /// Initializes a new instance.

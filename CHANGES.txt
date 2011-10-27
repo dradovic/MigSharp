@@ -1,4 +1,5 @@
-2.0.0 - API:
+2.0.0 - Duplicate migration exports are detected before actual migration execution
+      - API:
         - IMigrationBatch lists:
 		  - migrations scheduled for execution
 		  - migrations executed server-side but unknown to the application

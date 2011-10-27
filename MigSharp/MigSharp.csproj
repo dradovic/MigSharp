@@ -82,6 +82,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InvalidMigrationExportException.cs" />
     <Compile Include="Core\Commands\AddPrimaryKeyCommand.cs" />
     <Compile Include="Core\Commands\AddForeignKeyToCommand.cs" />
     <Compile Include="Core\Commands\AddUniqueConstraintCommand.cs" />
@@ -93,8 +94,11 @@
     <Compile Include="Core\Commands\InvalidCommandException.cs" />
     <Compile Include="IMigrationMetadata.cs" />
     <Compile Include="Core\MigrationMetadata.cs" />
+    <Compile Include="Process\ApplicableMigration.cs" />
+    <Compile Include="Process\ImportedMigration.cs" />
     <Compile Include="IScheduledMigrationMetadata.cs" />
     <Compile Include="Core\ScheduledMigrationMetadata.cs" />
+    <Compile Include="Process\MigrationSelector.cs" />
     <Compile Include="Process\UsedDataType.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />

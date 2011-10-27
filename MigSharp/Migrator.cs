@@ -138,10 +138,10 @@ namespace MigSharp
 
         private IMigrationBatch FetchMigrationsTo(ComposablePartCatalog catalog, long timestamp)
         {
-            // collect all migrations
+            // import all migrations
             DateTime start = DateTime.Now;
-            IEnumerable<Migration> availableMigrations = CollectAllMigrations(catalog);
-            Log.Verbose(LogCategory.Performance, "Collecting migrations took {0}s", (DateTime.Now - start).TotalSeconds);
+            IEnumerable<ImportedMigration> availableMigrations = ImportAllMigrations(catalog);
+            Log.Verbose(LogCategory.Performance, "Importing migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
             // initialize command execution/scripting dispatching
             ISqlDispatcher dispatcher = new SqlDispatcher(_options.ScriptingOptions, _provider, _providerMetadata);
@@ -150,46 +150,14 @@ namespace MigSharp
             IVersioning versioning = InitializeVersioning(catalog, dispatcher);
             var executedMigrations = new List<IMigrationMetadata>(versioning.ExecutedMigrations);
 
-            // filter applicable migrations
-            var applicableUpMigrations = new List<Migration>(
-                from m in availableMigrations
-                where _options.ModuleSelector(m.Metadata.ModuleName) &&
-                      m.Metadata.Timestamp <= timestamp &&
-                      !executedMigrations.Any(x => x.ModuleName == m.Metadata.ModuleName &&
-                                                   x.Timestamp == m.Metadata.Timestamp)
-                orderby m.Metadata.Timestamp ascending
-                select m);
-            var applicableDownMigrations = new List<Migration>(
-                from m in availableMigrations
-                where _options.ModuleSelector(m.Metadata.ModuleName) &&
-                      m.Metadata.Timestamp > timestamp &&
-                      executedMigrations.Any(x => x.ModuleName == m.Metadata.ModuleName &&
-                                                  x.Timestamp == m.Metadata.Timestamp)
-                orderby m.Metadata.Timestamp descending
-                select m);
-            if (applicableDownMigrations.Any(m => !(m.Implementation is IReversibleMigration)))
-            {
-                throw new IrreversibleMigrationException();
-            }
-            int countUp = applicableUpMigrations.Count;
-            int countDown = applicableDownMigrations.Count;
-            Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);
-
-            var unidentifiedMigrations = new List<IMigrationMetadata>(
-                from m in executedMigrations
-                where !availableMigrations.Any(a => a.Metadata.ModuleName == m.ModuleName &&
-                                                    a.Metadata.Timestamp == m.Timestamp)
-                orderby m.Timestamp
-                select m);
-            if (unidentifiedMigrations.Count > 0)
-            {
-                Log.Warning("Found {0} migration(s) that were executed in the database but are not contained in the application.", unidentifiedMigrations.Count);
-            }
-
+            // create migration batch
+            var migrationSelector = new MigrationSelector(availableMigrations, executedMigrations);
+            IEnumerable<ApplicableMigration> applicableMigrations;
+            IEnumerable<IMigrationMetadata> unidentifiedMigrations;
+            migrationSelector.GetMigrationsTo(timestamp, _options.ModuleSelector, out applicableMigrations, out unidentifiedMigrations);
             return new MigrationBatch(
 // ReSharper disable RedundantEnumerableCastCall
-                applicableUpMigrations.Select(m => new MigrationStep(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Up), _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
-                applicableDownMigrations.Select(m => new MigrationStep(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Down), _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
+                applicableMigrations.Select(m => new MigrationStep(m.Implementation, m.Metadata, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
 // ReSharper restore RedundantEnumerableCastCall
                 unidentifiedMigrations,
                 versioning,
@@ -224,7 +192,7 @@ namespace MigSharp
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var allMigrations = CollectAllMigrations(catalog)
+                    var allMigrations = ImportAllMigrations(catalog)
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = from m in allMigrations
                                                              where _customBootstrapper.IsContained(m)
@@ -272,31 +240,15 @@ namespace MigSharp
             return catalog;
         }
 
-        private static IEnumerable<Migration> CollectAllMigrations(ComposablePartCatalog catalog)
+        private static IEnumerable<ImportedMigration> ImportAllMigrations(ComposablePartCatalog catalog)
         {
-            Log.Info("Collecting migrations...");
+            Log.Info("Importing migrations...");
             var container = new CompositionContainer(catalog);
             IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> migrations = container.GetExports<IMigration, IMigrationExportMetadata>();
-            List<Migration> result =
-                new List<Migration>(migrations
-                    .Select(l => new Migration(l.Value, new MigrationMetadata(l.Value.GetType().GetTimestamp(), l.Metadata.ModuleName, l.Metadata.Tag))));
+            var result = new List<ImportedMigration>(migrations
+                .Select(l => new ImportedMigration(l.Value, new MigrationMetadata(l.Value.GetType().GetTimestamp(), l.Metadata.ModuleName, l.Metadata.Tag))));
             Log.Info("Found {0} migration(s)", result.Count);
             return result;
-        }
-
-        private class Migration
-        {
-            private readonly IMigration _implementation;
-            private readonly IMigrationMetadata _metadata;
-
-            public IMigration Implementation { get { return _implementation; } }
-            public IMigrationMetadata Metadata { get { return _metadata; } }
-
-            public Migration(IMigration implementation, IMigrationMetadata metadata)
-            {
-                _implementation = implementation;
-                _metadata = metadata;
-            }
         }
     }
 }

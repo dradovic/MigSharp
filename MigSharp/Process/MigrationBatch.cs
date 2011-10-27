@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 
 using MigSharp.Core;
@@ -9,8 +10,7 @@ namespace MigSharp.Process
 {
     internal class MigrationBatch : IMigrationBatch
     {
-        private readonly IEnumerable<IMigrationStep> _upMigrations;
-        private readonly IEnumerable<IMigrationStep> _downMigrations;
+        private readonly IEnumerable<IMigrationStep> _migrations;
         private readonly ReadOnlyCollection<IMigrationMetadata> _unidentifiedMigrations;
         private readonly IVersioning _versioning;
         private readonly MigrationOptions _options;
@@ -23,17 +23,16 @@ namespace MigSharp.Process
 
         public ReadOnlyCollection<IMigrationMetadata> UnidentifiedMigrations { get { return _unidentifiedMigrations; } }
 
+        public bool IsExecuted { get; private set; }
+
         public MigrationBatch(
-            IEnumerable<IMigrationStep> upMigrations,
-            IEnumerable<IMigrationStep> downMigrations,
+            IEnumerable<IMigrationStep> migrations,
             IEnumerable<IMigrationMetadata> unidentifiedMigrations,
             IVersioning versioning,
             MigrationOptions options)
         {
-            _upMigrations = upMigrations;
-            _downMigrations = downMigrations;
-            _scheduledMigrations = new ReadOnlyCollection<IScheduledMigrationMetadata>(
-                _downMigrations.Select(s => s.Metadata).Concat(_upMigrations.Select(s => s.Metadata)).ToList());
+            _migrations = migrations;
+            _scheduledMigrations = new ReadOnlyCollection<IScheduledMigrationMetadata>(_migrations.Select(s => s.Metadata).ToList());
             _unidentifiedMigrations = new ReadOnlyCollection<IMigrationMetadata>(unidentifiedMigrations.ToList());
             _versioning = versioning;
             _options = options;
@@ -41,12 +40,15 @@ namespace MigSharp.Process
 
         public void Execute()
         {
+            if (IsExecuted) throw new InvalidOperationException("Cannot execute the same batch twice.");
+            IsExecuted = true;
+
             // validate all steps
             var validator = new Validator(_options);
             string errors;
             string warnings;
 // ReSharper disable RedundantEnumerableCastCall
-            validator.Validate(_downMigrations.Concat(_upMigrations).Cast<IMigrationReporter>(), out errors, out warnings); // .Cast<IMigrationReporter>() is required for .NET 3.5
+            validator.Validate(_migrations.Cast<IMigrationReporter>(), out errors, out warnings); // .Cast<IMigrationReporter>() is required for .NET 3.5
 // ReSharper restore RedundantEnumerableCastCall
             if (!string.IsNullOrEmpty(errors))
             {
@@ -58,14 +60,12 @@ namespace MigSharp.Process
             }
 
             // execute all steps
-            foreach (IMigrationStep step in _downMigrations)
+            foreach (IMigrationStep step in _migrations)
             {
                 ExecuteStep(step);
             }
-            foreach (IMigrationStep step in _upMigrations)
-            {
-                ExecuteStep(step);
-            }
+
+            Debug.Assert(IsExecuted, "At the end of this method _isExecuted must be true.");
         }
 
         private void ExecuteStep(IMigrationStep step)
