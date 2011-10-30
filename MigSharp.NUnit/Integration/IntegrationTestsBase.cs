@@ -360,6 +360,8 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestUnidentifiedMigrations()
         {
+            if (ProviderName == ProviderNames.Teradata || ProviderName == ProviderNames.TeradataOdbc) return; // there's a bug in the Teradata ADO.NET DataAdapter implementation
+
             // migrate to 1 in order to create a versioning table
             var migrator = new Migrator(ConnectionString, ProviderName, _options);
             IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
