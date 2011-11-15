@@ -22,7 +22,8 @@
  </ProjectOptions>
  <Targets>
   <AssemblyReferenceDirectories>
-   <Directory>$(ProjectDir)/MigSharp.SQLite.NUnit/lib/</Directory>
+    <Directory>$(ProjectDir)/MigSharp.SQLite.NUnit/lib/</Directory>
+    <Directory>$(ProjectDir)/MigSharp.SqlServerCe.NUnit/Ce4.0/</Directory>
   </AssemblyReferenceDirectories>
   <Target Name="$(ProjectDir)/bin/Release/Migrate.exe" Analyze="True" AnalyzeAllChildren="False">
    <Modules AnalyzeAllChildren="False">

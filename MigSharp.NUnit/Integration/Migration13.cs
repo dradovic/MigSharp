@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 
@@ -60,9 +61,13 @@ namespace MigSharp.NUnit.Integration
                             command.ExecuteNonQuery();
                             Assert.Fail("The previous query should have failed.");
                         }
-                        catch (DbException)
+                        catch (Exception x)
                         {
-                            // this is expected
+                            // a DbException is expected (for the case of a SqlServer35 the SqlCeException is not derived from DbException)
+                            if (!(x is DbException) && x.GetType().Name != "SqlCeException")
+                            {
+                                throw;
+                            }
                         }
                     });
             }

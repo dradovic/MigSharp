@@ -1,11 +1,12 @@
-2.0.0 - Duplicate migration exports are detected before actual migration execution
+2.0.0 - Added support for SQL Server CE 3.5 (thanks to balistof)
+      - Duplicate migration exports are detected before actual migration execution
       - API:
         - IMigrationBatch lists:
 		  - migrations scheduled for execution
-		  - migrations executed server-side but unknown to the application
+		  - migrations executed server-side but unknown to the application (used to detect if an application is out-of-date)
         - Removed Migrator.IsUpToDate as it is ambiguous and incurs an extra round-trip to the database (use FetchMigrations instead)
-		- IVersionig: implementors need to return all executed migrations instead of answering Contains(...)
-		- IVersionig and MigrationEventArgs: use the new IScheduledMigrationMetadata interface which contains the direction
+		- IVersioning: implementors need to return all executed migrations instead of answering Contains(...)
+		- IVersioning and MigrationEventArgs: use the new IScheduledMigrationMetadata interface which contains the direction
       - BUG FIXES:
         - Teradata:
 	      - stop creating *_0 tables when adding foreign keys

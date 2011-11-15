@@ -18,16 +18,16 @@ namespace MigSharp.NUnit.Integration
 
             db.Execute(context =>
                 {
-                    bool isCe4Provider = db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4;
+                    bool isCeProvider = db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe35 || db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4;
                     IDbCommand command = context.Connection.CreateCommand();
                     command.Transaction = context.Transaction;
                     IDataParameter text = command.AddParameter("@text", DbType.String, Tables[0].Value(0, 1));
-                    if (isCe4Provider)
+                    if (isCeProvider)
                     {
                         SetSqlDbTypeToNText(text);
                     }
-                    IDataParameter ansiText = command.AddParameter("@ansiText", isCe4Provider ? DbType.String : DbType.AnsiString, Tables[0].Value(0, 2));
-                    if (isCe4Provider)
+                    IDataParameter ansiText = command.AddParameter("@ansiText", isCeProvider ? DbType.String : DbType.AnsiString, Tables[0].Value(0, 2));
+                    if (isCeProvider)
                     {
                         SetSqlDbTypeToNText(ansiText);
                     }

@@ -1,58 +1,12 @@
-﻿using System.Data.Common;
-using System.Data.SqlServerCe;
-using System.Globalization;
-using System.IO;
-
-using MigSharp.NUnit.Integration;
-
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace MigSharp.SqlServerCe.NUnit
 {
     [TestFixture, Category("SqlServerCe4")]
-    public class SqlServerCe4IntegrationTests : IntegrationTestsBase
+    public class SqlServerCe4IntegrationTests : SqlServerCeIntegrationTestsBase
     {
-        private string _dataFile;
-
         protected override string ProviderName { get { return ProviderNames.SqlServerCe4; } }
 
-        public override void Setup()
-        {
-            base.Setup();
-
-            _dataFile = Path.GetTempFileName();
-            File.Delete(_dataFile);
-
-            using (var engine = new SqlCeEngine(ConnectionString))
-            {
-                engine.CreateDatabase();
-            }
-        }
-
-        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
-        {
-            var adapter = new SqlCeDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString);
-            builder = new SqlCeCommandBuilder(adapter);
-            return adapter;
-        }
-
-        protected override string ConnectionString
-        {
-            get
-            {
-                var builder = new SqlCeConnectionStringBuilder
-                {
-                    DataSource = _dataFile
-                };
-                return builder.ConnectionString;
-            }
-        }
-
-        public override void Teardown()
-        {
-            File.Delete(_dataFile);
-
-            base.Teardown();
-        }
+        protected override string CeVersion { get { return "4.0"; } }
     }
 }

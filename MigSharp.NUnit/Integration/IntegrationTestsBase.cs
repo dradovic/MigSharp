@@ -402,6 +402,18 @@ namespace MigSharp.NUnit.Integration
             {
                 table = null;
             }
+            catch (Exception x)
+            {
+                // unfortunately the SqlCeException (used by SQL Server CE 3.5) does not derive from DbException
+                if (x.GetType().Name == "SqlCeException")
+                {
+                    table = null;
+                }
+                else
+                {
+                    throw;
+                }
+            }
             return table;
         }
 
