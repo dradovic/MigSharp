@@ -158,12 +158,32 @@ namespace MigSharp.Providers
             return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
+        protected IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
+        {
+            string constraintName = GetDefaultConstraintName(tableName, columnName);
+            string commandText = DropConstraint(tableName, constraintName);
+            if (checkIfExists)
+            {
+                commandText = PrefixIfObjectExists(constraintName, commandText);
+            }
+            yield return commandText;
+        }
+
+        protected static string PrefixIfObjectExists(string objectName, string commandTextToBePrefixed)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", objectName) + commandTextToBePrefixed;
+        }
+
         public abstract IEnumerable<string> RenameTable(string oldName, string newName);
 
         public abstract IEnumerable<string> RenameColumn(string tableName, string oldName, string newName);
 
         public IEnumerable<string> DropColumn(string tableName, string columnName)
         {
+            foreach (string text in  DropDefaultConstraint(tableName, columnName, true))
+            {
+                yield return text;
+            }
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0}{1} DROP COLUMN {2}", Dbo, Escape(tableName), Escape(columnName));
         }
 
