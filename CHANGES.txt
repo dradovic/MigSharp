@@ -8,6 +8,8 @@
 		- IVersioning: implementors need to return all executed migrations instead of answering Contains(...)
 		- IVersioning and MigrationEventArgs: use the new IScheduledMigrationMetadata interface which contains the direction
       - BUG FIXES:
+	    - SQL Server 2005/2008:
+		  - before dropping a column, drop its default constraint (if exists) (thanks to rmotyka)
         - Teradata:
 	      - stop creating *_0 tables when adding foreign keys
 1.1.0 - Added support for SQLite (without foreign keys)

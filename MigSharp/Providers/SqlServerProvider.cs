@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace MigSharp.Providers
 {
@@ -34,9 +35,20 @@ namespace MigSharp.Providers
                 Escape(tableName));
         }
 
-        protected override IEnumerable<string> DropDefaultConstraint(string tableName, Column column, bool checkIfExists)
+        protected override IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
         {
-            return DropDefaultConstraint(tableName, column.Name, checkIfExists);
+            string constraintName = GetDefaultConstraintName(tableName, columnName);
+            string commandText = DropConstraint(tableName, constraintName);
+            if (checkIfExists)
+            {
+                commandText = PrefixIfObjectExists(constraintName, commandText);
+            }
+            yield return commandText;
+        }
+
+        private static string PrefixIfObjectExists(string objectName, string commandTextToBePrefixed)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", objectName) + commandTextToBePrefixed;
         }
 
         public override IEnumerable<string> RenameTable(string oldName, string newName)
@@ -50,6 +62,12 @@ namespace MigSharp.Providers
             string renameDefaultConstraintName = string.Format("EXEC dbo.sp_rename @objname = N'{0}', @newname = N'{1}', @objtype = N'OBJECT'", Escape(defaultConstraintName), GetDefaultConstraintName(tableName, newName));
             yield return PrefixIfObjectExists(defaultConstraintName, renameDefaultConstraintName);
             yield return string.Format("EXEC dbo.sp_rename @objname=N'[dbo].{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", Escape(tableName), Escape(oldName), newName);
+        }
+
+        public override IEnumerable<string> DropColumn(string tableName, string columnName)
+        {
+            return DropDefaultConstraint(tableName, columnName, true)
+                .Concat(base.DropColumn(tableName, columnName));
         }
 
         public override IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)

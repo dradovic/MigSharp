@@ -37,12 +37,12 @@ namespace MigSharp.Providers
             return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}'", tableName);
         }
 
-        protected override IEnumerable<string> DropDefaultConstraint(string tableName, Column column, bool checkIfExists)
+        protected override IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
         {
             // checkIfExists can be ignored
             yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT",
                 Escape(tableName),
-                Escape(column.Name));
+                Escape(columnName));
         }
 
         public override IEnumerable<string> RenameTable(string oldName, string newName)

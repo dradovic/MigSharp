@@ -167,10 +167,21 @@ namespace MigSharp.SqlServer.NUnit
         public IEnumerable<string> DropColumn(string tableName, string columnName)
         {
             Table table = GetTable(tableName);
+            string defaultConstraintName = ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, columnName);
             var column = new Microsoft.SqlServer.Management.Smo.Column(table, columnName);
+            column.AddDefaultConstraint(defaultConstraintName);
             table.Columns.Add(column);
+
             column.Drop();
-            return ScriptChanges(table.Parent.Parent);
+
+            // script changes
+            IEnumerable<string> commandTexts = ScriptChanges(table.Parent.Parent);
+            string dropDefaultConstraintCommandText = string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", defaultConstraintName) + commandTexts.First();
+            yield return dropDefaultConstraintCommandText;
+            foreach (string commandText in commandTexts.Skip(1))
+            {
+                yield return commandText;
+            }
         }
 
         public IEnumerable<string> AlterColumn(string tableName, Column column)

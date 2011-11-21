@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\StringHelperTests.cs" />
+    <Compile Include="Integration\Migration18.cs" />
     <Compile Include="Integration\ExpectedTable.cs" />
     <Compile Include="Integration\ExpectedTables.cs" />
     <Compile Include="Integration\IntegrationTestContext.cs" />

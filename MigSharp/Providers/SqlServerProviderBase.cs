@@ -116,7 +116,7 @@ namespace MigSharp.Providers
             yield return commandText;
         }
 
-        protected abstract IEnumerable<string> DropDefaultConstraint(string tableName, Column column, bool checkIfExists);
+        protected abstract IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists);
 
         private string GetDefaultConstraintClause(string tableName, string columnName, object value)
         {
@@ -158,39 +158,19 @@ namespace MigSharp.Providers
             return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
-        protected IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
-        {
-            string constraintName = GetDefaultConstraintName(tableName, columnName);
-            string commandText = DropConstraint(tableName, constraintName);
-            if (checkIfExists)
-            {
-                commandText = PrefixIfObjectExists(constraintName, commandText);
-            }
-            yield return commandText;
-        }
-
-        protected static string PrefixIfObjectExists(string objectName, string commandTextToBePrefixed)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", objectName) + commandTextToBePrefixed;
-        }
-
         public abstract IEnumerable<string> RenameTable(string oldName, string newName);
 
         public abstract IEnumerable<string> RenameColumn(string tableName, string oldName, string newName);
 
-        public IEnumerable<string> DropColumn(string tableName, string columnName)
+        public virtual IEnumerable<string> DropColumn(string tableName, string columnName)
         {
-            foreach (string text in  DropDefaultConstraint(tableName, columnName, true))
-            {
-                yield return text;
-            }
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0}{1} DROP COLUMN {2}", Dbo, Escape(tableName), Escape(columnName));
         }
 
         public IEnumerable<string> AlterColumn(string tableName, Column column)
         {
             // remove any existing default value constraints (before possibly adding new ones)
-            foreach (string text in DropDefaultConstraint(tableName, column, true))
+            foreach (string text in DropDefaultConstraint(tableName, column.Name, true))
             {
                 yield return text;
             }
@@ -269,7 +249,7 @@ namespace MigSharp.Providers
         public IEnumerable<string> DropDefault(string tableName, Column column)
         {
             Debug.Assert(column.DefaultValue == null);
-            return DropDefaultConstraint(tableName, column, false);
+            return DropDefaultConstraint(tableName, column.Name, false);
         }
 
         protected string DropConstraint(string tableName, string constraintName)
