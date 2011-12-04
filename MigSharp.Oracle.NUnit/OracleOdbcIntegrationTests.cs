@@ -28,7 +28,16 @@ namespace MigSharp.Oracle.NUnit
             get
             {
                 const string password = "MIGSHARP_ORACLE_PASSWORD";
-                return Environment.GetEnvironmentVariable(password);
+                return GetEnvironmentVariable(password);
+            }
+        }
+
+        protected static string TableSpace
+        {
+            get
+            {
+                const string tableSpace = "MIGSHARP_ORACLE_TABLESPACE";
+                return GetEnvironmentVariable(tableSpace);
             }
         }
 
@@ -40,8 +49,8 @@ namespace MigSharp.Oracle.NUnit
 
         private static string GetUniqueDbName()
         {
-            //Teradata only allows 30 chars for databse name and a guid is 38 so we use this shortend form
-            //Oracle requires name to start with a letter no longer a true short guid as we use substring addedtimestamp to ensure unique and remove illegal chars
+            //Oracle only allows 30 chars for database name and a guid is 38 so we use this shortened form
+            //Oracle requires name to start with a letter no longer a true short guid as we use substring added timestamp to ensure unique and remove illegal chars
             return string.Format(CultureInfo.InvariantCulture, "A{0}{1}", Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 22).Replace("/", "_")
                 .Replace("+", "_"), DateTime.Now.Minute.ToString(CultureInfo.CurrentCulture) + DateTime.Now.Second + DateTime.Now.Millisecond);
         }
@@ -89,7 +98,7 @@ namespace MigSharp.Oracle.NUnit
 
         private static void CreateDatabase(string databaseName)
         {
-            var query1 = @"CREATE USER " + databaseName + " IDENTIFIED BY " + Password + " DEFAULT TABLESPACE ut_bwcm QUOTA UNLIMITED ON ut_bwcm";
+            var query1 = @"CREATE USER " + databaseName + " IDENTIFIED BY " + Password + " DEFAULT TABLESPACE " + TableSpace + " QUOTA UNLIMITED ON " + TableSpace;
             var query = @"GRANT CONNECT, RESOURCE TO " + databaseName;
 
             using (OdbcConnection con = new OdbcConnection(MasterConnectionString))
