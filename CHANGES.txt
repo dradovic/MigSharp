@@ -1,7 +1,7 @@
 2.0.0 - Added support for SQL Server CE 3.5 (thanks to balistof)
       - Duplicate migration exports are detected before actual migration execution
       - API:
-        - IMigrationBatch lists:
+        - IMigrationBatch now lists:
 		  - migrations scheduled for execution
 		  - migrations executed server-side but unknown to the application (used to detect if an application is out-of-date)
         - Removed Migrator.IsUpToDate as it is ambiguous and incurs an extra round-trip to the database (use FetchMigrations instead)
@@ -10,7 +10,9 @@
       - BUG FIXES:
 	    - SQL Server 2005/2008:
 		  - before dropping a column, drop its default constraint (if exists) (thanks to rmotyka)
-        - Teradata:
+        - SQL Server CE 4:
+		  - allow GUIDs to be used as primary keys (thanks to lestermat)
+		- Teradata:
 	      - stop creating *_0 tables when adding foreign keys
 1.1.0 - Added support for SQLite (without foreign keys)
       - Added support for SQL scripting: instead of executing migrations against a database, they can be scripted into files
