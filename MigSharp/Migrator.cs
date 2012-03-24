@@ -20,7 +20,7 @@ namespace MigSharp
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProvider _provider;
         private readonly IProviderMetadata _providerMetadata;
-        internal IDbConnectionFactory _dbConnectionFactory = new DbConnectionFactory();
+        private readonly IDbConnectionFactory _dbConnectionFactory;
         private readonly MigrationOptions _options;
 
         private IVersioning _customVersioning;
@@ -42,6 +42,8 @@ namespace MigSharp
 
             _connectionInfo = new ConnectionInfo(connectionString, _providerMetadata.InvariantName, _providerMetadata.SupportsTransactions);
             _options = options;
+
+            _dbConnectionFactory = new DbConnectionFactory();
         }
 
         /// <summary>
@@ -63,6 +65,17 @@ namespace MigSharp
         public Migrator(string connectionString, string providerName) : // signature used in a Wiki example
             this(connectionString, providerName, new MigrationOptions())
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="Migrator"/> with the default options, using the given connection.
+        /// </summary>
+        /// <param name="connection">The connection to use when performing the migrations.</param>
+        /// <param name="providerName">The name of the provider that should be used for this migrator (<see cref="ProviderNames"/>).</param>
+        public Migrator(IDbConnection connection, string providerName)
+            : this(string.Empty, providerName)
+        {
+            _dbConnectionFactory = new SingleDbConnectionConnectionFactory(connection);
         }
 
         /// <summary>
