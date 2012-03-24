@@ -213,6 +213,7 @@
     <Compile Include="Providers\SupportsAttribute.cs" />
     <Compile Include="Process\FileScripter.cs" />
     <Compile Include="Process\ScriptingOptions.cs" />
+    <Compile Include="SQLiteInMemoryMigrator.cs" />
     <Compile Include="SupportedProviders.cs" />
     <Compile Include="Providers\Column.cs" />
     <Compile Include="Providers\ColumnReference.cs" />

@@ -20,7 +20,7 @@ namespace MigSharp
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProvider _provider;
         private readonly IProviderMetadata _providerMetadata;
-        private readonly DbConnectionFactory _dbConnectionFactory = new DbConnectionFactory();
+        internal IDbConnectionFactory _dbConnectionFactory = new DbConnectionFactory();
         private readonly MigrationOptions _options;
 
         private IVersioning _customVersioning;
@@ -156,9 +156,9 @@ namespace MigSharp
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
             migrationSelector.GetMigrationsTo(timestamp, _options.ModuleSelector, out applicableMigrations, out unidentifiedMigrations);
             return new MigrationBatch(
-// ReSharper disable RedundantEnumerableCastCall
+                // ReSharper disable RedundantEnumerableCastCall
                 applicableMigrations.Select(m => new MigrationStep(m.Implementation, m.Metadata, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
-// ReSharper restore RedundantEnumerableCastCall
+                // ReSharper restore RedundantEnumerableCastCall
                 unidentifiedMigrations,
                 versioning,
                 _options);
