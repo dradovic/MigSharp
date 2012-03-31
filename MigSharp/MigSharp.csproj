@@ -99,6 +99,7 @@
     <Compile Include="IScheduledMigrationMetadata.cs" />
     <Compile Include="Core\ScheduledMigrationMetadata.cs" />
     <Compile Include="Process\MigrationSelector.cs" />
+    <Compile Include="Process\SingleDbConnectionConnectionFactory.cs" />
     <Compile Include="Process\UsedDataType.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />
@@ -213,7 +214,6 @@
     <Compile Include="Providers\SupportsAttribute.cs" />
     <Compile Include="Process\FileScripter.cs" />
     <Compile Include="Process\ScriptingOptions.cs" />
-    <Compile Include="SQLiteInMemoryMigrator.cs" />
     <Compile Include="SupportedProviders.cs" />
     <Compile Include="Providers\Column.cs" />
     <Compile Include="Providers\ColumnReference.cs" />
