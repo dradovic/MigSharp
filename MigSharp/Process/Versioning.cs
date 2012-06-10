@@ -65,7 +65,7 @@ namespace MigSharp.Process
         {
             if (_persistedVersioning == null)
             {
-                var history = new History(_versioningTableName, _providerMetadata);
+                var history = new History(_versioningTableName, _providerMetadata, _provider);
                 if (!_versioningTableExists.Value)
                 {
                     Debug.Assert(connection != null, "At this point, an upgrade of the versioning table is requested. This always takes part of a running migration step and therefore already has an associated connection (and possibly a transaction).");

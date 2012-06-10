@@ -215,6 +215,11 @@ namespace MigSharp.Providers
             throw new NotSupportedException("Rename the table, create a new table with the correct columns, and copy the contents from the renamed table.");
         }
 
+        public string Escape(string name)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", name);
+        }
+
         private static string GetTypeSpecifier(DataType type)
         {
             switch (type.DbType)

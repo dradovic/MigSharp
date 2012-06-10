@@ -8,19 +8,23 @@ using MigSharp.Core;
 
 namespace MigSharp.Process
 {
+    using Providers;
+
     internal class History
     {
         private readonly string _tableName;
         private readonly IProviderMetadata _providerMetadata;
+        private readonly IProvider _provider;
 
         private readonly List<IMigrationMetadata> _actualEntries = new List<IMigrationMetadata>();
         private readonly List<IMigrationMetadata> _entriesToDelete = new List<IMigrationMetadata>();
         private readonly List<IMigrationMetadata> _entriesToInsert = new List<IMigrationMetadata>();
 
-        public History(string tableName, IProviderMetadata providerMetadata)
+        public History(string tableName, IProviderMetadata providerMetadata, IProvider provider)
         {
             _tableName = tableName;
             _providerMetadata = providerMetadata;
+            _provider = provider;
         }
 
         public IEnumerable<IMigrationMetadata> GetMigrations()
@@ -80,11 +84,11 @@ namespace MigSharp.Process
                 string moduleName = entry.ModuleName;
                 IDataParameter moduleNameParameter = command.AddParameter("@ModuleName", DbType.String, moduleName);
                 long timestamp = entry.Timestamp;
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, "DELETE FROM \"{0}\" WHERE \"{1}\" = {2} AND \"{3}\" = {4}",
-                    _tableName,
-                    BootstrapMigration.TimestampColumnName,
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, "DELETE FROM {0} WHERE {1} = {2} AND {3} = {4}",
+                    _provider.Escape(_tableName),
+                    _provider.Escape(BootstrapMigration.TimestampColumnName),
                     timestamp.ToString(CultureInfo.InvariantCulture),
-                    BootstrapMigration.ModuleColumnName,
+                    _provider.Escape(BootstrapMigration.ModuleColumnName),
                     _providerMetadata.GetParameterSpecifier(moduleNameParameter));
                 // note: we do not provide the timestamp as a parameter as the OracleOdbcProvider has an issue with it
                 executor.ExecuteNonQuery(command);
@@ -99,11 +103,11 @@ namespace MigSharp.Process
                 command.Transaction = transaction;
                 IDataParameter moduleNameParameter = command.AddParameter("@ModuleName", DbType.String, entry.ModuleName);
                 IDataParameter tagParameter = command.AddParameter("@Tag", DbType.String, !string.IsNullOrEmpty(entry.Tag) ? (object)entry.Tag : DBNull.Value);
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"", ""{2}"", ""{3}"") VALUES ({4}, {5}, {6})",
-                    _tableName,
-                    BootstrapMigration.TimestampColumnName,
-                    BootstrapMigration.ModuleColumnName,
-                    BootstrapMigration.TagColumnName,
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO {0} ({1}, {2}, {3}) VALUES ({4}, {5}, {6})",
+                    _provider.Escape(_tableName),
+                    _provider.Escape(BootstrapMigration.TimestampColumnName),
+                    _provider.Escape(BootstrapMigration.ModuleColumnName),
+                    _provider.Escape(BootstrapMigration.TagColumnName),
                     entry.Timestamp.ToString(CultureInfo.InvariantCulture),
                     _providerMetadata.GetParameterSpecifier(moduleNameParameter),
                     _providerMetadata.GetParameterSpecifier(tagParameter));

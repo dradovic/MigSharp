@@ -144,7 +144,7 @@ namespace MigSharp.Providers
             yield return string.Format(string.Format("{0} ADD {1}", AlterTable(tableName), GetColumnString(column, false)));
         }
 
-        private static IEnumerable<string> DropConstraint(string tableName, string constraintName)
+        private IEnumerable<string> DropConstraint(string tableName, string constraintName)
         {
             yield return string.Format("{0} DROP CONSTRAINT {1}", AlterTable(tableName), Escape(constraintName));
         }
@@ -216,17 +216,17 @@ namespace MigSharp.Providers
             return AlterColumn(tableName, column);
         }
 
-        private static string CreateTable(string tableName)
+        private string CreateTable(string tableName)
         {
             return string.Format(CultureInfo.InvariantCulture, "CREATE TABLE {0}", Escape(tableName));
         }
 
-        private static string AlterTable(string tableName)
+        private string AlterTable(string tableName)
         {
             return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0}", Escape(tableName));
         }
 
-        private static string Escape(string name)
+        public string Escape(string name)
         {
             return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", name);
         }
@@ -346,7 +346,7 @@ namespace MigSharp.Providers
             return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
-        private static string GetCsList(IEnumerable<string> columnNames)
+        private string GetCsList(IEnumerable<string> columnNames)
         {
             string columns = String.Empty;
             foreach (var column in columnNames)

@@ -35,6 +35,11 @@ namespace MigSharp
         /// Gets the maximum length of object names within the database. 0 meaning that there is non restriction which is the default.
         /// </summary>
         int MaximumDbObjectNameLength { get; }
+
+        ///// <summary>
+        ///// Gets the identifier pattern for the database.
+        ///// </summary>
+        //string IdentifierPattern { get; }
     }
 
     internal static class ProviderMetadataExtensions

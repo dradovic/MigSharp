@@ -267,7 +267,7 @@ namespace MigSharp.Providers
             return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0}{1}", Dbo, Escape(tableName));
         }
 
-        protected static string Escape(string name)
+        public string Escape(string name)
         {
             return string.Format(CultureInfo.InvariantCulture, "[{0}]", name);
         }
