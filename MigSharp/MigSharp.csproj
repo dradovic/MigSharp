@@ -82,6 +82,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultMigrationTimestampProvider.cs" />
+    <Compile Include="IMigrationTimestampProvider.cs" />
     <Compile Include="InvalidMigrationExportException.cs" />
     <Compile Include="Core\Commands\AddPrimaryKeyCommand.cs" />
     <Compile Include="Core\Commands\AddForeignKeyToCommand.cs" />
@@ -200,7 +202,6 @@
     <Compile Include="Process\IMigrationStep.cs" />
     <Compile Include="Process\RuntimeContext.cs" />
     <Compile Include="MigrationDirection.cs" />
-    <Compile Include="Process\MigrationExtensions.cs" />
     <Compile Include="Providers\DataType.cs" />
     <Compile Include="Process\IRecordedMigration.cs" />
     <Compile Include="Providers\ObjectNameHelper.cs" />

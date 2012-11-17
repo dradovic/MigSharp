@@ -140,7 +140,7 @@ namespace MigSharp
         {
             // import all migrations
             DateTime start = DateTime.Now;
-            IEnumerable<ImportedMigration> availableMigrations = ImportAllMigrations(catalog);
+            IEnumerable<ImportedMigration> availableMigrations = ImportAllMigrations(catalog, _options.TimestampProvider);
             Log.Verbose(LogCategory.Performance, "Importing migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
             // initialize command execution/scripting dispatching
@@ -192,7 +192,7 @@ namespace MigSharp
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var allMigrations = ImportAllMigrations(catalog)
+                    var allMigrations = ImportAllMigrations(catalog, _options.TimestampProvider)
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = from m in allMigrations
                                                              where _customBootstrapper.IsContained(m)
@@ -240,13 +240,13 @@ namespace MigSharp
             return catalog;
         }
 
-        private static IEnumerable<ImportedMigration> ImportAllMigrations(ComposablePartCatalog catalog)
+        private static IEnumerable<ImportedMigration> ImportAllMigrations(ComposablePartCatalog catalog, IMigrationTimestampProvider timestampProvider)
         {
             Log.Info("Importing migrations...");
             var container = new CompositionContainer(catalog);
             IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> migrations = container.GetExports<IMigration, IMigrationExportMetadata>();
             var result = new List<ImportedMigration>(migrations
-                .Select(l => new ImportedMigration(l.Value, new MigrationMetadata(l.Value.GetType().GetTimestamp(), l.Metadata.ModuleName, l.Metadata.Tag))));
+                .Select(l => new ImportedMigration(l.Value, new MigrationMetadata(timestampProvider.GetTimestamp(l.Value.GetType()), l.Metadata.ModuleName, l.Metadata.Tag))));
             Log.Info("Found {0} migration(s)", result.Count);
             return result;
         }

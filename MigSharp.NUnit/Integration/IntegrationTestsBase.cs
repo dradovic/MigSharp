@@ -26,6 +26,8 @@ namespace MigSharp.NUnit.Integration
 
         private static readonly IList<long> Timestamps;
 
+        private static readonly IMigrationTimestampProvider TimestampProvider = new DefaultMigrationTimestampProvider();
+
         private MigrationOptions _options;
 
         [SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
@@ -36,7 +38,7 @@ namespace MigSharp.NUnit.Integration
                 .Where(t => Regex.IsMatch(t.Name, pattern))
                 .OrderBy(t => int.Parse(Regex.Match(t.Name, pattern).Groups[1].Value, CultureInfo.InvariantCulture))
                 .Select(t => (IMigration)Activator.CreateInstance(t)));
-            Timestamps = new List<long>(Migrations.Select(m => m.GetType().GetTimestamp()));
+            Timestamps = new List<long>(Migrations.Select(m => TimestampProvider.GetTimestamp(m.GetType())));
             MigrationOptions.SetGeneralTraceLevel(SourceLevels.All);
             MigrationOptions.SetPerformanceTraceLevel(SourceLevels.All);
             MigrationOptions.SetSqlTraceLevel(SourceLevels.All);

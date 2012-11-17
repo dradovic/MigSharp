@@ -32,6 +32,17 @@ namespace MigSharp
             }
         }
 
+        private IMigrationTimestampProvider _timestampProvider = new DefaultMigrationTimestampProvider();
+        
+        /// <summary>
+        /// The provider that parses the timestamp from the migration
+        /// </summary>
+        public IMigrationTimestampProvider TimestampProvider
+        {
+            get { return _timestampProvider; }
+            set { _timestampProvider = value; }
+        }
+
         private SupportedProviders _supportedProviders = new SupportedProviders();
         /// <summary>
         /// Gets the providers that should be supported for all migrations. Compatibility validation of migrations is performed
