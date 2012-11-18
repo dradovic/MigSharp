@@ -140,7 +140,8 @@ namespace MigSharp
         {
             // import all migrations
             DateTime start = DateTime.Now;
-            IEnumerable<ImportedMigration> availableMigrations = ImportAllMigrations(catalog, _options.TimestampProvider);
+            var timestampProvider = InitializeTimestampProvider(catalog, _options.ModuleSelector);
+            IEnumerable<ImportedMigration> availableMigrations = ImportAllMigrations(catalog, timestampProvider);
             Log.Verbose(LogCategory.Performance, "Importing migrations took {0}s", (DateTime.Now - start).TotalSeconds);
 
             // initialize command execution/scripting dispatching
@@ -164,6 +165,36 @@ namespace MigSharp
                 _options);
         }
 
+        private static IMigrationTimestampProvider InitializeTimestampProvider(ComposablePartCatalog catalog, Predicate<string> moduleSelector)
+        {
+            // Get timestamp providers from the MEF catalog
+            var container = new CompositionContainer(catalog);
+            var timestampProviders = container.GetExports<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata>();
+
+            Lazy<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata> defaultProvider = null;
+            foreach (var provider in timestampProviders)
+            {
+                if (moduleSelector(provider.Metadata.ModuleName))
+                {
+                    // Found a provider that is specific to the current module
+                    return provider.Value;
+                }
+                if (MigrationExportAttribute.DefaultModuleName.Equals(provider.Metadata.ModuleName))
+                {
+                    // Found a default provider
+                    if (defaultProvider != null)
+                        throw new InvalidOperationException("Cannot have more than one default timestamp provider exported in an assembly.");
+
+                    defaultProvider = provider;
+                }
+            }
+
+            // No module specific providers found, return either the default provider for the assembly or the default provider
+            return defaultProvider == null
+                       ? new DefaultMigrationTimestampProvider()
+                       : defaultProvider.Value;
+        }
+
         private IVersioning InitializeVersioning(ComposablePartCatalog catalog, ISqlDispatcher dispatcher)
         {
             IVersioning versioning;
@@ -185,6 +216,7 @@ namespace MigSharp
 
         private void ApplyCustomBootstrapping(Versioning versioning, ComposablePartCatalog catalog)
         {
+            var timestampProvider = InitializeTimestampProvider(catalog, _options.ModuleSelector);
             using (IDbConnection connection = _dbConnectionFactory.OpenConnection(_connectionInfo))
             {
                 using (IDbTransaction transaction = _connectionInfo.SupportsTransactions ? connection.BeginTransaction() : null)
@@ -192,7 +224,7 @@ namespace MigSharp
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var allMigrations = ImportAllMigrations(catalog, _options.TimestampProvider)
+                    var allMigrations = ImportAllMigrations(catalog, timestampProvider)
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = from m in allMigrations
                                                              where _customBootstrapper.IsContained(m)

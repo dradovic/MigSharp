@@ -29,38 +29,23 @@ namespace MigSharp.NUnit
         #region Migrator uses timestamp provider provided by MigrationOptions
 
         [Test]
-        public void MigratorUsesTimestampProviderSpecifiedInOptions()
+        public void MigratorUsesModuleSpecificTimestampProvider()
         {
-            // Get the total number of migrations
-            var totalMigrations = typeof (Migration1).Assembly.GetTypes()
-                .Count(t => !t.IsAbstract && t.IsClass && t.GetInterfaces().Any(i => i == typeof (IMigration)));
-
-            var mockProvider = new MockMigrationTimestampProvider();
-            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions
-                                                                              {
-                                                                                  TimestampProvider = mockProvider
-                                                                              });
+            var errorThrown = false;
+            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderTest"));
             try
             {
                 migrator.MigrateTo(typeof (Migration1).Assembly, 1);
             }
-            catch (Exception)
+            catch (NotImplementedException ex)
             {
-                // We know it's going to fail as the connection string is garbage
+                Assert.AreEqual("TimestampProviderTest called", ex.Message);
+                errorThrown = true;
             }
 
-            Assert.AreEqual(totalMigrations, mockProvider.TimesCalled);
+            Assert.IsTrue(errorThrown, "Timestamp Provider not called");
         }
 
-        private class MockMigrationTimestampProvider : IMigrationTimestampProvider
-        {
-            public int TimesCalled { get; private set; }
-
-            public long GetTimestamp(Type migration)
-            {
-                return TimesCalled++;
-            }
-        }
 
         #endregion
 
@@ -162,4 +147,26 @@ namespace MigSharp.NUnit
 
         #endregion
     }
+
+    #region Supporting classes for module-specific timestamp provider test
+
+    [MigrationTimestampProviderExport(ModuleName = "TimestampProviderTest")]
+    public class TestMigrationTimestampProvider : IMigrationTimestampProvider
+    {
+        public long GetTimestamp(Type migration)
+        {
+            throw new NotImplementedException("TimestampProviderTest called");
+        }
+    }
+
+    [MigrationExport(ModuleName = "TimestampProviderTest")]
+    public class TestTimestampMigration : IMigration
+    {
+        public void Up(IDatabase db)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    #endregion
 }
