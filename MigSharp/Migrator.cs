@@ -172,12 +172,17 @@ namespace MigSharp
             var timestampProviders = container.GetExports<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata>();
 
             Lazy<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata> defaultProvider = null;
+            Lazy<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata> moduleProvider = null;
             foreach (var provider in timestampProviders)
             {
                 if (moduleSelector(provider.Metadata.ModuleName))
                 {
                     // Found a provider that is specific to the current module
-                    return provider.Value;
+                    if (moduleProvider != null)
+                        throw new InvalidOperationException(
+                            string.Format("There is more than one timestamp provider for the module '{0}'. Cannot have more than one timestamp provider exported for a module in an assembly.", provider.Metadata.ModuleName));
+
+                    moduleProvider = provider;
                 }
                 if (MigrationExportAttribute.DefaultModuleName.Equals(provider.Metadata.ModuleName))
                 {
@@ -188,6 +193,10 @@ namespace MigSharp
                     defaultProvider = provider;
                 }
             }
+
+            // If we have a module provider, use that
+            if (moduleProvider != null)
+                return moduleProvider.Value;
 
             // No module specific providers found, return either the default provider for the assembly or the default provider
             return defaultProvider == null

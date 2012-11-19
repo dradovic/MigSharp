@@ -46,6 +46,13 @@ namespace MigSharp.NUnit
             Assert.IsTrue(errorThrown, "Timestamp Provider not called");
         }
 
+        [Test, ExpectedException(typeof(InvalidOperationException), ExpectedMessage = "There is more than one timestamp provider for the module 'TimestampProviderDuplicateTest'. Cannot have more than one timestamp provider exported for a module in an assembly.")]
+        public void MigratorThrowsErrorIfDuplicateTimestampProvidersFoundForModule()
+        {
+            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderDuplicateTest"));            
+            migrator.MigrateTo(typeof (Migration1).Assembly, 1);
+        }
+
 
         #endregion
 
@@ -161,6 +168,33 @@ namespace MigSharp.NUnit
 
     [MigrationExport(ModuleName = "TimestampProviderTest")]
     public class TestTimestampMigration : IMigration
+    {
+        public void Up(IDatabase db)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [MigrationTimestampProviderExport(ModuleName = "TimestampProviderDuplicateTest")]
+    public class TestMigrationTimestampProvider1 : IMigrationTimestampProvider
+    {
+        public long GetTimestamp(Type migration)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [MigrationTimestampProviderExport(ModuleName = "TimestampProviderDuplicateTest")]
+    public class TestMigrationTimestampProvider2 : IMigrationTimestampProvider
+    {
+        public long GetTimestamp(Type migration)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [MigrationExport(ModuleName = "TimestampProviderDuplicateTest")]
+    public class TestTimestampDuplicateMigration : IMigration
     {
         public void Up(IDatabase db)
         {
