@@ -35,7 +35,7 @@ namespace MigSharp.NUnit.Integration
         {
             const string pattern = @"Migration(\d+)";
             Migrations.AddRange(typeof(IntegrationTestsBase).Assembly.GetTypes()
-                .Where(t => Regex.IsMatch(t.Name, pattern))
+                .Where(t => Regex.IsMatch(t.Name, pattern) && t.GetInterface("IMigration") != null)
                 .OrderBy(t => long.Parse(Regex.Match(t.Name, pattern).Groups[1].Value, CultureInfo.InvariantCulture))
                 .Select(t => (IMigration)Activator.CreateInstance(t)));
             Timestamps = new List<long>(Migrations.Select(m => TimestampProvider.GetTimestamp(m.GetType())));
