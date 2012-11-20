@@ -1,7 +1,9 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Globalization;
 using System.Linq;
-using MigSharp.NUnit.Integration;
+using System.Reflection;
+using System.Text;
 using NUnit.Framework;
 
 namespace MigSharp.NUnit
@@ -23,36 +25,6 @@ namespace MigSharp.NUnit
         private class TimestampTestMigration201211171806
         {
         }
-
-        #endregion
-
-        #region Migrator uses timestamp provider provided by MigrationOptions
-
-        [Test]
-        public void MigratorUsesModuleSpecificTimestampProvider()
-        {
-            var errorThrown = false;
-            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderTest"));
-            try
-            {
-                migrator.MigrateTo(typeof (Migration1).Assembly, 1);
-            }
-            catch (NotImplementedException ex)
-            {
-                Assert.AreEqual("TimestampProviderTest called", ex.Message);
-                errorThrown = true;
-            }
-
-            Assert.IsTrue(errorThrown, "Timestamp Provider not called");
-        }
-
-        [Test, ExpectedException(typeof(InvalidOperationException), ExpectedMessage = "There is more than one timestamp provider for the module 'TimestampProviderDuplicateTest'. Cannot have more than one timestamp provider exported for a module in an assembly.")]
-        public void MigratorThrowsErrorIfDuplicateTimestampProvidersFoundForModule()
-        {
-            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderDuplicateTest"));            
-            migrator.MigrateTo(typeof (Migration1).Assembly, 1);
-        }
-
 
         #endregion
 
@@ -153,54 +125,128 @@ namespace MigSharp.NUnit
         }
 
         #endregion
-    }
 
-    #region Supporting classes for module-specific timestamp provider test
+        #region Migrator uses module-specifc timestamp provider
 
-    [MigrationTimestampProviderExport(ModuleName = "TimestampProviderTest")]
-    public class TestMigrationTimestampProvider : IMigrationTimestampProvider
-    {
-        public long GetTimestamp(Type migration)
+        [Test]
+        public void MigratorUsesModuleSpecificTimestampProvider()
         {
-            throw new NotImplementedException("TimestampProviderTest called");
-        }
-    }
+            var errorThrown = false;
+            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderTest"));
+            try
+            {
+                migrator.MigrateTo(_timestampModuleTestAssembly, 1);
+            }
+            catch (NotImplementedException ex)
+            {
+                Assert.AreEqual("TimestampProviderTest called", ex.Message);
+                errorThrown = true;
+            }
 
-    [MigrationExport(ModuleName = "TimestampProviderTest")]
-    public class TestTimestampMigration : IMigration
-    {
-        public void Up(IDatabase db)
+            Assert.IsTrue(errorThrown, "Timestamp Provider not called");
+        }
+
+        [Test, ExpectedException(typeof(InvalidOperationException), ExpectedMessage = "Cannot have more than one exported timestamp provider with the same module name.")]
+        public void MigratorThrowsErrorIfDuplicateTimestampProvidersFoundForModule()
         {
-            throw new NotImplementedException();
+            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderDuplicateTest"));
+            migrator.MigrateTo(_duplicateProviderTestAssembly, 1);
         }
-    }
 
-    [MigrationTimestampProviderExport(ModuleName = "TimestampProviderDuplicateTest")]
-    public class TestMigrationTimestampProvider1 : IMigrationTimestampProvider
-    {
-        public long GetTimestamp(Type migration)
+        
+        /* The following code dynamically compiles test assemblies into memory. 
+         * This is done to stop intentionally-broken timestamp provider code interfering with integration tests
+         * and removes the need for additional assemblies to be created.
+         */
+
+        private Assembly _timestampModuleTestAssembly;
+        private Assembly _duplicateProviderTestAssembly;
+
+        [TestFixtureSetUp]
+        public void SetupTimestampProvider()
         {
-            throw new NotImplementedException();
-        }
-    }
+            // Configure the compiler to generate in-memory
+            var parameters = new CompilerParameters
+                                 {
+                                     GenerateExecutable = false,
+                                     GenerateInMemory = true
+                                 };
 
-    [MigrationTimestampProviderExport(ModuleName = "TimestampProviderDuplicateTest")]
-    public class TestMigrationTimestampProvider2 : IMigrationTimestampProvider
-    {
-        public long GetTimestamp(Type migration)
-        {
-            throw new NotImplementedException();
-        }
-    }
+            // Add assemblies referenced by this assembly be referenced by the compiled assembly
+            var assemblies = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(a => !a.IsDynamic)
+                .Select(a => a.Location);
+            parameters.ReferencedAssemblies.AddRange(assemblies.ToArray());
 
-    [MigrationExport(ModuleName = "TimestampProviderDuplicateTest")]
-    public class TestTimestampDuplicateMigration : IMigration
-    {
-        public void Up(IDatabase db)
-        {
-            throw new NotImplementedException();
-        }
-    }
+            // Compile the time stamp module test code
+            var result = CodeDomProvider.CreateProvider("C#")
+                .CompileAssemblyFromSource(parameters, TimestampModuleTestAssemblySource.ToString());
+            if (result.Errors.Count != 0)
+                throw new InvalidOperationException("TimestampModuleTestAssemblySource generated errors when compiled. Please check.");
+            _timestampModuleTestAssembly = result.CompiledAssembly;
 
-    #endregion
+            // Compile the duplicate time stamp provider test code
+            result = CodeDomProvider.CreateProvider("C#")
+                .CompileAssemblyFromSource(parameters, DuplicateTimestampProviderAssemblySource.ToString());
+            if (result.Errors.Count != 0)
+                throw new InvalidOperationException("DuplicateTimestampProviderAssemblySource generated errors when compiled. Please check.");
+            _duplicateProviderTestAssembly = result.CompiledAssembly;
+        }
+
+        // Code to test module-specifc timestamp providers
+        private static readonly StringBuilder TimestampModuleTestAssemblySource = new StringBuilder()
+            .AppendLine("using System;")
+            .AppendLine("using MigSharp;")
+            .AppendLine("[MigrationTimestampProviderExport(ModuleName = \"TimestampProviderTest\")]")
+            .AppendLine("public class TestMigrationTimestampProvider : IMigrationTimestampProvider")
+            .AppendLine("{")
+            .AppendLine("   public long GetTimestamp(Type migration)")
+            .AppendLine("   {")
+            .AppendLine("       throw new NotImplementedException(\"TimestampProviderTest called\");")
+            .AppendLine("   }")
+            .AppendLine("}")
+            .AppendLine()
+            .AppendLine("[MigrationExport(ModuleName = \"TimestampProviderTest\")]")
+            .AppendLine("public class TestTimestampMigration : IMigration")
+            .AppendLine("{")
+            .AppendLine("   public void Up(IDatabase db)")
+            .AppendLine("   {")
+            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("   }")
+            .AppendLine("}");
+
+        // Code to test duplicate timestamp provider error handling
+        private static readonly StringBuilder DuplicateTimestampProviderAssemblySource = new StringBuilder()
+            .AppendLine("using System;")
+            .AppendLine("using MigSharp;")
+            .AppendLine("[MigrationTimestampProviderExport(ModuleName = \"TimestampProviderDuplicateTest\")]")
+            .AppendLine("public class TestMigrationTimestampProvider1 : IMigrationTimestampProvider")
+            .AppendLine("{")
+            .AppendLine("   public long GetTimestamp(Type migration)")
+            .AppendLine("   {")
+            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("   }")
+            .AppendLine("}")
+            .AppendLine()
+            .AppendLine("[MigrationTimestampProviderExport(ModuleName = \"TimestampProviderDuplicateTest\")]")
+            .AppendLine("public class TestMigrationTimestampProvider2 : IMigrationTimestampProvider")
+            .AppendLine("{")
+            .AppendLine("   public long GetTimestamp(Type migration)")
+            .AppendLine("   {")
+            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("   }")
+            .AppendLine("}")
+            .AppendLine()
+            .AppendLine("[MigrationExport(ModuleName = \"TimestampProviderDuplicateTest\")]")
+            .AppendLine("public class TestTimestampDuplicateMigration : IMigration")
+            .AppendLine("{")
+            .AppendLine("   public void Up(IDatabase db)")
+            .AppendLine("   {")
+            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("   }")
+            .AppendLine("}");
+
+        #endregion
+    }
 }
