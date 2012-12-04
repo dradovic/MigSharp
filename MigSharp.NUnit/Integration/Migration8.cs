@@ -102,7 +102,8 @@ namespace MigSharp.NUnit.Integration
                 int maximumSize = support.MaximumSize;
                 if (db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005 ||
                     db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2005Odbc ||
-                    db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2008)
+                    db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2008 ||
+                    db.Context.ProviderMetadata.Name == ProviderNames.SqlServer2012)
                 {
                     // SQL Server only allow PKs with a maximum length of 900 bytes
                     if (support.DbType == DbType.AnsiStringFixedLength)

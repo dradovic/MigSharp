@@ -148,6 +148,7 @@
     <Compile Include="Process\ScriptingMode.cs" />
     <Compile Include="Process\SqlDispatcher.cs" />
     <Compile Include="Providers\SQLiteProvider.cs" />
+    <Compile Include="Providers\SqlServer2012Provider.cs" />
     <Compile Include="Providers\SqlServerCe35Provider.cs" />
     <Compile Include="Providers\SqlServerCeProviderBase.cs" />
     <Compile Include="Providers\UnsupportedMethod.cs" />

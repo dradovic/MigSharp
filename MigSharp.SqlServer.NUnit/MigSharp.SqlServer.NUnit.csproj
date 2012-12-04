@@ -101,6 +101,7 @@
     <Compile Include="SmoProvider.cs" />
     <Compile Include="SqlServer2005IntegrationTests.cs" />
     <Compile Include="SqlServer2008IntegrationTests.cs" />
+    <Compile Include="SqlServer2012IntegrationTests.cs" />
     <Compile Include="SqlServerIntegrationTests.cs" />
     <Compile Include="SqlServerProviderVersusSmoTests.cs" />
   </ItemGroup>

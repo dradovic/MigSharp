@@ -12,6 +12,7 @@
         public const string SqlServer2005 = "SqlServer2005";
         public const string SqlServer2005Odbc = "SqlServer2005Odbc";
         public const string SqlServer2008 = "SqlServer2008";
+        public const string SqlServer2012 = "SqlServer2012";
         public const string SqlServerCe35 = "SqlServerCe35";
         public const string SqlServerCe4 = "SqlServerCe4";
         public const string Teradata = "Teradata";
