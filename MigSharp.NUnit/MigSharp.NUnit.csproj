@@ -120,6 +120,7 @@
     <Compile Include="Migrate\MigrateProcess.cs" />
     <Compile Include="Migrate\ConsoleTests.cs" />
     <Compile Include="MigrationOptionTests.cs" />
+    <Compile Include="MigrationTimestampProviderTests.cs" />
     <Compile Include="Process\MigrationBatchTests.cs" />
     <Compile Include="Process\MigrationSelectorTests.cs" />
     <Compile Include="Process\ValidatorTests.cs" />
