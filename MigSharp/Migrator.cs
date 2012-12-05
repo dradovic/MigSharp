@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -169,21 +170,25 @@ namespace MigSharp
         {
             // get timestamp providers from the MEF catalog
             var container = new CompositionContainer(catalog);
-            var providers = container.GetExports<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata>().ToArray();
-            try
+            var providers = container.GetExports<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata>();
+            var result = new Dictionary<string, IMigrationTimestampProvider>();
+            foreach (var provider in providers)
             {
-                var timestampProviders = providers.ToDictionary(x => x.Metadata.ModuleName, x => x.Value);
-                if (!timestampProviders.ContainsKey(MigrationExportAttribute.DefaultModuleName))
+                if (result.ContainsKey(provider.Metadata.ModuleName))
                 {
-                    timestampProviders.Add(MigrationExportAttribute.DefaultModuleName, new DefaultMigrationTimestampProvider());
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Cannot have more than one timestamp provider responsible for module: '{0}'.", provider.Metadata.ModuleName));                    
                 }
-
-                return timestampProviders;
+                else
+                {
+                    result.Add(provider.Metadata.ModuleName, provider.Value);
+                }
             }
-            catch (ArgumentException)
+            // add default timestamp provider if needed
+            if (!result.ContainsKey(MigrationExportAttribute.DefaultModuleName))
             {
-                throw new InvalidOperationException("Cannot have more than one exported timestamp provider with the same module name.");
+                result.Add(MigrationExportAttribute.DefaultModuleName, new DefaultMigrationTimestampProvider());
             }
+            return result;
         }
 
         private IVersioning InitializeVersioning(ComposablePartCatalog catalog, ISqlDispatcher dispatcher)
