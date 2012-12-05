@@ -5,16 +5,16 @@ using System.Globalization;
 namespace MigSharp
 {
     /// <summary>
-    /// Use this attribute to mark a class as a timestamp provider
+    /// Use this attribute to mark a class as a timestamp provider.
     /// </summary>
     [MetadataAttribute]
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class MigrationTimestampProviderExportAttribute : ExportAttribute
+    public sealed class MigrationTimestampProviderExportAttribute : ExportAttribute
     {
         private string _moduleName = MigrationExportAttribute.DefaultModuleName;
 
         /// <summary>
-        /// Gets the name of the module to which this migration belongs to (see also <seealso cref="MigrationExportAttribute.MaximumModuleNameLength"/>).
+        /// Gets the name of the module which is handled by this timestamp provider (see also <seealso cref="MigrationExportAttribute.MaximumModuleNameLength"/>).
         /// </summary>
         public string ModuleName
         {

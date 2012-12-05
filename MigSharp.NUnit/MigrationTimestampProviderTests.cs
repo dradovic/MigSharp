@@ -34,7 +34,7 @@ namespace MigSharp.NUnit
         public void TestExampleAttributeProvider()
         {
             var provider = new AttributeMigrationTimestampProvider();
-            var timestamp = provider.GetTimestamp(typeof(TimestampAttributeTestMigration));
+            var timestamp = provider.GetTimestamp(typeof (TimestampAttributeTestMigration));
 
             Assert.AreEqual(timestamp, 201211171825);
         }
@@ -45,13 +45,9 @@ namespace MigSharp.NUnit
             {
                 if (migration == null) throw new ArgumentNullException("migration");
 
-                var timestampAttr = (MigrationTimestampAttribute) migration.GetCustomAttributes(typeof (MigrationTimestampAttribute), false).FirstOrDefault();
+                var timestampAttr = (MigrationTimestampAttribute)migration.GetCustomAttributes(typeof (MigrationTimestampAttribute), false).FirstOrDefault();
 
-                if (timestampAttr == null)
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                                                              "Could find timestamp attribute on migration ({0}). Types implementing migrations using the AttributeMigrationTimestampProvider must have a MigrationTimestamp attribute.",
-                                                              migration.Name));
-
+                Assert.IsNotNull(timestampAttr, string.Format(CultureInfo.CurrentCulture, "Could find timestamp attribute on migration ({0}). Types implementing migrations using the AttributeMigrationTimestampProvider must have a MigrationTimestamp attribute.", migration.Name));
                 return timestampAttr.Timestamp;
             }
         }
@@ -61,9 +57,9 @@ namespace MigSharp.NUnit
         {
         }
 
-        private class MigrationTimestampAttribute : Attribute
+        private sealed class MigrationTimestampAttribute : Attribute
         {
-            public long Timestamp { get; set; }
+            public long Timestamp { get; private set; }
 
             public MigrationTimestampAttribute(long timestamp)
             {
@@ -79,7 +75,7 @@ namespace MigSharp.NUnit
         public void TestExampleInterfaceProvider()
         {
             var provider = new InterfaceMigrationTimestampProvider();
-            var timestamp = provider.GetTimestamp(typeof(TimestampInterfaceTestMigration));
+            var timestamp = provider.GetTimestamp(typeof (TimestampInterfaceTestMigration));
 
             Assert.AreEqual(timestamp, 201211171833);
         }
@@ -101,11 +97,7 @@ namespace MigSharp.NUnit
                                                               "Could not create an instance of migration {0}. Please make sure the migration has a parameterless constructor.",
                                                               migration.Name), ex);
                 }
-
-                if (instance == null)
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                                                              "Could find timestamp interface on migration ({0}). Types implementing migrations using the InterfaceMigrationTimestampProvider must implement the IMigrationTimestamp interface.",
-                                                              migration.Name));
+                Assert.IsNotNull(instance, string.Format(CultureInfo.CurrentCulture, "Could find timestamp interface on migration ({0}). Types implementing migrations using the InterfaceMigrationTimestampProvider must implement the IMigrationTimestamp interface.", migration.Name));
 
                 return instance.Timestamp;
             }
@@ -128,22 +120,11 @@ namespace MigSharp.NUnit
 
         #region Migrator uses module-specifc timestamp provider
 
-        [Test]
+        [Test, ExpectedException(typeof(NotSupportedException), ExpectedMessage = "TimestampProviderTest called")]
         public void MigratorUsesModuleSpecificTimestampProvider()
         {
-            var errorThrown = false;
             var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderTest"));
-            try
-            {
-                migrator.MigrateTo(_timestampModuleTestAssembly, 1);
-            }
-            catch (NotImplementedException ex)
-            {
-                Assert.AreEqual("TimestampProviderTest called", ex.Message);
-                errorThrown = true;
-            }
-
-            Assert.IsTrue(errorThrown, "Timestamp Provider not called");
+            migrator.MigrateTo(_timestampModuleTestAssembly, 1);
         }
 
         [Test, ExpectedException(typeof(InvalidOperationException), ExpectedMessage = "Cannot have more than one exported timestamp provider with the same module name.")]
@@ -153,7 +134,7 @@ namespace MigSharp.NUnit
             migrator.MigrateTo(_duplicateProviderTestAssembly, 1);
         }
 
-        
+
         /* The following code dynamically compiles test assemblies into memory. 
          * This is done to stop intentionally-broken timestamp provider code interfering with integration tests
          * and removes the need for additional assemblies to be created.
@@ -175,7 +156,7 @@ namespace MigSharp.NUnit
             // Add assemblies referenced by this assembly be referenced by the compiled assembly
             var assemblies = AppDomain.CurrentDomain
                 .GetAssemblies()
-                .Where(a => !a.IsDynamic)
+                .Where(a => !AssemblyIsDynamic(a)) // note: assembly.IsDynamic only works for .NET 4.0 and higher
                 .Select(a => a.Location);
             parameters.ReferencedAssemblies.AddRange(assemblies.ToArray());
 
@@ -183,15 +164,24 @@ namespace MigSharp.NUnit
             var result = CodeDomProvider.CreateProvider("C#")
                 .CompileAssemblyFromSource(parameters, TimestampModuleTestAssemblySource.ToString());
             if (result.Errors.Count != 0)
+            {
                 throw new InvalidOperationException("TimestampModuleTestAssemblySource generated errors when compiled. Please check.");
+            }
             _timestampModuleTestAssembly = result.CompiledAssembly;
 
             // Compile the duplicate time stamp provider test code
             result = CodeDomProvider.CreateProvider("C#")
                 .CompileAssemblyFromSource(parameters, DuplicateTimestampProviderAssemblySource.ToString());
             if (result.Errors.Count != 0)
+            {
                 throw new InvalidOperationException("DuplicateTimestampProviderAssemblySource generated errors when compiled. Please check.");
+            }
             _duplicateProviderTestAssembly = result.CompiledAssembly;
+        }
+
+        private static bool AssemblyIsDynamic(Assembly assembly)
+        {
+            return assembly.ManifestModule.Name == "<In Memory Module>";
         }
 
         // Code to test module-specifc timestamp providers
@@ -203,7 +193,7 @@ namespace MigSharp.NUnit
             .AppendLine("{")
             .AppendLine("   public long GetTimestamp(Type migration)")
             .AppendLine("   {")
-            .AppendLine("       throw new NotImplementedException(\"TimestampProviderTest called\");")
+            .AppendLine("       throw new NotSupportedException(\"TimestampProviderTest called\");")
             .AppendLine("   }")
             .AppendLine("}")
             .AppendLine()
@@ -212,7 +202,7 @@ namespace MigSharp.NUnit
             .AppendLine("{")
             .AppendLine("   public void Up(IDatabase db)")
             .AppendLine("   {")
-            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("       throw new NotSupportedException();")
             .AppendLine("   }")
             .AppendLine("}");
 
@@ -225,7 +215,7 @@ namespace MigSharp.NUnit
             .AppendLine("{")
             .AppendLine("   public long GetTimestamp(Type migration)")
             .AppendLine("   {")
-            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("       throw new NotSupportedException();")
             .AppendLine("   }")
             .AppendLine("}")
             .AppendLine()
@@ -234,7 +224,7 @@ namespace MigSharp.NUnit
             .AppendLine("{")
             .AppendLine("   public long GetTimestamp(Type migration)")
             .AppendLine("   {")
-            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("       throw new NotSupportedException();")
             .AppendLine("   }")
             .AppendLine("}")
             .AppendLine()
@@ -243,7 +233,7 @@ namespace MigSharp.NUnit
             .AppendLine("{")
             .AppendLine("   public void Up(IDatabase db)")
             .AppendLine("   {")
-            .AppendLine("       throw new NotImplementedException();")
+            .AppendLine("       throw new NotSupportedException();")
             .AppendLine("   }")
             .AppendLine("}");
 
