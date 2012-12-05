@@ -103,6 +103,7 @@
     <Compile Include="IScheduledMigrationMetadata.cs" />
     <Compile Include="Core\ScheduledMigrationMetadata.cs" />
     <Compile Include="Process\MigrationSelector.cs" />
+    <Compile Include="Process\SingleDbConnectionConnectionFactory.cs" />
     <Compile Include="Process\UsedDataType.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />

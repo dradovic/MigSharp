@@ -21,7 +21,7 @@ namespace MigSharp
         private readonly ConnectionInfo _connectionInfo;
         private readonly IProvider _provider;
         private readonly IProviderMetadata _providerMetadata;
-        private readonly DbConnectionFactory _dbConnectionFactory = new DbConnectionFactory();
+        private readonly IDbConnectionFactory _dbConnectionFactory;
         private readonly MigrationOptions _options;
 
         private IVersioning _customVersioning;
@@ -45,6 +45,8 @@ namespace MigSharp
 
             _connectionInfo = new ConnectionInfo(connectionString, _providerMetadata.InvariantName, _providerMetadata.SupportsTransactions);
             _options = options;
+
+            _dbConnectionFactory = new DbConnectionFactory();
         }
 
         /// <summary>
@@ -66,6 +68,17 @@ namespace MigSharp
         public Migrator(string connectionString, string providerName) : // signature used in a Wiki example
             this(connectionString, providerName, new MigrationOptions())
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="Migrator"/> with the default options, using the given connection.
+        /// </summary>
+        /// <param name="connection">The connection to use when performing the migrations.</param>
+        /// <param name="providerName">The name of the provider that should be used for this migrator (<see cref="ProviderNames"/>).</param>
+        public Migrator(IDbConnection connection, string providerName)
+            : this(string.Empty, providerName)
+        {
+            _dbConnectionFactory = new SingleDbConnectionConnectionFactory(connection);
         }
 
         /// <summary>
@@ -160,9 +173,9 @@ namespace MigSharp
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
             migrationSelector.GetMigrationsTo(timestamp, _options.ModuleSelector, out applicableMigrations, out unidentifiedMigrations);
             return new MigrationBatch(
-// ReSharper disable RedundantEnumerableCastCall
+                // ReSharper disable RedundantEnumerableCastCall
                 applicableMigrations.Select(m => new MigrationStep(m.Implementation, m.Metadata, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
-// ReSharper restore RedundantEnumerableCastCall
+                // ReSharper restore RedundantEnumerableCastCall
                 unidentifiedMigrations,
                 versioning,
                 _options);
