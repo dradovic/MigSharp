@@ -1,4 +1,5 @@
-2.1.0 - Added support for SQL Server 2012 (2.0.0 was already compatible but we've added an official provider now)
+2.1.0 - Added support for custom timestamp formats (see Wiki on how to use this feature) (thanks to richardprior)
+      - Added support for SQL Server 2012 (2.0.0 was already compatible but we've added an official provider now)
 2.0.0 - Added support for SQL Server CE 3.5 (thanks to balistof)
       - Duplicate migration exports are detected before actual migration execution
       - API:

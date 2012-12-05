@@ -3,7 +3,9 @@ using System.CodeDom.Compiler;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using MigSharp.Process;
 using NUnit.Framework;
+using Rhino.Mocks;
 
 namespace MigSharp.NUnit
 {
@@ -119,11 +121,29 @@ namespace MigSharp.NUnit
 
         #region Migrator uses module-specifc timestamp provider
 
-        [Test, ExpectedException(typeof(NotSupportedException), ExpectedMessage = "TimestampProviderTest called")]
+        [Test]
         public void MigratorUsesModuleSpecificTimestampProvider()
         {
-            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderTest"));
-            migrator.MigrateTo(_timestampModuleTestAssembly, 1);
+            var migrator = new Migrator("Server=localhost;Database=test", ProviderNames.SqlServer2005);
+            var versioning = MockRepository.GenerateStub<IVersioning>();
+            versioning.Expect(v => v.ExecutedMigrations).Return(Enumerable.Empty<IMigrationMetadata>()); // pretend, no migrations ran so far
+            migrator.UseCustomVersioning(versioning);
+
+            IMigrationBatch batch = migrator.FetchMigrations(_timestampModuleTestAssembly);
+            
+            Assert.AreEqual(4, batch.ScheduledMigrations.Count);
+
+            IScheduledMigrationMetadata migration = batch.ScheduledMigrations.Single(m => m.ModuleName == MigrationExportAttribute.DefaultModuleName);
+            Assert.AreEqual(1, migration.Timestamp);
+
+            migration = batch.ScheduledMigrations.Single(m => m.ModuleName == "NonDefaultModuleTreatedWithDefaultTimestampProvider");
+            Assert.AreEqual(23, migration.Timestamp);
+
+            migration = batch.ScheduledMigrations.Single(m => m.ModuleName == "ModuleA");
+            Assert.AreEqual(201110251455L, migration.Timestamp);
+
+            migration = batch.ScheduledMigrations.Single(m => m.ModuleName == "ModuleB");
+            Assert.AreEqual(201211171825L, migration.Timestamp);
         }
 
         [Test, ExpectedException(typeof(ArgumentException), ExpectedMessage = "Cannot have more than one timestamp provider responsible for module: 'TimestampProviderDuplicateTest'.")]
@@ -183,24 +203,84 @@ namespace MigSharp.NUnit
         // Code to test module-specifc timestamp providers
         private const string TimestampModuleTestAssemblySource = @"
             using System;
+            using System.Reflection;
+            using System.Text.RegularExpressions;
             using MigSharp;
-            [MigrationTimestampProviderExport(ModuleName = ""TimestampProviderTest"")]
-            public class TestMigrationTimestampProvider : IMigrationTimestampProvider
-            {
-               public long GetTimestamp(Type migration)
-               {
-                   throw new NotSupportedException(""TimestampProviderTest called"");
-               }
-            }
-            
-            [MigrationExport(ModuleName = ""TimestampProviderTest"")]
-            public class TestTimestampMigration : IMigration
+                
+            [MigrationExport]
+            public class Migration1 : IMigration
             {
                public void Up(IDatabase db)
                {
                    throw new NotSupportedException();
                }
-            };";
+            };
+            
+            [MigrationExport(ModuleName = ""NonDefaultModuleTreatedWithDefaultTimestampProvider"")]
+            public class Migration23 : IMigration
+            {
+               public void Up(IDatabase db)
+               {
+                   throw new NotSupportedException();
+               }
+            };
+
+            namespace ModuleA 
+            {
+                [MigrationTimestampProviderExport(ModuleName = ""ModuleA"")]
+                public class TestMigrationTimestampProvider : IMigrationTimestampProvider
+                {
+                    public long GetTimestamp(Type migration)
+                    {
+                        Match match = Regex.Match(migration.Name, @""^M_([\d_]+)_\D.+"");
+                        if (!match.Success) throw new InvalidOperationException(""The ModuleA migrations must have this naming pattern."");
+                        return long.Parse(match.Groups[1].Value.Replace(""_"", """"));
+                    }
+                }
+
+                [MigrationExport(ModuleName = ""ModuleA"")]
+                public class M_2011_10_25_1455_SomeNameHere : IMigration
+                {
+                   public void Up(IDatabase db)
+                   {
+                       throw new NotSupportedException();
+                   }
+                };
+            }
+
+            namespace ModuleB
+            {
+                [MigrationTimestampProviderExport(ModuleName = ""ModuleB"")]
+                public class AttributeMigrationTimestampProvider : IMigrationTimestampProvider
+                {
+                    public long GetTimestamp(Type migration)
+                    {
+                        var timestampAttr = (MigrationTimestampAttribute)migration.GetCustomAttributes(typeof(MigrationTimestampAttribute), false)[0];
+                        return timestampAttr.Timestamp;
+                    }
+                };
+
+                internal sealed class MigrationTimestampAttribute : Attribute
+                {
+                    public long Timestamp { get; private set; }
+
+                    public MigrationTimestampAttribute(long timestamp)
+                    {
+                        Timestamp = timestamp;
+                    }
+                };
+            
+                [MigrationExport(ModuleName = ""ModuleB"")]
+                [MigrationTimestamp(201211171825)]
+                public class AddCustomerTableMigration : IMigration
+                {
+                   public void Up(IDatabase db)
+                   {
+                       throw new NotSupportedException();
+                   }
+                };
+            }
+";
 
         // Code to test duplicate timestamp provider error handling
         private const string DuplicateTimestampProviderAssemblySource =
