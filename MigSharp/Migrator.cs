@@ -27,6 +27,8 @@ namespace MigSharp
         private IVersioning _customVersioning;
         private IBootstrapper _customBootstrapper;
 
+        internal DbConnectionFactory ConnectionFactory { get { return _dbConnectionFactory; } }
+
         /// <summary>
         /// Initializes a new instance of <see cref="Migrator"/>.
         /// </summary>
@@ -255,6 +257,23 @@ namespace MigSharp
             if (_customVersioning != null) throw new InvalidOperationException("Either use custom versioning or custom bootstrapping.");
 
             _customBootstrapper = customBootstrapper;
+        }
+
+        /// <summary>
+        /// <para>Injects an existing connection which is used for all database accesses without opening or closing it. In this case,
+        /// the provided ConnectionString will be ignored.</para>
+        /// <para>The caller is responsible for opening the connection before executing the migrations and disposing the connection afterwards.</para>
+        /// <para>Use this method only if you really have to.</para>
+        /// </summary>
+        /// <remarks>
+        /// SQLite in-memory databases require the connection to be open all the time (see https://github.com/dradovic/MigSharp/pull/38).
+        /// </remarks>
+        /// <param name="connection">The connection to be used.</param>
+        public void UseCustomConnection(IDbConnection connection)
+        {
+            if (connection == null) throw new ArgumentNullException("connection");
+
+            _dbConnectionFactory.UseCustomConnection(connection);
         }
 
         private static ComposablePartCatalog CreateCatalog<T>(IEnumerable<T> assemblies, Func<T, ComposablePartCatalog> createCatalogFor, Func<T, string> getAssemblyName)

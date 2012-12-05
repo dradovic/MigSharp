@@ -4,8 +4,9 @@ This file contains global TODOs for the next release that are not in the source 
 - SQLite
 	- Add support for foreign keys (see https://github.com/dradovic/MigSharp/issues/2)
 	- update wiki and all referencing pages to include SQLite support
-- Document custom versioning
-- Document TemporaryDefault feature
+- document UseCustomConnection
+- document custom versioning
+- document TemporaryDefault feature
 - fix all FIXME and NotImplementedException
 
 Nice-to-have/backlog:

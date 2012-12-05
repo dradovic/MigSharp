@@ -48,7 +48,7 @@ namespace MigSharp.NUnit.Integration
         public void TestOnlyFetchingMigrationsDoesNotCreateVersioningTable()
         {
             _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
-            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
             IMigrationBatch batch = migrator.FetchMigrations(typeof(Migration1).Assembly);
             Assert.AreEqual(Timestamps.Count, batch.ScheduledMigrations.Count);
 
@@ -56,11 +56,21 @@ namespace MigSharp.NUnit.Integration
             Assert.IsNull(versioningTable, "Migrator.IsUpToDate should not have any side-effects. In particualar, it should *not* create a versioning table. This allows for being able to check the up-to-dateness of a db without having the privilege to create tables.");
         }
 
+        private Migrator CreateMigrator()
+        {
+            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            if (CustomConnection != null)
+            {
+                migrator.UseCustomConnection(CustomConnection);
+            }
+            return migrator;
+        }
+
         [Test]
         public void TestMigration1()
         {
             _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
-            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
 
             // verify if the migrations batch is populated correctly
             IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
@@ -106,7 +116,7 @@ namespace MigSharp.NUnit.Integration
             DirectoryInfo targetDirectory = PrepareScriptingDirectory();
             _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
             _options.ExecuteAndScriptSqlTo(targetDirectory);
-            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
             migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
 
             CheckResultsOfMigration1();
@@ -145,7 +155,7 @@ namespace MigSharp.NUnit.Integration
             DirectoryInfo targetDirectory = PrepareScriptingDirectory();
             _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
             _options.OnlyScriptSqlTo(targetDirectory);
-            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
             migrator.MigrateAll(typeof(Migration1).Assembly);
 
             // assert that all script files were generated
@@ -169,8 +179,7 @@ namespace MigSharp.NUnit.Integration
             IProviderMetadata providerMetadata;
             _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
             var info = new ConnectionInfo(ConnectionString, providerMetadata.InvariantName, providerMetadata.SupportsTransactions);
-            var factory = new DbConnectionFactory();
-            using (IDbConnection connection = factory.OpenConnection(info))
+            using (IDbConnection connection = migrator.ConnectionFactory.OpenConnection(info))
             {
                 foreach (FileInfo scriptFile in scriptFiles)
                 {
@@ -218,12 +227,12 @@ namespace MigSharp.NUnit.Integration
         public void TestMigration1SucceededByAllOtherMigrations()
         {
             // execute Migration1
-            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, Timestamps[0]);
 
             // execute all other migrations
-            migrator = new Migrator(ConnectionString, ProviderName, _options);
+            migrator = CreateMigrator();
             migrator.MigrateAll(assemblyContainingMigrations);
 
             // make sure there are no more migrations to run
@@ -295,11 +304,11 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestUndoingMigration2()
         {
-            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
             Assembly assemblyContainingMigrations = typeof(Migration1).Assembly;
             migrator.MigrateTo(assemblyContainingMigrations, Timestamps[1]);
 
-            migrator = new Migrator(ConnectionString, ProviderName);
+            migrator = CreateMigrator();
 
             // verify if the migrations batch is populated correctly
             IMigrationBatch batch = migrator.FetchMigrationsTo(assemblyContainingMigrations, Timestamps[0]);
@@ -329,7 +338,7 @@ namespace MigSharp.NUnit.Integration
         {
             // use a Module selection to verify that the bootstrapping is still considering *all* migrations
             _options.ModuleSelector = moduleName => moduleName == Migration2.Module;
-            Migrator migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
 
             IBootstrapper bootstrapper = MockRepository.GenerateStrictMock<IBootstrapper>();
             bootstrapper.Expect(b => b.BeginBootstrapping(null, null)).IgnoreArguments();
@@ -366,7 +375,7 @@ namespace MigSharp.NUnit.Integration
                 ProviderName == ProviderNames.Oracle || ProviderName == ProviderNames.OracleOdbc) return; // for some reason, the ODBC data adapter updating does not work
 
             // migrate to 1 in order to create a versioning table
-            var migrator = new Migrator(ConnectionString, ProviderName, _options);
+            Migrator migrator = CreateMigrator();
             IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
             Assert.AreEqual(0, batch.UnidentifiedMigrations.Count);
             batch.Execute();
@@ -463,6 +472,15 @@ namespace MigSharp.NUnit.Integration
         [TearDown]
         public virtual void Teardown()
         {
+        }
+
+        /// <summary>
+        /// Override if you want to use a custom connection.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IDbConnection CustomConnection
+        {
+            get { return null; }
         }
     }
 }

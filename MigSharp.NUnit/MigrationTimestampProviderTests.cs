@@ -9,7 +9,7 @@ using Rhino.Mocks;
 
 namespace MigSharp.NUnit
 {
-    [TestFixture]
+    [TestFixture, Category("smoke")]
     public class MigrationTimestampProviderTests
     {
         #region Default timestamp provider
@@ -124,7 +124,7 @@ namespace MigSharp.NUnit
         [Test]
         public void MigratorUsesModuleSpecificTimestampProvider()
         {
-            var migrator = new Migrator("Server=localhost;Database=test", ProviderNames.SqlServer2005);
+            var migrator = new Migrator("not-used", ProviderNames.SqlServer2005);
             var versioning = MockRepository.GenerateStub<IVersioning>();
             versioning.Expect(v => v.ExecutedMigrations).Return(Enumerable.Empty<IMigrationMetadata>()); // pretend, no migrations ran so far
             migrator.UseCustomVersioning(versioning);
