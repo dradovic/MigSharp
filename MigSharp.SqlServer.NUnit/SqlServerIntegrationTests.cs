@@ -17,7 +17,7 @@ namespace MigSharp.SqlServer.NUnit
 
         private Database _database;
 
-        [Test]
+        [Test] // FIXME: remove this test!?
         public void TestMigration1UsingConsoleApp()
         {
             TestMigration1UsingMigrate();
