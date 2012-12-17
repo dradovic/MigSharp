@@ -181,6 +181,11 @@ namespace MigSharp.Providers
             return Enumerable.Empty<string>();
         }
 
+        public string Escape(string name)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", name);
+        }
+
         #endregion
 
         private void AddNewObjectNames(params string[] names)

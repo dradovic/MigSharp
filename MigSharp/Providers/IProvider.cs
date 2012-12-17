@@ -129,6 +129,13 @@ namespace MigSharp.Providers
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
         IEnumerable<string> DropDefault(string tableName, Column column);
+
+        /// <summary>
+        /// Return escaped name
+        /// </summary>
+        /// <param name="name">value to escape</param>
+        /// <returns></returns>
+        string Escape(string name);
     }
 
     internal static class ProviderExtensions

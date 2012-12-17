@@ -124,7 +124,7 @@ namespace MigSharp.Providers
             return comands;
         }
 
-        private static string CreateTrigger(string tableName, string identityColumn, string sequenceName)
+        private string CreateTrigger(string tableName, string identityColumn, string sequenceName)
         {
             return string.Format(CultureInfo.InvariantCulture, @"CREATE TRIGGER ""{0}"" BEFORE INSERT ON {1} FOR EACH ROW BEGIN SELECT ""{3}"".NEXTVAL into :new.{2} FROM dual; END;",
                 GetTriggerName(tableName),
@@ -296,7 +296,7 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, query, tableName, column.Name, GetTypeSpecifier(column.DataType), colN, colY, defaultConstraintClause);
         }
 
-        private static IEnumerable<string> DropConstraint(string tableName, string constraintName)
+        private IEnumerable<string> DropConstraint(string tableName, string constraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "{0} DROP CONSTRAINT {1}", AlterTable(tableName), Escape(constraintName));
         }
@@ -343,7 +343,7 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, "{0} RENAME TO {1}", AlterIndex(oldName), Escape(newName));
         }
 
-        private static string AlterIndex(string indexName)
+        private string AlterIndex(string indexName)
         {
             return string.Format(CultureInfo.InvariantCulture, "ALTER INDEX {0}", Escape(indexName));
         }
@@ -369,17 +369,17 @@ namespace MigSharp.Providers
             return AlterColumn(tableName, column);
         }
 
-        private static string CreateTable(string tableName)
+        private string CreateTable(string tableName)
         {
             return string.Format(CultureInfo.InvariantCulture, "CREATE TABLE {0}", Escape(tableName));
         }
 
-        private static string AlterTable(string tableName)
+        private string AlterTable(string tableName)
         {
             return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0}", Escape(tableName));
         }
 
-        private static string Escape(string name)
+        public string Escape(string name)
         {
             return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", name);
         }
@@ -455,7 +455,7 @@ namespace MigSharp.Providers
             }
         }
 
-        private static string GetCsList(IEnumerable<string> columnNames)
+        private string GetCsList(IEnumerable<string> columnNames)
         {
             string columns = String.Empty;
             foreach (var column in columnNames)
