@@ -104,6 +104,7 @@
     <Compile Include="Core\ScheduledMigrationMetadata.cs" />
     <Compile Include="Process\MigrationSelector.cs" />
     <Compile Include="Process\UsedDataType.cs" />
+    <Compile Include="Providers\MySqlProvider.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />
     <Compile Include="Core\Entities\AddedIndex.cs" />

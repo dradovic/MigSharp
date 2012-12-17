@@ -35,6 +35,11 @@ namespace MigSharp
         /// Gets the maximum length of object names within the database. 0 meaning that there is non restriction which is the default.
         /// </summary>
         int MaximumDbObjectNameLength { get; }
+
+        /// <summary>
+        /// Gets a command-text to be executed on opening the connection to the database to enable ANSI quoting.
+        /// </summary>
+        string EnableAnsiQuotesCommand { get; }
     }
 
     internal static class ProviderMetadataExtensions

@@ -179,7 +179,7 @@ namespace MigSharp.NUnit.Integration
             // execute generated script files against database and recheck results
             IProviderMetadata providerMetadata;
             _options.SupportedProviders.GetProvider(ProviderName, out providerMetadata);
-            var info = new ConnectionInfo(ConnectionString, providerMetadata.InvariantName, providerMetadata.SupportsTransactions);
+            var info = new ConnectionInfo(ConnectionString, providerMetadata.InvariantName, providerMetadata.SupportsTransactions, providerMetadata.EnableAnsiQuotesCommand);
             using (IDbConnection connection = migrator.ConnectionFactory.OpenConnection(info))
             {
                 foreach (FileInfo scriptFile in scriptFiles)

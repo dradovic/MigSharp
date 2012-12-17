@@ -42,6 +42,11 @@ namespace MigSharp.Providers
         public int MaximumDbObjectNameLength { get; set; }
 
         /// <summary>
+        /// Gets a command-text to be executed on opening the connection to the database to enable ANSI quoting.
+        /// </summary>
+        public string EnableAnsiQuotesCommand { get; set; }
+
+        /// <summary>
         /// Initializes a new instance.
         /// </summary>
         public ProviderExportAttribute(string name, string invariantName) : base(typeof(IProvider))

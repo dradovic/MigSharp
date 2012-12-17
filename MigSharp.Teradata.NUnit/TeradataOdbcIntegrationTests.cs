@@ -37,7 +37,7 @@ namespace MigSharp.Teradata.NUnit
             get
             {
                 const string user = "MIGSHARP_TERADATA_USER";
-                return Environment.GetEnvironmentVariable(user);
+                return GetEnvironmentVariable(user);
             }
         }
 

@@ -43,7 +43,7 @@ namespace MigSharp
 
             _provider = options.SupportedProviders.GetProvider(providerName, out _providerMetadata);
 
-            _connectionInfo = new ConnectionInfo(connectionString, _providerMetadata.InvariantName, _providerMetadata.SupportsTransactions);
+            _connectionInfo = new ConnectionInfo(connectionString, _providerMetadata.InvariantName, _providerMetadata.SupportsTransactions, _providerMetadata.EnableAnsiQuotesCommand);
             _options = options;
         }
 

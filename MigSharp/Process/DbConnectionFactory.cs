@@ -25,6 +25,15 @@ namespace MigSharp.Process
                 }
                 connection.ConnectionString = connectionInfo.ConnectionString;
                 connection.Open();
+
+                // enable ANSI quoting if needed
+                if (!string.IsNullOrEmpty(connectionInfo.EnableAnsiQuotesCommand))
+                {
+                    DbCommand command = connection.CreateCommand();
+                    command.CommandText = connectionInfo.EnableAnsiQuotesCommand;
+                    command.ExecuteNonQuery();
+                }
+
                 return connection;
             }
             else

@@ -16,6 +16,7 @@ namespace MigSharp
     {
         private static readonly string[] DefaultProviderNames = new[]
         {
+            ProviderNames.MySqlExperimental,
             ProviderNames.Oracle,
             ProviderNames.OracleOdbc,
             ProviderNames.SQLite,

@@ -22,6 +22,8 @@ namespace MigSharp.Providers
     [Supports(DbType.Single, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.String)] // translates to NVARCHAR(MAX) without specifying the Size
+    // FIXME: supports DbType.Time is missing?
+    // FIXME: supports DbType.VarNumeric is missing?
     [Supports(DbType.AnsiStringFixedLength, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.StringFixedLength, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     internal abstract class SqlServerProvider : SqlServerProviderBase
