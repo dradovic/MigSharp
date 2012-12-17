@@ -98,5 +98,13 @@ namespace MigSharp.SqlServerCe.NUnit
             Assert.IsTrue(_ceAssembly.FullName.Contains("Version=" + CeVersion), 
                 "Expected Ce " + CeVersion + " but using " + _ceAssembly.FullName);
         }
+
+        [Test]
+        public override void TestMigration1UsingConsoleApp()
+        {
+            // we don't execute this test yet since the Migrate.exe
+            // would require a config file that includes the definition of
+            // the .Net Framework Data Provider
+        }
     }
 }

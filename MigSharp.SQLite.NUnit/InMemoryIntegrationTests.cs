@@ -9,7 +9,7 @@ namespace MigSharp.SQLite.NUnit
 {
     [TestFixture, Category("SQLite")]
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "This is a unit test.")]
-    public class InMemoryIntegrationTests : IntegrationTestsBase
+    public class InMemoryIntegrationTests : SQLiteIntegrationTestsBase
     {
         private SQLiteConnection _connection;
 
@@ -31,8 +31,6 @@ namespace MigSharp.SQLite.NUnit
                 return builder.ConnectionString;
             }
         }
-
-        protected override string ProviderName { get { return ProviderNames.SQLite; } }
 
         protected override System.Data.IDbConnection CustomConnection { get { return _connection; } }
 

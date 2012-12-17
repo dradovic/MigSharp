@@ -3,14 +3,12 @@ using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
 
-using MigSharp.NUnit.Integration;
-
 using NUnit.Framework;
 
 namespace MigSharp.SQLite.NUnit
 {
     [TestFixture, Category("SQLite")]
-    public class SQLiteIntegrationTests : IntegrationTestsBase
+    public class SQLiteIntegrationTests : SQLiteIntegrationTestsBase
     {
         private string _dataFile;
 
@@ -32,7 +30,6 @@ namespace MigSharp.SQLite.NUnit
                 return builder.ConnectionString;
             }
         }
-        protected override string ProviderName { get { return ProviderNames.SQLite; } }
 
         public override void Setup()
         {

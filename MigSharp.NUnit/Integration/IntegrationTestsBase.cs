@@ -142,7 +142,8 @@ namespace MigSharp.NUnit.Integration
             return targetDirectory;
         }
 
-        protected void TestMigration1UsingMigrate()
+        [Test]
+        public virtual void TestMigration1UsingConsoleApp()
         {
             int exitCode = MigrateProcess.Execute(ConnectionString, ProviderName, typeof(Migration1).Assembly, Timestamps[0]);
             Assert.AreEqual(0, exitCode, "Migrate.exe failed.");
