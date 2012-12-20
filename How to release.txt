@@ -6,6 +6,7 @@ Pre-conditions:
   - MigSharp\AssemblyInfo.cs
   - Migrate\AssemblyInfo.cs
   - nuget\MigSharp.nuspec
+  - TeamCity variables used to name the binaries
 - CHANGES.txt is up-to-date
 - All changes pushed to GitHub
 - Wiki on GitHub reflects new features and changes
