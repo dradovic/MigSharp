@@ -324,6 +324,11 @@ namespace MigSharp.SqlServer.NUnit
             return ScriptChanges(table.Parent.Parent);
         }
 
+        public string Escape(string name)
+        {
+            return string.Format("[{0}]", name);
+        }
+
         private static IEnumerable<string> DropConstraint(string tableName, string constraintName, IndexKeyType keyType)
         {
             Table table = GetTable(tableName);

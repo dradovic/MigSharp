@@ -9,6 +9,8 @@ using Rhino.Mocks;
 
 namespace MigSharp.NUnit.Process
 {
+    using MigSharp.Providers;
+
     [TestFixture, Category("smoke")]
     public class PersistedVersioningTests
     {
@@ -35,7 +37,7 @@ namespace MigSharp.NUnit.Process
 
         private static PersistedVersioning CreateVersioning()
         {
-            var history = new History("TableName", MockRepository.GenerateStub<IProviderMetadata>());
+            var history = new History("TableName", MockRepository.GenerateStub<IProviderMetadata>(), MockRepository.GenerateStub<IProvider>());
             history.LoadEntry(ExistingTimestampForDefaultModule, string.Empty, ExistingTagForDefaultModule);
             history.LoadEntry(ExistingTimestampForTestModule, TestModule, ExistingTagForTestModule);
             return new PersistedVersioning(history);

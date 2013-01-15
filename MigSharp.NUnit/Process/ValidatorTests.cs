@@ -345,6 +345,11 @@ namespace MigSharp.NUnit.Process
                 throw new NotSupportedException();
             }
 
+            public string Escape(string name)
+            {
+                return string.Format("\"{0}\"", name);
+            }
+
             #endregion
         }
     }

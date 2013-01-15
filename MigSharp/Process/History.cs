@@ -103,11 +103,11 @@ namespace MigSharp.Process
                 command.Transaction = transaction;
                 IDataParameter moduleNameParameter = command.AddParameter("@ModuleName", DbType.String, entry.ModuleName);
                 IDataParameter tagParameter = command.AddParameter("@Tag", DbType.String, !string.IsNullOrEmpty(entry.Tag) ? (object)entry.Tag : DBNull.Value);
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO {0} ({1}, {2}, {3}) VALUES ({4}, {5}, {6})",
-                    _provider.Escape(_tableName),
-                    _provider.Escape(BootstrapMigration.TimestampColumnName),
-                    _provider.Escape(BootstrapMigration.ModuleColumnName),
-                    _provider.Escape(BootstrapMigration.TagColumnName),
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"", ""{2}"", ""{3}"") VALUES ({4}, {5}, {6})",
+                    _tableName,
+                    BootstrapMigration.TimestampColumnName,
+                    BootstrapMigration.ModuleColumnName,
+                    BootstrapMigration.TagColumnName,
                     entry.Timestamp.ToString(CultureInfo.InvariantCulture),
                     _providerMetadata.GetParameterSpecifier(moduleNameParameter),
                     _providerMetadata.GetParameterSpecifier(tagParameter));
