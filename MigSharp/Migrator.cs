@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Data;
@@ -137,6 +139,21 @@ namespace MigSharp
             IEnumerable<string> assemblyPaths = new[] { assemblyPath }.Concat(additionalAssemblyPaths);
             ComposablePartCatalog catalog = CreateCatalog(assemblyPaths, p => new AssemblyCatalog(p), p => p);
             return FetchMigrationsTo(catalog, timestamp);
+        }
+
+        /// <summary>
+        /// Execute a migration without versioning.
+        /// </summary>
+        /// <param name="migration"></param>
+        public void BypassMigration(IMigration migration)
+        {
+            ISqlDispatcher dispatcher = new SqlDispatcher(_options.ScriptingOptions, _provider, _providerMetadata);
+            var scheduledMigrationMetadata = new ScheduledMigrationMetadata(0, "Bypass", "This migration is being executed without affecting the versioning.", MigrationDirection.Up);
+            var batch = new MigrationBatch(new[]
+                {
+                    new MigrationStep(migration, scheduledMigrationMetadata, _connectionInfo, _provider, _providerMetadata, _dbConnectionFactory, dispatcher)
+                }, Enumerable.Empty<IMigrationMetadata>(), new NoVersioning(), _options);
+            batch.Execute();
         }
 
         private IMigrationBatch FetchMigrationsTo(ComposablePartCatalog catalog, long timestamp)

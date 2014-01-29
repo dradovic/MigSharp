@@ -97,6 +97,7 @@
     <Compile Include="Core\Commands\InvalidCommandException.cs" />
     <Compile Include="IMigrationMetadata.cs" />
     <Compile Include="Core\MigrationMetadata.cs" />
+    <Compile Include="Process\NoVersioning.cs" />
     <Compile Include="Process\ApplicableMigration.cs" />
     <Compile Include="Process\DbConnectionWrapper.cs" />
     <Compile Include="Process\ImportedMigration.cs" />

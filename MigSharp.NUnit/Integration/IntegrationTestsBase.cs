@@ -397,6 +397,37 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(tag, batch.UnidentifiedMigrations[0].Tag);
         }
 
+        [Test]
+        public void TestBypassMigration()
+        {
+            Migrator migrator = CreateMigrator();
+
+            // verify if the migrations batch is populated correctly
+            IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
+            Assert.AreEqual(1, batch.ScheduledMigrations.Count);
+            Assert.AreEqual(Timestamps[0], batch.ScheduledMigrations[0].Timestamp);
+            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.ScheduledMigrations[0].ModuleName);
+            Assert.IsNull(batch.ScheduledMigrations[0].Tag);
+            Assert.AreEqual(MigrationDirection.Up, batch.ScheduledMigrations[0].Direction);
+
+            // use MigrateTo to execute the actual migrations to test that method, too
+            migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
+
+            CheckResultsOfMigration1();
+
+            // execute another free-style migration
+            migrator.BypassMigration(new BypassMigration());
+
+            // assert Customer table was created
+            DataTable bypassTable = GetTable(BypassMigration.TableName);
+            Assert.IsNotNull(bypassTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was not created.", BypassMigration.TableName));
+            Assert.AreEqual(1, bypassTable.Columns.Count);
+
+            // assert Versioning table does not have new entries
+            DataTable versioningTable = GetTable(_options.VersioningTableName);
+            Assert.AreEqual(1, versioningTable.Rows.Count, "The versioning table has a wrong number of entries.");
+        }
+
         /// <summary>
         /// Gets the content of the specified table or null if the table does not exist.
         /// </summary>
