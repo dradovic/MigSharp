@@ -16,8 +16,7 @@ Releasing:
 - Tag the sources with AssemblyVersion
   git tag -a v1.0.0 -m "v1.0.0"
   git push origin v1.0.0
-- Grab the artifacts from the 3.5 and 4.0 compilation configs (MigSharp.zip) and upload these to GitHub
-  - Pin the build on TeamCity
+- Grab the artifacts from the 3.5 and 4.0 compilation configs (MigSharp.zip)
 - Verify downloads are okay (extracting the zip file works)
 - Publish NuGet package using the MigSharp.nuspec (see: http://docs.nuget.org/)
   - Open nuget/MigSharp.nuspec in the NuGet Package Explorer
@@ -28,9 +27,17 @@ Releasing:
 	  net35/
 	    MigSharp.dll
 		MigSharp.xml
+		Migrate.exe
       net40/
 	    MigSharp.dll
 		MigSharp.xml
+	tools/
+	  net35/
+		Migrate.exe
+		Migrate.exe.config
+	  net40/
+	    Migrate.exe
+		Migrate.exe.config
   - File > Publish...
 
 Post-actions:

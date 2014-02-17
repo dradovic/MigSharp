@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA4A057D-7277-4869-BA9E-6764C7736EC1}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGES.txt = CHANGES.txt
@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
 		MigSharp.FxCop = MigSharp.FxCop
 		MigSharp.msbuild = MigSharp.msbuild
+		nuget\MigSharp.nuspec = nuget\MigSharp.nuspec
 		MigSharp.vsmdi = MigSharp.vsmdi
 		Open.snk = Open.snk
 		TODO.txt = TODO.txt
