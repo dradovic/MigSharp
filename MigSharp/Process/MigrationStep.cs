@@ -53,7 +53,19 @@ namespace MigSharp.Process
                     IDbCommandExecutor executor;
                     using ((executor = _sqlDispatcher.CreateExecutor(string.Format(CultureInfo.InvariantCulture, "Migration.{0}.{1}", _metadata.ModuleName, _metadata.Timestamp))) as IDisposable)
                     {
-                        Execute(connection, transaction, _metadata.Direction, executor);
+                        try
+                        {
+                            Execute(connection, transaction, _metadata.Direction, executor);
+                        }
+                        catch
+                        {
+                            Log.Error("An non-recoverable error occurred in Migration '{0}'{1}{2} while executing {3}.", 
+                                _metadata.Timestamp,
+                                _metadata.ModuleName != MigrationExportAttribute.DefaultModuleName ? " in module '" + _metadata.ModuleName + "'" : string.Empty,
+                                !string.IsNullOrEmpty(_metadata.Tag) ? ": '" + _metadata.Tag + "'" : string.Empty,
+                                _metadata.Direction);
+                            throw;
+                        }
 
                         // update versioning
                         versioning.Update(_metadata, connection, transaction, executor);
