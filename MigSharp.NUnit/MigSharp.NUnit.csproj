@@ -102,6 +102,7 @@
     <Compile Include="Integration\Migration15.cs" />
     <Compile Include="Integration\Migration16.cs" />
     <Compile Include="Integration\Migration17.cs" />
+    <Compile Include="Integration\Migration19.cs" />
     <Compile Include="Integration\Migration2.cs" />
     <Compile Include="Integration\Migration3.cs" />
     <Compile Include="Integration\Migration4.cs" />

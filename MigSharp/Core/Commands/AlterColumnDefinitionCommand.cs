@@ -10,8 +10,8 @@ namespace MigSharp.Core.Commands
         private readonly DbType _type;
         private readonly bool _isNullable;
 
-        public int Size { get; set; }
-        public int Scale { get; set; }
+        public int? Size { get; set; }
+        public int? Scale { get; set; }
 
         public new AlterColumnCommand Parent { get { return (AlterColumnCommand)base.Parent; } }
         public object DefaultValue { get; set; }

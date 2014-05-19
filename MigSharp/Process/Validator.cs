@@ -100,7 +100,7 @@ namespace MigSharp.Process
                         providerMetadata.Name));
                     continue;
                 }
-                // post-condition: the data type is supported and OfSize was specified correctly
+                // post-condition: the data type is supported and OfSize was specified with the correct number of parameters
 
                 // check other properties
                 if (report.PrimaryKeyDataTypes.Contains(dataType) && !attribute.CanBeUsedAsPrimaryKey)

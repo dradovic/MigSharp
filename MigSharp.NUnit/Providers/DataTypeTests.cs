@@ -17,10 +17,14 @@ namespace MigSharp.NUnit.Providers
             DataType type3 = new DataType(DbType.StringFixedLength, 20, 0);
             DataType type4 = new DataType(DbType.AnsiStringFixedLength, 0, 0);
             DataType type5 = new DataType(DbType.AnsiStringFixedLength, 0, 1);
+            DataType type6 = new DataType(DbType.AnsiStringFixedLength, null, null);
+            DataType type7 = new DataType(DbType.AnsiStringFixedLength, null, null);
             Assert.IsTrue(type1 == type2);
             Assert.IsTrue(type1 != type3);
             Assert.IsTrue(type1 != type4);
             Assert.IsTrue(type1 != type5);
+            Assert.IsTrue(type6 == type7);
+            Assert.IsTrue(type1 != type7);
         }
     }
 }

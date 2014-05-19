@@ -10,8 +10,8 @@ namespace MigSharp.Providers
     public struct DataType : IEquatable<DataType>
     {
         private readonly DbType _dbType;
-        private readonly int _size;
-        private readonly int _scale;
+        private readonly int? _size;
+        private readonly int? _scale;
 
         /// <summary>
         /// Gets the associated <see cref="DbType"/>.
@@ -19,19 +19,19 @@ namespace MigSharp.Providers
         public DbType DbType { get { return _dbType; } }
 
         /// <summary>
-        /// Gets the length for character data types or the maximum total number of decimal digits for numeric data types.
+        /// Gets the length for character data types, or the maximum total number of decimal digits for numeric data types and <see cref="System.Data.DbType.DateTime2"/>.
         /// </summary>
-        public int Size { get { return _size; } }
+        public int? Size { get { return _size; } }
 
         /// <summary>
         /// Gets the maximum number of decimal digits that can be stored to the right of the decimal point. Scale is a value from 0 through <see cref="Size"/>.
         /// </summary>
-        public int Scale { get { return _scale; } }
+        public int? Scale { get { return _scale; } }
 
         /// <summary>
         /// Initializes a new instance of <see cref="DataType"/>.
         /// </summary>
-        public DataType(DbType dbType, int size, int scale)
+        public DataType(DbType dbType, int? size, int? scale)
         {
             _dbType = dbType;
             _size = size;

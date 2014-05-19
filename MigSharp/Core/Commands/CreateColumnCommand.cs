@@ -14,8 +14,8 @@ namespace MigSharp.Core.Commands
         public bool IsNullable { get { return _isNullable; } }
         public bool IsPrimaryKey { get { return _isPrimaryKey; } }
 
-        public int Size { get; set; }
-        public int Scale { get; set; }
+        public int? Size { get; set; }
+        public int? Scale { get; set; }
         public bool IsUnique { get; set; }
         public string UniqueConstraint { get; set; }
         public bool IsIdentity { get; set; }

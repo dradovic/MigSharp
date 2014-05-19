@@ -19,8 +19,8 @@ namespace MigSharp.Core.Commands
 
         public object DefaultValue { get; set; }
         public bool DropThereafter { get; set; }
-        public int Size { get; set; }
-        public int Scale { get; set; }
+        public int? Size { get; set; }
+        public int? Scale { get; set; }
 
         public new AlterTableCommand Parent { get { return (AlterTableCommand)base.Parent; } }
 

@@ -151,7 +151,14 @@ namespace MigSharp.Providers
                     //case DbType.Xml:
                     //    break;
                 case DbType.DateTime2:
-                    return "[datetime2]";
+                    if (type.Size > 0)
+                    {
+                        return string.Format(CultureInfo.InvariantCulture, "[datetime2]({0})", type.Size);
+                    }
+                    else
+                    {
+                        return "[datetime2]";
+                    }
                 case DbType.DateTimeOffset:
                     return "[datetimeoffset]";
                 default:
