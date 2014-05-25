@@ -40,7 +40,7 @@ namespace MigSharp.Core.Entities
             return this;
         }
 
-        IAlteredColumn IAlteredColumn.OfSize(int size, int scale)
+        IAlteredColumn IAlteredColumn.OfSize(int size, int? scale)
         {
             var command = (AlterColumnDefinitionCommand)_command.Children.Last();
             command.Size = size;

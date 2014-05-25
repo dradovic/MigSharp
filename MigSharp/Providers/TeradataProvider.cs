@@ -267,7 +267,7 @@ namespace MigSharp.Providers
                     //    break;
                 case DbType.AnsiString:
                 case DbType.String:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "VARCHAR ({0})", type.Size);
                     }

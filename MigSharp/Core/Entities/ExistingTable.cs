@@ -140,7 +140,7 @@ namespace MigSharp.Core.Entities
             return this;
         }
 
-        IExistingTableWithAddedColumn IExistingTableWithAddedColumn.OfSize(int size, int scale)
+        IExistingTableWithAddedColumn IExistingTableWithAddedColumn.OfSize(int size, int? scale)
         {
             var command = (AddColumnCommand)_command.Children.Last();
             command.Size = size;

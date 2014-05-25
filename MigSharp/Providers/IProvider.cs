@@ -189,7 +189,7 @@ namespace MigSharp.Providers
                 }
                 else if (parameter.ParameterType == typeof(Column))
                 {
-                    parameters.Add(new Column(string.Empty, new DataType(0, 0, 0), false, null));
+                    parameters.Add(new Column(string.Empty, new DataType(0), false, null));
                 }
                 else
                 {

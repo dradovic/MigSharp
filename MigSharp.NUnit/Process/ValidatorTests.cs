@@ -47,17 +47,17 @@ namespace MigSharp.NUnit.Process
         {
             var dataTypes = new List<UsedDataType>
             {
-                new UsedDataType(new DataType(DbType.String, 255, 0), false, false), // ok
-                new UsedDataType(new DataType(DbType.Currency, 0, 0), false, false), // not supported
-                new UsedDataType(new DataType(DbType.Int32, 0, 0), false, false), // ok
+                new UsedDataType(new DataType(DbType.String, 255), false, false), // ok
+                new UsedDataType(new DataType(DbType.Currency), false, false), // not supported
+                new UsedDataType(new DataType(DbType.Int32), false, false), // ok
                 new UsedDataType(new DataType(DbType.Decimal, 20, 10), false, false), // exceeds size and scale
-                new UsedDataType(new DataType(DbType.String, 0, 0), false, false), // ok (should not override the primary key status of this DbType)
+                new UsedDataType(new DataType(DbType.String), false, false), // ok (should not override the primary key status of this DbType)
 
-                new UsedDataType(new DataType(DbType.String, 0, 0), true, false), // as primary key -> *not* ok w/o size
-                new UsedDataType(new DataType(DbType.String, 255, 0), true, false), // as primary key -> ok
+                new UsedDataType(new DataType(DbType.String), true, false), // as primary key -> *not* ok w/o size
+                new UsedDataType(new DataType(DbType.String, 255), true, false), // as primary key -> ok
 
                 new UsedDataType(new DataType(DbType.Decimal, 8, 2), false, true), // as identity -> *not* ok with scale
-                new UsedDataType(new DataType(DbType.Decimal, 8, 0), false, true), // as identity -> ok without scale
+                new UsedDataType(new DataType(DbType.Decimal, 8), false, true), // as identity -> ok without scale
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
@@ -108,8 +108,8 @@ namespace MigSharp.NUnit.Process
         {
             var dataTypes = new List<UsedDataType>
             {
-                new UsedDataType(new DataType(DbType.Guid, 0, 0), false, false),
-                new UsedDataType(new DataType(DbType.String, 0, 0), false, false),
+                new UsedDataType(new DataType(DbType.Guid), false, false),
+                new UsedDataType(new DataType(DbType.String), false, false),
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
@@ -126,7 +126,7 @@ namespace MigSharp.NUnit.Process
         {
             var dataTypes = new List<UsedDataType>
             {
-                new UsedDataType(new DataType(DbType.Int64, 0, 0), false, false),
+                new UsedDataType(new DataType(DbType.Int64), false, false),
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
@@ -148,9 +148,9 @@ namespace MigSharp.NUnit.Process
         {
             var dataTypes = new List<UsedDataType>
             {
-                new UsedDataType(new DataType(DbType.Int32, 666, 0), false, false),
-                new UsedDataType(new DataType(DbType.String, 0, 666), false, false),
-                new UsedDataType(new DataType(DbType.Decimal, 0, 0), false, false),
+                new UsedDataType(new DataType(DbType.Int32, 777), false, false),
+                new UsedDataType(new DataType(DbType.String, null, 777), false, false),
+                new UsedDataType(new DataType(DbType.Decimal), false, false),
             };
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(dataTypes);
@@ -162,8 +162,8 @@ namespace MigSharp.NUnit.Process
             Validate(report, out errors, out warnings);
 
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(666)' with a non-zero size and a zero scale which is not supported by '{2}'.", MigrationName, DbType.Int32, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(0,666)' with a zero size and a non-zero scale which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName) + Environment.NewLine +
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(777)' with a non-zero size and a zero scale which is not supported by '{2}'.", MigrationName, DbType.Int32, ProviderName) + Environment.NewLine +
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(null,777)' with a zero size and a non-zero scale which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName) + Environment.NewLine +
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' with a zero size and a zero scale which is not supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName),
                 errors);
             Assert.IsNullOrEmpty(warnings);

@@ -389,7 +389,7 @@ namespace MigSharp.Providers
             switch (type.DbType)
             {
                 case DbType.AnsiString:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "VARCHAR2({0})", type.Size);
                     }
@@ -425,7 +425,7 @@ namespace MigSharp.Providers
                     //case DbType.Single:
                     //    break;
                 case DbType.String:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "NVARCHAR2({0})", type.Size);
                     }

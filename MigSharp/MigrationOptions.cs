@@ -116,7 +116,7 @@ namespace MigSharp
             ExecuteAndScriptSqlTo(new DirectoryInfo(targetDirectory));
         }
 
-        internal bool IsWarningSuppressed(string providerName, DbType type, int size, int scale)
+        internal bool IsWarningSuppressed(string providerName, DbType type, int? size, int? scale)
         {
             foreach (Suppression suppression in _warningSuppressions
                 .Where(s => s.ProviderName == providerName && s.Type == type))
@@ -124,13 +124,13 @@ namespace MigSharp
                 switch (suppression.Condition)
                 {
                     case SuppressCondition.WhenSpecifiedWithoutSize:
-                        if (size == 0) return true;
+                        if (!size.HasValue) return true;
                         break;
                     case SuppressCondition.WhenSpecifiedWithSize:
-                        if (size > 0 && scale == 0) return true;
+                        if (size.HasValue && !scale.HasValue) return true;
                         break;
                     case SuppressCondition.WhenSpecifiedWithSizeAndScale:
-                        if (size > 0 && scale > 0) return true;
+                        if (size.HasValue && scale.HasValue) return true;
                         break;
                     case SuppressCondition.Always:
                         return true;

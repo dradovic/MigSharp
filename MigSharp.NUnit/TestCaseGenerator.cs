@@ -30,8 +30,8 @@ namespace MigSharp.NUnit
                 .WithNotNullableColumn("1st Column Under Named Unique Constraint", DbType.Int64).Unique("MyUniqueConstraint")
                 .WithNotNullableColumn("2nd Column Under Named Unique Constraint", DbType.Int64).Unique("MyUniqueConstraint");
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.String, 0, 0), new DataType(DbType.AnsiString, 0, 0), new DataType(DbType.String, 128, 0), new DataType(DbType.Decimal, 10, 2), new DataType(DbType.StringFixedLength, 128, 0), new DataType(DbType.Int64, 0, 0) },
-                new[] { new DataType(DbType.Int32, 0, 0) },
+                new[] { new DataType(DbType.Int32), new DataType(DbType.String), new DataType(DbType.AnsiString), new DataType(DbType.String, 128), new DataType(DbType.Decimal, 10, 2), new DataType(DbType.StringFixedLength, 128), new DataType(DbType.Int64) },
+                new[] { new DataType(DbType.Int32) },
                 Enumerable.Empty<DataType>(),
                 "1st Column Under Named Unique Constraint")
                 .SetDescription("CreateTable");
@@ -53,7 +53,7 @@ namespace MigSharp.NUnit
                 .AddNotNullableColumn("MyColumn", DbType.String).OfSize(100).HavingDefault("myValue")
                 .AddNotNullableColumn("MySystemTime", DbType.DateTime).HavingCurrentDateTimeAsDefault();
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.Int64, 0, 0), new DataType(DbType.String, 100, 0), new DataType(DbType.DateTime, 0, 0) },
+                new[] { new DataType(DbType.Int32), new DataType(DbType.Int64), new DataType(DbType.String, 100), new DataType(DbType.DateTime) },
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 "NewNonNullableColumnWithTempDflt7")
@@ -112,9 +112,9 @@ namespace MigSharp.NUnit
                 .WithPrimaryKeyColumn("PK", DbType.Int32)
                 .WithNotNullableColumn("Id", DbType.Decimal).OfSize(12).AsIdentity();
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.Decimal, 12, 0) },
-                new[] { new DataType(DbType.Int32, 0, 0) },
-                new[] { new DataType(DbType.Decimal, 12, 0) },
+                new[] { new DataType(DbType.Int32), new DataType(DbType.Decimal, 12) },
+                new[] { new DataType(DbType.Int32) },
+                new[] { new DataType(DbType.Decimal, 12) },
                 "PK_Table")
                 .SetDescription("Identity");
 
@@ -191,7 +191,7 @@ namespace MigSharp.NUnit
             db.Tables["Customers"]
                 .AddNotNullableColumn("MySystemTime", DbType.DateTime).HavingCurrentDateTimeAsDefault();
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.DateTime, 0, 0) },
+                new[] { new DataType(DbType.DateTime) },
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 "MySystemTime")
@@ -201,7 +201,7 @@ namespace MigSharp.NUnit
             db.CreateTable("Customers")
                 .WithNotNullableColumn("MySystemTime", DbType.DateTime).HavingCurrentDateTimeAsDefault();
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.DateTime, 0, 0) },
+                new[] { new DataType(DbType.DateTime) },
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 "MySystemTime")
@@ -212,8 +212,8 @@ namespace MigSharp.NUnit
                 .WithPrimaryKeyColumn("Id", DbType.Int32)
                 .WithNullableColumn("Some Other Column", DbType.AnsiString);
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.Int32, 0, 0), new DataType(DbType.AnsiString, 0, 0) },
-                new[] { new DataType(DbType.Int32, 0, 0) },
+                new[] { new DataType(DbType.Int32), new DataType(DbType.AnsiString) },
+                new[] { new DataType(DbType.Int32) },
                 Enumerable.Empty<DataType>(),
                 "My custom PK constraint name")
                 .SetDescription("Create table with custom primary key constraint name");
@@ -240,7 +240,7 @@ namespace MigSharp.NUnit
             db = new Database(context);
             db.Tables["Table"].Columns["Column"].AlterToNotNullable(DbType.String);
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.String, 0, 0) },
+                new[] { new DataType(DbType.String) },
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
@@ -249,7 +249,7 @@ namespace MigSharp.NUnit
             db = new Database(context);
             db.Tables["Table"].Columns["Column"].AlterToNullable(DbType.String).OfSize(255);
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.String, 255, 0) },
+                new[] { new DataType(DbType.String, 255) },
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty).SetDescription("MakeNullable OfSize");
@@ -257,7 +257,7 @@ namespace MigSharp.NUnit
             db = new Database(context);
             db.Tables["Table"].Columns["Column"].AlterToNotNullable(DbType.String).OfSize(255).HavingDefault("my default");
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.String, 255, 0) },
+                new[] { new DataType(DbType.String, 255) },
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)
@@ -266,7 +266,7 @@ namespace MigSharp.NUnit
             db = new Database(context);
             db.Tables["Table"].Columns["Column"].AlterToNotNullable(DbType.String).OfSize(255).HavingCurrentDateTimeAsDefault();
             yield return new TestCaseData(db,
-                new[] { new DataType(DbType.String, 255, 0) },
+                new[] { new DataType(DbType.String, 255) },
                 Enumerable.Empty<DataType>(),
                 Enumerable.Empty<DataType>(),
                 string.Empty)

@@ -383,9 +383,9 @@ namespace MigSharp.SqlServer.NUnit
             switch (type.DbType)
             {
                 case DbType.AnsiString:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
-                        return Microsoft.SqlServer.Management.Smo.DataType.VarChar(type.Size);
+                        return Microsoft.SqlServer.Management.Smo.DataType.VarChar(type.Size.Value);
                     }
                     else
                     {
@@ -404,7 +404,8 @@ namespace MigSharp.SqlServer.NUnit
                 case DbType.DateTime:
                     return Microsoft.SqlServer.Management.Smo.DataType.DateTime;
                 case DbType.Decimal:
-                    return Microsoft.SqlServer.Management.Smo.DataType.Decimal(type.Scale, type.Size);
+                    Debug.Assert(type.Size.HasValue, "Ensured through validation.");
+                    return Microsoft.SqlServer.Management.Smo.DataType.Decimal(type.Scale ?? 0, type.Size.Value);
                 //case DbType.Double:
                 //    break;
                 //case DbType.Guid:
@@ -422,9 +423,9 @@ namespace MigSharp.SqlServer.NUnit
                 //case DbType.Single:
                 //    break;
                 case DbType.String:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
-                        return Microsoft.SqlServer.Management.Smo.DataType.NVarChar(type.Size);
+                        return Microsoft.SqlServer.Management.Smo.DataType.NVarChar(type.Size.Value);
                     }
                     else
                     {
@@ -441,9 +442,11 @@ namespace MigSharp.SqlServer.NUnit
                 //case DbType.VarNumeric:
                 //    break;
                 case DbType.AnsiStringFixedLength:
-                    return Microsoft.SqlServer.Management.Smo.DataType.Char(type.Size);
+                    Debug.Assert(type.Size.HasValue, "Ensured through validation.");
+                    return Microsoft.SqlServer.Management.Smo.DataType.Char(type.Size.Value);
                 case DbType.StringFixedLength:
-                    return Microsoft.SqlServer.Management.Smo.DataType.NChar(type.Size);
+                    Debug.Assert(type.Size.HasValue, "Ensured through validation.");
+                    return Microsoft.SqlServer.Management.Smo.DataType.NChar(type.Size.Value);
                     //case DbType.Xml:
                     //    break;
                     //case DbType.DateTime2:

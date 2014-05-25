@@ -12,7 +12,7 @@ namespace MigSharp
         /// </summary>
         /// <param name="size">The length for character data types or the maximum total number of decimal digits for numeric data types.</param>
         /// <param name="scale">The maximum number of decimal digits that can be stored to the right of the decimal point. Scale must be a value from 0 through <paramref name="size"/>.</param>
-        IAlteredColumn OfSize(int size, int scale);
+        IAlteredColumn OfSize(int size, int? scale);
 
         /// <summary>
         /// Adds a default value to the column.
@@ -37,7 +37,7 @@ namespace MigSharp
         /// <param name="size">The length for character data types or the maximum total number of decimal digits for numeric data types.</param>
         public static IAlteredColumn OfSize(this IAlteredColumn column, int size)
         {
-            return column.OfSize(size, 0);
+            return column.OfSize(size, null);
         }
 
         /// <summary>

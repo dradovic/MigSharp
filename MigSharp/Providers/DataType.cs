@@ -28,14 +28,21 @@ namespace MigSharp.Providers
         /// </summary>
         public int? Scale { get { return _scale; } }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="DataType"/>.
-        /// </summary>
-        public DataType(DbType dbType, int? size, int? scale)
+        internal DataType(DbType dbType, int? size, int? scale)
         {
             _dbType = dbType;
             _size = size;
             _scale = scale;
+        }
+
+        internal DataType(DbType dbType, int? size)
+            : this(dbType, size, null)
+        {
+        }
+
+        internal DataType(DbType dbType)
+            : this(dbType, null, null)
+        {
         }
 
         #region Equality And Hashing
@@ -82,11 +89,11 @@ namespace MigSharp.Providers
         /// </summary>
         public override string ToString()
         {
-            if (_scale > 0)
+            if (_scale.HasValue)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0}({1},{2})", _dbType, _size, _scale);
+                return string.Format(CultureInfo.InvariantCulture, "{0}({1},{2})", _dbType, _size.HasValue ? (object)_size : "null", _scale);
             }
-            else if (_size > 0)
+            else if (_size.HasValue)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}({1})", _dbType, _size);                
             }

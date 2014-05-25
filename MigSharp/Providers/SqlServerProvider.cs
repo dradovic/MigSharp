@@ -87,7 +87,7 @@ namespace MigSharp.Providers
             switch (type.DbType)
             {
                 case DbType.AnsiString:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "[varchar]({0})", type.Size);
                     }
@@ -126,7 +126,7 @@ namespace MigSharp.Providers
                 case DbType.Single:
                     return "[real]";
                 case DbType.String:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "[nvarchar]({0})", type.Size);
                     }
@@ -151,7 +151,7 @@ namespace MigSharp.Providers
                     //case DbType.Xml:
                     //    break;
                 case DbType.DateTime2:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "[datetime2]({0})", type.Size);
                     }

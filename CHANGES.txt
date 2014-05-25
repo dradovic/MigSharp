@@ -1,5 +1,10 @@
 2.3.0 - DateTime2 columns respecting OfSize parameter (#50)
       - Error log contains exact information about the failed migration.
+	  BREAKING CHANGES:
+	  - Change of DataType class: size and precision are now nullable:
+	    -> the 'scale' parameter of the 'OfSize' methods is nullable
+	    -> a size equal to 0 means 'is set to zero' now
+		-> validation messages might contain the string 'null' instead of 0
 2.2.0 - Added possibility to execute a migration without versioning it (useful for dynamical schema changes)
 2.1.0 - Added support for custom timestamp formats (see Wiki on how to use this feature) (thanks to richardprior)
 	  - Added support for custom DB connections which is needed for SQLite in-memory databases (thanks to jvandertil)

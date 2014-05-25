@@ -97,7 +97,7 @@ namespace MigSharp.Providers
                     return "[real]";
                 case DbType.AnsiString:
                 case DbType.String:
-                    if (type.Size > 0)
+                    if (type.Size.HasValue)
                     {
                         return string.Format(CultureInfo.InvariantCulture, "[nvarchar]({0})", type.Size);
                     }

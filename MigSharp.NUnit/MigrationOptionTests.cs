@@ -24,8 +24,8 @@ namespace MigSharp.NUnit
         {
             var options = new MigrationOptions();
             options.SuppressWarning(ProviderName, Type, SuppressCondition.Always);
-            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 0, 0));
-            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, 0));
+            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, null, null));
+            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, null));
             Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, 1));
         }
 
@@ -34,8 +34,8 @@ namespace MigSharp.NUnit
         {
             var options = new MigrationOptions();
             options.SuppressWarning(ProviderName, Type, SuppressCondition.WhenSpecifiedWithoutSize);
-            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 0, 0));
-            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 1, 0));
+            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, null, null));
+            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 1, null));
             Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 1, 1));
         }
 
@@ -44,8 +44,8 @@ namespace MigSharp.NUnit
         {
             var options = new MigrationOptions();
             options.SuppressWarning(ProviderName, Type, SuppressCondition.WhenSpecifiedWithSize);
-            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 0, 0));
-            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, 0));
+            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, null, null));
+            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, null));
             Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 1, 1));
         }
 
@@ -54,8 +54,8 @@ namespace MigSharp.NUnit
         {
             var options = new MigrationOptions();
             options.SuppressWarning(ProviderName, Type, SuppressCondition.WhenSpecifiedWithSizeAndScale);
-            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 0, 0));
-            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 1, 0));
+            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, null, null));
+            Assert.IsFalse(options.IsWarningSuppressed(ProviderName, Type, 1, null));
             Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, 1));
         }
 
@@ -66,8 +66,8 @@ namespace MigSharp.NUnit
             options.SuppressWarning(ProviderName, Type, SuppressCondition.WhenSpecifiedWithoutSize);
             options.SuppressWarning(ProviderName, Type, SuppressCondition.WhenSpecifiedWithSize);
             options.SuppressWarning(ProviderName, Type, SuppressCondition.WhenSpecifiedWithSizeAndScale);
-            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 0, 0));
-            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, 0));
+            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, null, null));
+            Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, null));
             Assert.IsTrue(options.IsWarningSuppressed(ProviderName, Type, 1, 1));
         }
     }

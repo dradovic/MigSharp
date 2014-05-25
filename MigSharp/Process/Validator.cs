@@ -86,8 +86,8 @@ namespace MigSharp.Process
                 // post-condition: the data type is supported
                 
                 // check if OfSize was specified correctly
-                bool sizeIsSpecified = dataType.Size > 0;
-                bool scaleIsSpecified = dataType.Scale > 0;
+                bool sizeIsSpecified = dataType.Size.HasValue;
+                bool scaleIsSpecified = dataType.Scale.HasValue;
                 SupportsAttribute attribute = attributes.Find(a => !(a.MaximumSize > 0 ^ sizeIsSpecified) && !(a.MaximumScale > 0 ^ scaleIsSpecified));
                 if (attribute == null)
                 {

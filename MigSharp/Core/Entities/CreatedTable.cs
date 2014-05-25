@@ -43,7 +43,7 @@ namespace MigSharp.Core.Entities
             }
         }
 
-        ICreatedTableWithAddedColumn ICreatedTableWithAddedColumn.OfSize(int size, int scale)
+        ICreatedTableWithAddedColumn ICreatedTableWithAddedColumn.OfSize(int size, int? scale)
         {
             var command = (CreateColumnCommand)_command.Children.Last();
             command.Size = size;
