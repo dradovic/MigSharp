@@ -162,9 +162,9 @@ namespace MigSharp.NUnit.Process
             Validate(report, out errors, out warnings);
 
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(777)' with a non-zero size and a zero scale which is not supported by '{2}'.", MigrationName, DbType.Int32, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(null,777)' with a zero size and a non-zero scale which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' with a zero size and a zero scale which is not supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(777)' which is not supported by '{2}'.", MigrationName, DbType.Int32, ProviderName) + Environment.NewLine +
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(null,777)' which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName) + Environment.NewLine +
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName),
                 errors);
             Assert.IsNullOrEmpty(warnings);
         }

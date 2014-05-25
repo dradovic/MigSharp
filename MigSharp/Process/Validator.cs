@@ -86,17 +86,13 @@ namespace MigSharp.Process
                 // post-condition: the data type is supported
                 
                 // check if OfSize was specified correctly
-                bool sizeIsSpecified = dataType.Size.HasValue;
-                bool scaleIsSpecified = dataType.Scale.HasValue;
-                SupportsAttribute attribute = attributes.Find(a => !(a.MaximumSize > 0 ^ sizeIsSpecified) && !(a.MaximumScale > 0 ^ scaleIsSpecified));
+                SupportsAttribute attribute = attributes.Find(a => !(a.MaximumSize > 0 ^ dataType.Size.HasValue) && !(a.MaximumScale > 0 ^ dataType.Scale.HasValue));
                 if (attribute == null)
                 {
                     errorMessages.Add(string.Format(CultureInfo.CurrentCulture,
-                        "Migration '{0}' uses the data type '{1}' with a {2}zero size and a {3}zero scale which is not supported by '{4}'.",
+                        "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.",
                         report.MigrationName,
                         dataType,
-                        sizeIsSpecified ? "non-" : string.Empty,
-                        scaleIsSpecified ? "non-" : string.Empty,
                         providerMetadata.Name));
                     continue;
                 }
