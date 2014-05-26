@@ -63,7 +63,11 @@ namespace MigSharp.NUnit.Integration
                 }
 
                 string columnName = "Column" + i++;
-                table.WithNullableColumn(columnName, support.DbType).OfSize(support.MaximumSize, support.MaximumScale);
+                ICreatedTableWithAddedColumn column = table.WithNullableColumn(columnName, support.DbType);
+                if (support.MaximumSize > 0)
+                {
+                    column.OfSize(support.MaximumSize, support.MaximumScale > 0 ? support.MaximumScale : (int?)null);
+                }
                 columns.Add(columnName, support.DbType);
             }
 
@@ -115,7 +119,11 @@ namespace MigSharp.NUnit.Integration
                         maximumSize = 450; // FEATURE: this information should be part of the SupportAttribute
                     }
                 }
-                pkTable.WithPrimaryKeyColumn("Id", support.DbType).OfSize(maximumSize, support.MaximumScale);
+                ICreatedTableWithAddedColumn column = pkTable.WithPrimaryKeyColumn("Id", support.DbType);
+                if (maximumSize > 0)
+                {
+                    column.OfSize(maximumSize, support.MaximumScale > 0 ? support.MaximumScale : (int?)null);
+                }
                 ExpectedTables.Add(new ExpectedTable(pkTableName, "Id"));
             }
         }

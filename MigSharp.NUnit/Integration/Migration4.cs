@@ -44,7 +44,10 @@ namespace MigSharp.NUnit.Integration
             var identityColumn = onPrimaryKey
                                      ? table.WithPrimaryKeyColumn("Id", support.DbType).AsIdentity()
                                      : table.WithNotNullableColumn("Id", support.DbType).AsIdentity();
-            identityColumn.OfSize(support.MaximumSize, support.MaximumScale);
+            if (support.MaximumSize > 0)
+            {
+                identityColumn.OfSize(support.MaximumSize, support.MaximumScale > 0 ? support.MaximumScale : (int?)null);
+            }
             table.WithNotNullableColumn("Content", DbType.String).OfSize(255);
 
             // insert one record to see if Identity works
