@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using MigSharp.Process;
 using NUnit.Framework;
 using Rhino.Mocks;
@@ -175,7 +176,7 @@ namespace MigSharp.NUnit
             // Add assemblies referenced by this assembly be referenced by the compiled assembly
             var assemblies = AppDomain.CurrentDomain
                 .GetAssemblies()
-                .Where(a => !AssemblyIsDynamic(a)) // note: assembly.IsDynamic only works for .NET 4.0 and higher
+                .Where(a => !AssemblyIsDynamic(a)) // note: assembly.IsDynamic is only available in .NET 4.0 and higher
                 .Select(a => a.Location);
             parameters.ReferencedAssemblies.AddRange(assemblies.ToArray());
 
@@ -185,7 +186,21 @@ namespace MigSharp.NUnit
 
         private static bool AssemblyIsDynamic(Assembly assembly)
         {
-            return assembly.ManifestModule.Name == "<In Memory Module>";
+            // see: http://stackoverflow.com/questions/1423733/how-to-tell-if-a-net-assembly-is-dynamic
+            var moduleBuilder = assembly.ManifestModule as ModuleBuilder;
+            if (moduleBuilder != null && moduleBuilder.IsTransient())
+            {
+                return true;
+            }
+            // For some unknown reason, the criteria above are not sufficient yet. On our Chinese Windows accessing
+            // the Location property still yields a NotSupportedException and thus we need to exclude the following
+            // assemblies hard-codedly:
+            if (assembly.FullName.StartsWith("DynamicProxyGenAssembly2", StringComparison.Ordinal) ||
+                assembly.FullName.StartsWith("MetadataViewProxies", StringComparison.Ordinal))
+            {
+                return true;
+            }
+            return false;
         }
 
         private static Assembly Compile(CompilerParameters parameters, string sources)
