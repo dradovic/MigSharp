@@ -80,7 +80,7 @@ namespace MigSharp.Providers
                 case DbType.DateTime:
                     return "[datetime]";
                 case DbType.Decimal:
-                    return string.Format(CultureInfo.InvariantCulture, "[numeric]({0}, {1})", type.Size, type.Scale);
+                    return string.Format(CultureInfo.InvariantCulture, "[numeric]({0}, {1})", type.Size, type.Scale ?? 0);
                 case DbType.Double:
                     return "[float]";
                 case DbType.Guid:

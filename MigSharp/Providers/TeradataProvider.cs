@@ -136,12 +136,12 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> DropColumn(string tableName, string columnName)
         {
-            yield return string.Format(string.Format("{0} DROP {1}", AlterTable(tableName), Escape(columnName)));
+            yield return string.Format("{0} DROP {1}", AlterTable(tableName), Escape(columnName));
         }
 
         public IEnumerable<string> AlterColumn(string tableName, Column column)
         {
-            yield return string.Format(string.Format("{0} ADD {1}", AlterTable(tableName), GetColumnString(column, false)));
+            yield return string.Format("{0} ADD {1}", AlterTable(tableName), GetColumnString(column, false));
         }
 
         private static IEnumerable<string> DropConstraint(string tableName, string constraintName)
@@ -248,7 +248,7 @@ namespace MigSharp.Providers
                 case DbType.DateTime:
                     return "TIMESTAMP"; // note: DATE only denotes dates without a time component and therefore cannot be used
                 case DbType.Decimal:
-                    return "DECIMAL(" + type.Size + "," + type.Scale + ")";
+                    return "DECIMAL(" + type.Size + "," + (type.Scale ?? 0) + ")";
                 case DbType.Double:
                     return "DOUBLE PRECISION";
                 case DbType.Guid:

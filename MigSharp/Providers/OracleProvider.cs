@@ -253,7 +253,7 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> DropColumn(string tableName, string columnName)
         {
-            yield return string.Format(string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP COLUMN {1}", Escape(tableName), Escape(columnName)));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP COLUMN {1}", Escape(tableName), Escape(columnName));
         }
 
         public IEnumerable<string> AlterColumn(string tableName, Column column)
@@ -407,7 +407,7 @@ namespace MigSharp.Providers
                 case DbType.DateTime:
                     return "DATE";
                 case DbType.Decimal:
-                    return "DECIMAL(" + type.Size + "," + type.Scale + ")";
+                    return "DECIMAL(" + type.Size + "," + (type.Scale ?? 0) + ")";
                 case DbType.Double:
                     return "DOUBLE PRECISION";
                 case DbType.Guid:

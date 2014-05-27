@@ -108,7 +108,14 @@ namespace MigSharp.Providers
                 case DbType.DateTime:
                     return "[datetime]";
                 case DbType.Decimal:
-                    return string.Format(CultureInfo.InvariantCulture, "[decimal]({0}, {1})", type.Size, type.Scale);
+                    if (type.Scale.HasValue)
+                    {
+                        return string.Format(CultureInfo.InvariantCulture, "[decimal]({0}, {1})", type.Size, type.Scale);
+                    }
+                    else
+                    {
+                        return string.Format(CultureInfo.InvariantCulture, "[decimal]({0})", type.Size);                        
+                    }
                 case DbType.Double:
                     return "[float]";
                 case DbType.Guid:
@@ -143,7 +150,14 @@ namespace MigSharp.Providers
                     //case DbType.UInt64:
                     //    break;
                 case DbType.VarNumeric:
-                    return string.Format(CultureInfo.InvariantCulture, "[numeric]({0}, {1})", type.Size, type.Scale);
+                    if (type.Scale.HasValue)
+                    {
+                        return string.Format(CultureInfo.InvariantCulture, "[numeric]({0}, {1})", type.Size, type.Scale);
+                    }
+                    else
+                    {
+                        return string.Format(CultureInfo.InvariantCulture, "[numeric]({0})", type.Size);                        
+                    }
                 case DbType.AnsiStringFixedLength:
                     return string.Format(CultureInfo.InvariantCulture, "[char]({0})", type.Size);
                 case DbType.StringFixedLength:

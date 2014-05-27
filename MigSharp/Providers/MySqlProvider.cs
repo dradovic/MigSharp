@@ -353,7 +353,14 @@ namespace MigSharp.Providers
                 case DbType.DateTime:
                     return "DATETIME";
                 case DbType.Decimal:
-                    return string.Format(CultureInfo.InvariantCulture, "NUMERIC({0}, {1})", type.Size, type.Scale);
+                    if (type.Scale.HasValue)
+                    {
+                        return string.Format(CultureInfo.InvariantCulture, "NUMERIC({0}, {1})", type.Size, type.Scale);
+                    }
+                    else
+                    {
+                        return string.Format(CultureInfo.InvariantCulture, "NUMERIC({0})", type.Size);                        
+                    }
                 case DbType.Double:
                     return "DOUBLE";
                 case DbType.Int16:
