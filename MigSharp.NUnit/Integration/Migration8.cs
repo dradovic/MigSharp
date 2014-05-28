@@ -36,7 +36,7 @@ namespace MigSharp.NUnit.Integration
             { DbType.UInt64, UInt64.MinValue },
             { DbType.VarNumeric, 1.5f },
             { DbType.DateTimeOffset, new DateTimeOffset(2010, 12, 28, 18, 14, 33, TimeSpan.FromHours(-2.0)) },
-            { DbType.DateTime2, DateTime.Parse("12/28/2010 19:25:21.9999", CultureInfo.InvariantCulture) },
+            { DbType.DateTime2, new DateTime(2010, 12, 28, 18, 14, 33) },
         };
 
         private static readonly ExpectedTables ExpectedTables = new ExpectedTables();

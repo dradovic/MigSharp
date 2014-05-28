@@ -42,7 +42,19 @@ namespace MigSharp.Providers
                 case DbType.Date:
                     return value => "'" + ((DateTime)value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "'"; // ISO 8601                    
                 case DbType.DateTime:
-                    return value => "'" + ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + "'"; // ISO 8601                    
+                case DbType.DateTime2:
+                    return value =>
+                        {
+                            DateTime dateTime = (DateTime)value;
+                            if (dateTime.Millisecond > 0)
+                            {
+                                return "'" + ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture) + "'"; // ISO 8601          
+                            }
+                            else
+                            {
+                                return "'" + ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture) + "'"; // ISO 8601
+                            }
+                        };          
                 case DbType.Double:
                     return value => Convert.ToDouble(value, CultureInfo.InvariantCulture).ToString("r", CultureInfo.InvariantCulture);
                 case DbType.Int16:
