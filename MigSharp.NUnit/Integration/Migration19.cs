@@ -11,9 +11,29 @@ namespace MigSharp.NUnit.Integration
     {
         private static readonly DateTime TestValue = new DateTime(2014, 5, 17, 16, 55, 34, 123);
 
+        private static readonly ExpectedTables ExpectedTables = new ExpectedTables();
+
         public void Up(IDatabase db)
         {
             //DateTime.Parse("12/28/2010 19:25:21.9999", CultureInfo.InvariantCulture)
+
+            if (!IntegrationTestContext.ProviderSupports(DbType.DateTime2))
+            {
+                return;
+            }
+
+            ExpectedTables.Add(
+                        new ExpectedTable("Mig19", "Id", "DateWithoutSizeOf", "Date7", "Date3", "Date1", "Date0")
+                            {
+                                {
+                                    1,
+                                    TestValue, // should be the full value
+                                    TestValue, // should be the full value
+                                    TestValue, // should be the full value (still 3)
+                                    new DateTime(TestValue.Year, TestValue.Month, TestValue.Day, TestValue.Hour, TestValue.Minute, TestValue.Second, 100*(TestValue.Millisecond/100)), // the seconds should only have one decimal place
+                                    new DateTime(TestValue.Year, TestValue.Month, TestValue.Day, TestValue.Hour, TestValue.Minute, TestValue.Second, 0) // there should be no milliseconds
+                                },
+                            });
 
             db.CreateTable(Tables[0].Name)
               .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32)
@@ -52,23 +72,7 @@ namespace MigSharp.NUnit.Integration
 
         public ExpectedTables Tables
         {
-            get
-            {
-                return new ExpectedTables
-                    {
-                        new ExpectedTable("Mig19", "Id", "DateWithoutSizeOf", "Date7", "Date3", "Date1", "Date0")
-                            {
-                                {
-                                    1,
-                                    TestValue, // should be the full value
-                                    TestValue, // should be the full value
-                                    TestValue, // should be the full value (still 3)
-                                    new DateTime(TestValue.Year, TestValue.Month, TestValue.Day, TestValue.Hour, TestValue.Minute, TestValue.Second, 100*(TestValue.Millisecond/100)), // the seconds should only have one decimal place
-                                    new DateTime(TestValue.Year, TestValue.Month, TestValue.Day, TestValue.Hour, TestValue.Minute, TestValue.Second, 0) // there should be no milliseconds
-                                },
-                            }
-                    };
-            }
+            get { return ExpectedTables; }
         }
     }
 }

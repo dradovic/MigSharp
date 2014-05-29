@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-
+using System.Data;
 using MigSharp.Process;
 using MigSharp.Providers;
+using System.Linq;
 
 namespace MigSharp.NUnit.Integration
 {
@@ -22,5 +23,10 @@ namespace MigSharp.NUnit.Integration
         public static IEnumerable<SupportsAttribute> SupportsAttributes { get { return _supportsAttributes; } }
 
         public static bool IsScripting { get { return _options.ScriptingOptions.Mode == ScriptingMode.ScriptAndExecute || _options.ScriptingOptions.Mode == ScriptingMode.ScriptOnly; } }
+
+        public static bool ProviderSupports(DbType dbType)
+        {
+            return SupportsAttributes.Any(a => a.DbType == dbType);
+        }
     }
 }
