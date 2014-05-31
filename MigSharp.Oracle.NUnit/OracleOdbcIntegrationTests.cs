@@ -96,6 +96,14 @@ namespace MigSharp.Oracle.NUnit
             DropDatabase(TestDbName);
         }
 
+        [Test]
+        public override void TestMigration1UsingConsoleApp()
+        {
+            // we don't execute this test yet since the Migrate.exe
+            // would require a config file that includes the definition of
+            // the .Net Framework Data Provider
+        }
+
         private static void CreateDatabase(string databaseName)
         {
             var query1 = @"CREATE USER " + databaseName + " IDENTIFIED BY " + Password + " DEFAULT TABLESPACE " + TableSpace + " QUOTA UNLIMITED ON " + TableSpace;
