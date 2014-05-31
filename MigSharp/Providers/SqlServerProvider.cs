@@ -108,14 +108,7 @@ namespace MigSharp.Providers
                 case DbType.DateTime:
                     return "[datetime]";
                 case DbType.Decimal:
-                    if (type.Scale.HasValue)
-                    {
-                        return string.Format(CultureInfo.InvariantCulture, "[decimal]({0}, {1})", type.Size, type.Scale);
-                    }
-                    else
-                    {
-                        return string.Format(CultureInfo.InvariantCulture, "[decimal]({0})", type.Size);                        
-                    }
+                    return string.Format(CultureInfo.InvariantCulture, "[decimal]({0}, {1})", type.Size, type.Scale.HasValue ? type.Scale : 0);
                 case DbType.Double:
                     return "[float]";
                 case DbType.Guid:
