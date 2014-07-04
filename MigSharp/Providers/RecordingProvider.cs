@@ -58,9 +58,16 @@ namespace MigSharp.Providers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IEnumerable<string> DropTable(string tableName)
+        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
-            AddMethodName();
+            if (checkIfExists)
+            {
+                AddMethodName("DropTableIfExists");
+            }
+            else
+            {
+                AddMethodName();
+            }
             return Enumerable.Empty<string>();
         }
 
@@ -205,6 +212,11 @@ namespace MigSharp.Providers
             }
             string methodName = callingMethod.Name;
             Debug.Assert(typeof(IProvider).GetMethod(methodName) != null, string.Format("IProvider has not '{0}' method.", methodName));
+            AddMethodName(methodName);
+        }
+
+        private void AddMethodName(string methodName)
+        {
             if (!_methods.Contains(methodName))
             {
                 _methods.Add(methodName);

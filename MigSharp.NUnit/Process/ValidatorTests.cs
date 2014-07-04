@@ -175,9 +175,12 @@ namespace MigSharp.NUnit.Process
             var provider = new ProviderStub();
             List<UnsupportedMethod> unsupportedMethods = provider.GetUnsupportedMethods().ToList();
 
-            UnsupportedMethod dropTable = unsupportedMethods.Find(m => m.Name == "DropTable");
-            Assert.IsNotNull(dropTable, "DropTable should be one of the unsupported methods.");
-            Assert.AreEqual(ProviderStub.NotSupportedMessageForDropTable, dropTable.Message);
+            UnsupportedMethod addColumn = unsupportedMethods.Find(m => m.Name == "AddColumn");
+            Assert.IsNotNull(addColumn, "AddColumn should be one of the unsupported methods.");
+            Assert.AreEqual(ProviderStub.NotSupportedMessageForAddColumn, addColumn.Message);
+
+            UnsupportedMethod dropTable = unsupportedMethods.Find(m => m.Name == "DropTableIfExists");
+            Assert.IsNotNull(dropTable, "DropTableIfExists should be one of the unsupported methods.");
 
             Assert.IsNull(unsupportedMethods.Find(m => m.Name == "CreateTable"), "CreateTable should be one of the supported methods.");
         }
@@ -187,7 +190,7 @@ namespace MigSharp.NUnit.Process
         {
             IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
             migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<UsedDataType>());
-            migration.Expect(m => m.Methods).Return(new[] { "CreateTable", "DropTable" });
+            migration.Expect(m => m.Methods).Return(new[] { "CreateTable", "AddColumn" });
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
             string errors;
@@ -195,7 +198,7 @@ namespace MigSharp.NUnit.Process
             Validate(report, out errors, out warnings);
 
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' calls the '{1}' method which is not supported by '{2}': DropTable is not supported because this is just a test.", MigrationName, "DropTable", ProviderName),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' calls the '{1}' method which is not supported by '{2}': AddColumn is not supported because this is just a test.", MigrationName, "AddColumn", ProviderName),
                 errors);
             Assert.IsNullOrEmpty(warnings);
         }
@@ -246,7 +249,7 @@ namespace MigSharp.NUnit.Process
         {
             public const string WarningMessage = "This is a test warning message.";
             public const string WarningMessageWithoutSize = "Some warning that applies when size is omitted.";
-            public const string NotSupportedMessageForDropTable = "DropTable is not supported because this is just a test.";
+            public const string NotSupportedMessageForAddColumn = "AddColumn is not supported because this is just a test.";
 
             #region Implementation of IProvider
 
@@ -265,14 +268,18 @@ namespace MigSharp.NUnit.Process
                 yield break;
             }
 
-            IEnumerable<string> IProvider.DropTable(string tableName)
+            IEnumerable<string> IProvider.DropTable(string tableName, bool checkIfExists)
             {
-                throw new NotSupportedException(NotSupportedMessageForDropTable);
+                if (checkIfExists)
+                {
+                    throw new NotSupportedException();
+                }
+                return Enumerable.Empty<string>();
             }
 
             IEnumerable<string> IProvider.AddColumn(string tableName, Column column)
             {
-                throw new NotSupportedException();
+                throw new NotSupportedException(NotSupportedMessageForAddColumn);
             }
 
             IEnumerable<string> IProvider.RenameTable(string oldName, string newName)

@@ -42,6 +42,11 @@ namespace MigSharp
         void Drop();
 
         /// <summary>
+        /// Drops the table if it exists. If not, no exception is thrown.
+        /// </summary>
+        void DropIfExists();
+
+        /// <summary>
         /// Adds a primary key constraint to the table.
         /// </summary>
         /// <param name="constraintName">Optionally, the primary key constraint name. If null or empty, a default name will be generated.</param>

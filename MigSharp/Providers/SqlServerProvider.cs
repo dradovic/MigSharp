@@ -31,12 +31,6 @@ namespace MigSharp.Providers
         public override bool SpecifyWith { get { return true; } }
         public override string Dbo { get { return "[dbo]."; } }
 
-        public override string ExistsTable(string databaseName, string tableName)
-        {
-            return string.Format(CultureInfo.InvariantCulture, @"IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].{0}') AND type in (N'U')) SELECT 0 ELSE SELECT 1",
-                Escape(tableName));
-        }
-
         protected override IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
         {
             string constraintName = GetDefaultConstraintName(tableName, columnName);

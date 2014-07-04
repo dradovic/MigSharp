@@ -124,7 +124,7 @@ namespace MigSharp.Providers
             yield return commandText;
         }
 
-        public IEnumerable<string> DropTable(string tableName)
+        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "DROP TABLE {0}", Escape(tableName));
         }

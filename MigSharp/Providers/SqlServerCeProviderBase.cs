@@ -32,17 +32,21 @@ namespace MigSharp.Providers
         public override bool SpecifyWith { get { return false; } }
         public override string Dbo { get { return string.Empty; } }
 
-        public override string ExistsTable(string databaseName, string tableName)
-        {
-            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}'", tableName);
-        }
-
         protected override IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
         {
             // checkIfExists can be ignored
             yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT",
                 Escape(tableName),
                 Escape(columnName));
+        }
+
+        public override IEnumerable<string> DropTable(string tableName, bool checkIfExists)
+        {
+            if (checkIfExists)
+            {
+                throw new NotSupportedException("Conditional logic is not supported by the Compact Edition.");
+            }
+            return base.DropTable(tableName, checkIfExists);
         }
 
         public override IEnumerable<string> RenameTable(string oldName, string newName)

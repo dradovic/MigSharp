@@ -1,6 +1,8 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
+- annotate API with ReSharper annotations (NotNull, etc.)
+
 - SQLite
 	- Add support for foreign keys (see https://github.com/dradovic/MigSharp/issues/2)
 	- update wiki and all referencing pages to include SQLite support

@@ -16,7 +16,10 @@ namespace MigSharp.Providers
         public abstract bool SpecifyWith { get; }
         public abstract string Dbo { get; }
 
-        public abstract string ExistsTable(string databaseName, string tableName);
+        public string ExistsTable(string databaseName, string tableName)
+        {
+            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}'", tableName);            
+        }
 
         public string ConvertToSql(object value, DbType targetDbType)
         {
@@ -98,9 +101,17 @@ namespace MigSharp.Providers
             yield return commandText;
         }
 
-        public IEnumerable<string> DropTable(string tableName)
+        public virtual IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "DROP TABLE {0}{1}", Dbo, Escape(tableName));
+            string commandText = string.Format(CultureInfo.InvariantCulture, "DROP TABLE {0}{1}", Dbo, Escape(tableName));
+            if (checkIfExists)
+            {
+                yield return "IF (" + ExistsTable(null, tableName) + ") != 0 BEGIN " + commandText + " END";
+            }
+            else
+            {
+                yield return commandText;
+            }
         }
 
         public IEnumerable<string> AddColumn(string tableName, Column column)

@@ -1,4 +1,5 @@
-2.3.0 - DateTime2 columns respects OfSize parameter (#50)
+2.3.0 - new DropIfExists method on tables
+      - DateTime2 columns respects OfSize parameter (#50)
       - added scripting support for DateTime2
 	  - Scripting a DateTime or DateTime2 value includes 3 digits of miliseconds according to ISO 8601 with a dot as a decimal mark
       - Error log contains exact information about the failed migration.

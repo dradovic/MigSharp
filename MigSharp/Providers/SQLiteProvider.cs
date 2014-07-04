@@ -117,9 +117,9 @@ namespace MigSharp.Providers
             return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
-        public IEnumerable<string> DropTable(string tableName)
+        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE ""{0}""", tableName);
+            yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}""{1}""", checkIfExists ? "IF EXISTS ": string.Empty, tableName);
         }
 
         public IEnumerable<string> AddColumn(string tableName, Column column)

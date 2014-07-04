@@ -93,11 +93,11 @@ namespace MigSharp.NUnit
                 {
                     instance = Activator.CreateInstance(migration) as IMigrationTimestamp;
                 }
-                catch (Exception ex)
+                catch (Exception x)
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                                                               "Could not create an instance of migration {0}. Please make sure the migration has a parameterless constructor.",
-                                                              migration.Name), ex);
+                                                              migration.Name), x);
                 }
                 Assert.IsNotNull(instance, string.Format(CultureInfo.CurrentCulture, "Could find timestamp interface on migration ({0}). Types implementing migrations using the InterfaceMigrationTimestampProvider must implement the IMigrationTimestamp interface.", migration.Name));
 

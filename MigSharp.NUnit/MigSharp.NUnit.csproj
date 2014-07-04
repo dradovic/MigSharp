@@ -87,6 +87,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\StringHelperTests.cs" />
+    <Compile Include="Integration\ExceptionExtensions.cs" />
+    <Compile Include="Integration\Migration20.cs" />
     <Compile Include="Integration\Migration18.cs" />
     <Compile Include="Integration\ExpectedTable.cs" />
     <Compile Include="Integration\ExpectedTables.cs" />

@@ -82,6 +82,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Entities\Check.cs" />
     <Compile Include="DefaultMigrationTimestampProvider.cs" />
     <Compile Include="IMigrationTimestampProvider.cs" />
     <Compile Include="IMigrationTimestampProviderExportMetadata.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Process\MigrationSelector.cs" />
     <Compile Include="Process\UsedDataType.cs" />
     <Compile Include="Providers\MySqlProvider.cs" />
+    <Compile Include="Providers\ProviderExtensions.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />
     <Compile Include="Core\Entities\AddedIndex.cs" />

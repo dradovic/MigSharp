@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using MigSharp.Core.Entities;
 using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
     internal class DropCommand : Command, ITranslatableCommand
     {
-        public DropCommand(ICommand parent) : base(parent)
+        public Check Check { get; set; }
+
+        public DropCommand(ICommand parent)
+            : base(parent)
         {
         }
 
@@ -21,7 +24,7 @@ namespace MigSharp.Core.Commands
             AlterForeignKeyCommand parentAlterForeignKeyCommand;
             if ((parentAlterTableCommand = Parent as AlterTableCommand) != null)
             {
-                return provider.DropTable(parentAlterTableCommand.TableName);
+                return provider.DropTable(parentAlterTableCommand.TableName, Check == Check.IfExists);
             }
             else if ((parentAlterColumnCommand = Parent as AlterColumnCommand) != null)
             {
@@ -38,7 +41,7 @@ namespace MigSharp.Core.Commands
             }
             else if ((parentAlterUniqueConstraintCommand = Parent as AlterUniqueConstraintCommand) != null)
             {
-                return provider.DropUniqueConstraint(parentAlterUniqueConstraintCommand.Parent.TableName, parentAlterUniqueConstraintCommand.ConstraintName);                
+                return provider.DropUniqueConstraint(parentAlterUniqueConstraintCommand.Parent.TableName, parentAlterUniqueConstraintCommand.ConstraintName);
             }
             else if ((parentAlterForeignKeyCommand = Parent as AlterForeignKeyCommand) != null)
             {
@@ -46,7 +49,7 @@ namespace MigSharp.Core.Commands
             }
             else
             {
-                throw new InvalidOperationException("Unsupported parent command of a DropCommand.");                
+                throw new InvalidOperationException("Unsupported parent command of a DropCommand.");
             }
         }
     }

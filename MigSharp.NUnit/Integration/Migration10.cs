@@ -45,6 +45,10 @@ namespace MigSharp.NUnit.Integration
                         }
                         catch (Exception x)
                         {
+                            if (!x.IsDbException())
+                            {
+                                throw;
+                            }
                             // a DbException is expected (for the case of a SqlServer35 the SqlCeException is not derived from DbException)
                             if (!(x is DbException) && x.GetType().Name != "SqlCeException")
                             {

@@ -111,8 +111,18 @@ namespace MigSharp.Providers
             yield return commandText;
         }
 
-        public IEnumerable<string> DropTable(string tableName)
+        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
+            if (checkIfExists)
+            {
+                // FEATURE: probably we could do a 
+                // IF EXISTS(SELECT 1 FROM dbc.tables WHERE databasename = db_name AND tablename = table_name) THEN
+                //   CALL DBC.SysExecSQL('DROP TABLE ' || db_name ||'.'|| table_name);
+                // END IF;
+                // as suggested on http://forums.teradata.com/forum/enterprise/drop-table-if-exists-0 but for this
+                // we would need to have a databaseName parameter for this method as well. So, for the time being we:
+                throw new NotSupportedException("The DropIfExists method is not supported by the current Teradata provider implementation.");
+            }
             yield return string.Format("DROP TABLE {0}", Escape(tableName));
         }
 

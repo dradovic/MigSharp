@@ -77,7 +77,7 @@ namespace MigSharp.SqlServer.NUnit
             return TransformScript(table.Script(options));
         }
 
-        public IEnumerable<string> DropTable(string tableName)
+        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
             Table table = GetTable(tableName);
             table.Drop();

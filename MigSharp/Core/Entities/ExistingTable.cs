@@ -1,7 +1,6 @@
 using System;
 using System.Data;
 using System.Linq;
-
 using MigSharp.Core.Commands;
 
 namespace MigSharp.Core.Entities
@@ -98,6 +97,11 @@ namespace MigSharp.Core.Entities
         void IExistingTable.Drop()
         {
             _command.Add(new DropCommand(_command));
+        }
+
+        public void DropIfExists()
+        {
+            _command.Add(new DropCommand(_command) {Check = Check.IfExists});
         }
 
         public IAddedPrimaryKey AddPrimaryKey(string constraintName)

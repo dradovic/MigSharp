@@ -143,9 +143,24 @@ namespace MigSharp.Providers
             return ObjectNameHelper.GetObjectName(tableName, "SEQ", MaximumDbObjectNameLength, tableName.GetHashCode().ToString(CultureInfo.InvariantCulture));
         }
 
-        public IEnumerable<string> DropTable(string tableName)
+        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}", Escape(tableName));
+            if (checkIfExists)
+            {
+                // see: http://stackoverflow.com/questions/1799128/oracle-if-table-exists
+                yield return string.Format(CultureInfo.InvariantCulture, @"BEGIN
+   EXECUTE IMMEDIATE 'DROP TABLE {0}';
+EXCEPTION
+   WHEN OTHERS THEN
+      IF SQLCODE != -942 THEN
+         RAISE;
+      END IF;
+END;", Escape(tableName));
+            }
+            else
+            {
+                yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}", Escape(tableName));
+            }
 
             // drop associated SEQUENCE (if it exists); the TRIGGER is dropped automatically by Oracle
             // Oracle Database Error Code ORA-02289: sequence does not exist
