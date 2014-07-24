@@ -76,6 +76,7 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON [dbo].{1} WITH ( ONLINE = OFF )", Escape(indexName), Escape(tableName));
         }
 
+        // see: http://msdn.microsoft.com/en-us/library/cc716729.aspx
         protected override string GetTypeSpecifier(DataType type)
         {
             switch (type.DbType)
@@ -92,7 +93,7 @@ namespace MigSharp.Providers
                 case DbType.Binary:
                     return "[varbinary](max)";
                 case DbType.Byte:
-                    return "[smallint]";
+                    return "[tinyint]";
                 case DbType.Boolean:
                     return "[bit]";
                     //case DbType.Currency:
