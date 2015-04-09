@@ -32,7 +32,9 @@ namespace MigSharp.Generate
                 Environment.Exit(x.ExitCode);
                 throw; // will not be executed; just to satisfy R#
             }
-
+            var generator = new SqlMigrationGenerator(connectionString);
+            string migration = generator.Generate();
+            Console.WriteLine(migration);
         }
 
         internal static void ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings, out string connectionString)
@@ -62,8 +64,6 @@ namespace MigSharp.Generate
             }
         }
 
-
-
         private static bool DisplayHelp(string commandLine, out CommandLineOptions options, out CommandLineParser parser)
         {
             options = new CommandLineOptions();
@@ -81,7 +81,5 @@ namespace MigSharp.Generate
                            Environment.NewLine + parser.GetUsage();
             return string.Format(CultureInfo.CurrentCulture, "Usage:{0}{1}", Environment.NewLine, usage);
         }
-
-
     }
 }

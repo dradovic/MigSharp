@@ -29,6 +29,7 @@ obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
+Generate/lib/
 MigSharp.*.NUnit/lib/
 MigSharp.SqlServerCe.NUnit/Ce*
 .svn
