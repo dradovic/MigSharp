@@ -5,6 +5,7 @@ Pre-conditions:
 - All versions are up-to-date:
   - MigSharp\AssemblyInfo.cs
   - Migrate\AssemblyInfo.cs
+  - Generate\AssemblyInfo.cs
   - nuget\MigSharp.nuspec
   - TeamCity variables used to name the binaries (Project Settings > Parameters > Version)
 - CHANGES.txt is up-to-date

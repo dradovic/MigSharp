@@ -1,3 +1,4 @@
+2.3.1 - new console application that generates a migration from an existing database schema (Generate.exe)
 2.3.0 - new DropIfExists method on tables
       - DateTime2 columns respects OfSize parameter (#50)
       - added scripting support for DateTime2
