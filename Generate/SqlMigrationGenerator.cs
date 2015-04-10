@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System;
+using System.Data.SqlClient;
 using Microsoft.SqlServer.Management.Smo;
 
 namespace MigSharp.Generate
@@ -21,7 +22,14 @@ namespace MigSharp.Generate
             string migration = string.Empty;
             foreach (Table table in database.Tables)
             {
-                migration += string.Format("db.CreateTable(\"{0}\")", table.Name);
+                migration += string.Format("db.CreateTable(\"{0}\")", table.Name) + Environment.NewLine;
+                foreach (Column column in table.Columns)
+                {
+                    migration += string.Format("\t.With{0}{1}NullableColumn(\"{2}\")",
+                        column.InPrimaryKey ? "PrimaryKey" : string.Empty,
+                        column.Nullable ? string.Empty : "Not",
+                        column.Name) + Environment.NewLine;
+                }
             }
             return migration;
         }
