@@ -45,11 +45,12 @@ namespace MigSharp.Generate
                     {
                         string dbTypeExpression = GetDbTypeExpression(column);
                         string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
-                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}",
+                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}",
                             Indent(1),
                             columnKind,
                             column.Name,
                             dbTypeExpression,
+                            column.Identity ? ".AsIdentity()" : string.Empty,
                             column == lastColumn ? ";" : string.Empty), ref migration);
                     }
                     catch (NotSupportedException x)
