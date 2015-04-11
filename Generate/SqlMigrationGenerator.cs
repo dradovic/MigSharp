@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.Linq;
 using Microsoft.SqlServer.Management.Smo;
 
 namespace MigSharp.Generate
@@ -20,7 +21,7 @@ namespace MigSharp.Generate
             _connectionString = connectionString;
         }
 
-        public void Generate()
+        public string Generate()
         {
             _errors.Clear();
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(_connectionString);
@@ -30,17 +31,26 @@ namespace MigSharp.Generate
             string migration = string.Empty;
             foreach (Table table in database.Tables)
             {
-                AppendLine(string.Format("db.CreateTable(\"{0}\")", table.Name), ref migration);
+                if (table.Name.StartsWith("__", StringComparison.Ordinal))
+                {
+                    // hide special tables such as the migration history table
+                    continue;
+                }
+
+                AppendLine(string.Format("{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
+                Column lastColumn = table.Columns.OfType<Column>().Last();
                 foreach (Column column in table.Columns)
                 {
                     try
                     {
                         string dbTypeExpression = GetDbTypeExpression(column);
-                        AppendLine(string.Format("\t.With{0}{1}NullableColumn(\"{2}\", {3})",
-                            column.InPrimaryKey ? "PrimaryKey" : string.Empty,
-                            column.Nullable ? string.Empty : "Not",
-                            column.Name, 
-                            dbTypeExpression), ref migration);
+                        string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
+                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}",
+                            Indent(1),
+                            columnKind,
+                            column.Name,
+                            dbTypeExpression,
+                            column == lastColumn ? ";" : string.Empty), ref migration);
                     }
                     catch (NotSupportedException x)
                     {
@@ -48,6 +58,12 @@ namespace MigSharp.Generate
                     }
                 }
             }
+            return migration;
+        }
+
+        private static string Indent(int count)
+        {
+            return new string('\t', count + 3);
         }
 
         private static void AppendLine(string line, ref string migration)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Globalization;
+using System.Windows.Forms;
 using MigSharp.Generate.Util;
 using System.Linq;
 
@@ -13,6 +14,7 @@ namespace MigSharp.Generate
         public const int InvalidTargetExitCode = 0x2;
         public const int UnsuccessfulExitCode = 0x3;
 
+        [STAThreadAttribute] // for setting the clipboard
         private static void Main()
         {
             CommandLineOptions commandLineOptions;
@@ -35,13 +37,16 @@ namespace MigSharp.Generate
                 throw; // will not be executed; just to satisfy R#
             }
             var generator = new SqlMigrationGenerator(connectionString);
-            generator.Generate();
+            string migration = generator.Generate();
             if (generator.Errors.Any())
             {
                 Console.Error.WriteLine("Following errors have occured:");
                 Console.Error.WriteLine(string.Join(Environment.NewLine, generator.Errors));
                 Environment.Exit(UnsuccessfulExitCode);
             }
+            
+            Clipboard.SetText(migration, TextDataFormat.UnicodeText);
+            Console.WriteLine("The generation of the migration was successful and is now available in your clipboard.");
         }
 
         internal static void ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings, out string connectionString)
