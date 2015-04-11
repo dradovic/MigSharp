@@ -31,9 +31,10 @@ namespace MigSharp.Generate
             string migration = string.Empty;
             foreach (Table table in database.Tables)
             {
-                if (table.Name.StartsWith("__", StringComparison.Ordinal))
+                if (table.Name.StartsWith("__", StringComparison.Ordinal) ||
+                    table.Name == "MigSharp")
                 {
-                    // hide special tables such as the migration history table
+                    // hide special tables such as the EF migration history table
                     continue;
                 }
 
@@ -45,11 +46,12 @@ namespace MigSharp.Generate
                     {
                         string dbTypeExpression = GetDbTypeExpression(column);
                         string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
-                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}",
+                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}",
                             Indent(1),
                             columnKind,
                             column.Name,
                             dbTypeExpression,
+                            GetOfSize(column),
                             column.Identity ? ".AsIdentity()" : string.Empty,
                             !string.IsNullOrEmpty(column.Default) ? ".HavingDefault(" + column.Default + ")" : string.Empty,
                             column == lastColumn ? ";" : string.Empty), ref migration);
@@ -61,6 +63,28 @@ namespace MigSharp.Generate
                 }
             }
             return migration;
+        }
+
+        private static string GetOfSize(Column column)
+        {
+            if (column.DataType.MaximumLength <= 0)
+            {
+                return string.Empty;
+            }
+            DbType dbType = Convert(column.DataType.SqlDataType);
+            if (dbType == DbType.String || dbType == DbType.AnsiString || dbType == DbType.StringFixedLength || dbType == DbType.AnsiStringFixedLength)
+            {
+                return string.Format(CultureInfo.InvariantCulture, ".OfSize({0})", column.DataType.MaximumLength);
+            }
+            if (dbType == DbType.Decimal)
+            {
+                return string.Format(CultureInfo.InvariantCulture, ".OfSize({0}, {1})", column.DataType.NumericPrecision, column.DataType.NumericScale);
+            }
+            if (dbType == DbType.DateTime2 && column.DataType.MaximumLength != 8)
+            {
+                return string.Format(CultureInfo.InvariantCulture, ".OfSize({0})", column.DataType.MaximumLength);
+            }
+            return string.Empty;
         }
 
         private static string Indent(int count)
@@ -90,8 +114,8 @@ namespace MigSharp.Generate
                     return DbType.Binary;
                 case SqlDataType.Bit:
                     return DbType.Boolean;
-                    //case SqlDataType.Char:
-                    //    break;
+                case SqlDataType.Char:
+                    return DbType.AnsiStringFixedLength;
                 case SqlDataType.DateTime:
                     return DbType.DateTime;
                 case SqlDataType.Decimal:
@@ -136,8 +160,8 @@ namespace MigSharp.Generate
                     //    break;
                 case SqlDataType.VarBinaryMax:
                     return DbType.Binary;
-                    //case SqlDataType.VarChar:
-                    //    break;
+                case SqlDataType.VarChar:
+                    return DbType.AnsiString;
                     //case SqlDataType.VarCharMax:
                     //    break;
                     //case SqlDataType.Variant:
