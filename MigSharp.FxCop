@@ -36,6 +36,17 @@
     </Module>
    </Modules>
   </Target>
+  <Target Name="$(ProjectDir)/bin/Release/Generate.exe" Analyze="True" AnalyzeAllChildren="False">
+   <Modules AnalyzeAllChildren="False">
+    <Module Name="generate.exe" Analyze="True" AnalyzeAllChildren="False">
+     <Namespaces AnalyzeAllChildren="False">
+      <Namespace Name="" Analyze="True" AnalyzeAllChildren="True" />
+      <Namespace Name="MigSharp.Generate" Analyze="True" AnalyzeAllChildren="True" />
+     </Namespaces>
+     <Resources AnalyzeAllChildren="True" />
+    </Module>
+   </Modules>
+  </Target>
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
    <Modules AnalyzeAllChildren="False">
     <Module Name="migsharp.dll" Analyze="True" AnalyzeAllChildren="False">

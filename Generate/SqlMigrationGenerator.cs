@@ -38,7 +38,7 @@ namespace MigSharp.Generate
                     continue;
                 }
 
-                AppendLine(string.Format("{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
+                AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
                 Column lastColumn = table.Columns.OfType<Column>().Last();
                 foreach (Column column in table.Columns)
                 {
@@ -58,7 +58,7 @@ namespace MigSharp.Generate
                     }
                     catch (NotSupportedException x)
                     {
-                        _errors.Add(string.Format("In table {0} for column {1}: {2}", table.Name, column.Name, x.Message));
+                        _errors.Add(string.Format(CultureInfo.CurrentCulture, "In table {0} for column {1}: {2}", table.Name, column.Name, x.Message));
                     }
                 }
             }
