@@ -35,6 +35,12 @@ namespace MigSharp.Generate
                     table.Name == "MigSharp")
                 {
                     // hide special tables such as the EF migration history table
+                    Console.WriteLine("Skipping [{0}]", table.Name);
+                    continue;
+                }
+                if (table.Schema != "dbo")
+                {
+                    Console.Error.WriteLine("WARNING: Skipping [{0}].[{1}] as non-dbo schemas are not supported yet.", table.Schema, table.Name);
                     continue;
                 }
 

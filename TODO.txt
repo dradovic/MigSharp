@@ -1,11 +1,10 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
-- add Generate to FxCop
-- try AppVeyor / CoverAlls.io
 Generate:
 	- set primarykey constraint name
 	- handle UNIQUE constraints
+	- support FKs
 - SQLite
 	- Add support for foreign keys (see https://github.com/dradovic/MigSharp/issues/2)
 	- update wiki and all referencing pages to include SQLite support
@@ -15,5 +14,6 @@ Generate:
 - fix all FIXME and NotImplementedException
 
 Nice-to-have/backlog:
+- try AppVeyor / CoverAlls.io
 - search for FEATURE
 - see Roadmap in GitHub Wiki
