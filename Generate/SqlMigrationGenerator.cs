@@ -112,6 +112,7 @@ namespace MigSharp.Generate
 
         private static DbType Convert(SqlDataType type)
         {
+            // see: https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx
             switch (type)
             {
                 case SqlDataType.BigInt:
