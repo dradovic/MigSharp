@@ -44,6 +44,10 @@ namespace MigSharp.Generate
                     continue;
                 }
 
+                if (table.Indexes.Cast<Index>().Any(i => i.IsUnique && i.IndexedColumns.Count != 1))
+                {
+                    Console.Error.WriteLine("WARNING: Table [{0}] has a unique index covering more than one column. This is not supported yet.", table.Name);
+                }
                 AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
                 Column lastColumn = table.Columns.OfType<Column>().Last();
                 foreach (Column column in table.Columns)
@@ -52,13 +56,14 @@ namespace MigSharp.Generate
                     {
                         string dbTypeExpression = GetDbTypeExpression(column);
                         string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
-                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}",
+                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}{8}",
                             Indent(1),
                             columnKind,
                             column.Name,
                             dbTypeExpression,
                             GetOfSize(column),
                             column.Identity ? ".AsIdentity()" : string.Empty,
+                            !column.InPrimaryKey && table.Indexes.Cast<Index>().Any(i => i.IsUnique && i.IndexedColumns.Count == 1 && i.IndexedColumns[0].Name == column.Name) ? ".Unique()" : string.Empty,
                             !string.IsNullOrEmpty(column.Default) ? ".HavingDefault(" + column.Default + ")" : string.Empty,
                             column == lastColumn ? ";" : string.Empty), ref migration);
                     }
