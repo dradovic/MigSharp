@@ -59,11 +59,29 @@ namespace MigSharp.Generate
             Column lastColumn = table.Columns.OfType<Column>().Last();
             foreach (Column column in table.Columns)
             {
-                HandleColumn(table, ref migration, column, column == lastColumn);
+                HandleColumn(table, column, column == lastColumn, ref migration);
+            }
+
+            foreach (Index index in table.Indexes)
+            {
+                HandleIndex(table, index, ref migration);
             }
         }
 
-        private void HandleColumn(Table table, ref string migration, Column column, bool isLastColumn)
+        private static void HandleIndex(Table table, Index index, ref string migration)
+        {
+            if (index.IndexKeyType == IndexKeyType.DriPrimaryKey || index.IsUnique) return; // handled in HandleColumn
+
+            string line = string.Format(CultureInfo.InvariantCulture, "{0}db.Tables[\"{1}\"].AddIndex()", Indent(0), table.Name);
+            foreach (IndexedColumn column in index.IndexedColumns)
+            {
+                line += string.Format(CultureInfo.InvariantCulture, ".OnColumn(\"{0}\")", column.Name);
+            }
+            line += ";";
+            AppendLine(line, ref migration);
+        }
+
+        private void HandleColumn(Table table, Column column, bool isLastColumn, ref string migration)
         {
             try
             {
