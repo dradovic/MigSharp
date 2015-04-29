@@ -44,40 +44,65 @@ namespace MigSharp.Generate
                     continue;
                 }
 
-                if (table.Indexes.Cast<Index>().Where(i => !i.Name.StartsWith("PK", StringComparison.OrdinalIgnoreCase)).Any(i => i.IsUnique && i.IndexedColumns.Count != 1))
+                migration = HandleTable(table, migration);
+            }
+            return migration;
+        }
+
+        private string HandleTable(Table table, string migration)
+        {
+            if (table.ForeignKeys.Count > 0)
+            {
+                Console.Error.WriteLine("WARNING: Table [{0}] has foreign keys. This is not supported yet.", table.Name);
+            }
+            AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
+            Column lastColumn = table.Columns.OfType<Column>().Last();
+            foreach (Column column in table.Columns)
+            {
+                try
                 {
-                    Console.Error.WriteLine("WARNING: Table [{0}] has a unique index covering more than one column. This is not supported yet.", table.Name);
+                    string dbTypeExpression = GetDbTypeExpression(column);
+                    string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
+                    string uniqueExpression = GetUniqueExpression(table, column);
+                    AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}{8}",
+                        Indent(1),
+                        columnKind,
+                        column.Name,
+                        dbTypeExpression,
+                        GetOfSize(column),
+                        column.Identity ? ".AsIdentity()" : string.Empty,
+                        uniqueExpression,
+                        !string.IsNullOrEmpty(column.Default) ? ".HavingDefault(" + column.Default + ")" : string.Empty,
+                        column == lastColumn ? ";" : string.Empty), ref migration);
                 }
-                if (table.ForeignKeys.Count > 0)
+                catch (NotSupportedException x)
                 {
-                    Console.Error.WriteLine("WARNING: Table [{0}] has foreign keys. This is not supported yet.", table.Name);                    
-                }
-                AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
-                Column lastColumn = table.Columns.OfType<Column>().Last();
-                foreach (Column column in table.Columns)
-                {
-                    try
-                    {
-                        string dbTypeExpression = GetDbTypeExpression(column);
-                        string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
-                        AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}{8}",
-                            Indent(1),
-                            columnKind,
-                            column.Name,
-                            dbTypeExpression,
-                            GetOfSize(column),
-                            column.Identity ? ".AsIdentity()" : string.Empty,
-                            !column.InPrimaryKey && table.Indexes.Cast<Index>().Any(i => i.IsUnique && i.IndexedColumns.Count == 1 && i.IndexedColumns[0].Name == column.Name) ? ".Unique()" : string.Empty,
-                            !string.IsNullOrEmpty(column.Default) ? ".HavingDefault(" + column.Default + ")" : string.Empty,
-                            column == lastColumn ? ";" : string.Empty), ref migration);
-                    }
-                    catch (NotSupportedException x)
-                    {
-                        _errors.Add(string.Format(CultureInfo.CurrentCulture, "In table {0} for column {1}: {2}", table.Name, column.Name, x.Message));
-                    }
+                    _errors.Add(string.Format(CultureInfo.CurrentCulture, "In table {0} for column {1}: {2}", table.Name, column.Name, x.Message));
                 }
             }
             return migration;
+        }
+
+        private static string GetUniqueExpression(Table table, Column column)
+        {
+            if (column.InPrimaryKey) return string.Empty;
+
+            Index uniqueIndex = FindUniqueIndex(table, column);
+            if (uniqueIndex == null) return string.Empty;
+
+            if (uniqueIndex.IndexedColumns.Count == 1)
+            {
+                return ".Unique()"; // no unique constraint name required
+            }
+            else
+            {
+                return string.Format(".Unique(\"{0}\")", uniqueIndex.Name);
+            }
+        }
+
+        private static Index FindUniqueIndex(Table table, Column column)
+        {
+            return table.Indexes.Cast<Index>().SingleOrDefault(i => i.IsUnique && i.IndexedColumns.Cast<IndexedColumn>().Any(c => c.Name == column.Name));
         }
 
         private static string GetOfSize(Column column)
