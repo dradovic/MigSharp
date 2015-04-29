@@ -44,9 +44,13 @@ namespace MigSharp.Generate
                     continue;
                 }
 
-                if (table.Indexes.Cast<Index>().Any(i => i.IsUnique && i.IndexedColumns.Count != 1))
+                if (table.Indexes.Cast<Index>().Where(i => !i.Name.StartsWith("PK", StringComparison.OrdinalIgnoreCase)).Any(i => i.IsUnique && i.IndexedColumns.Count != 1))
                 {
                     Console.Error.WriteLine("WARNING: Table [{0}] has a unique index covering more than one column. This is not supported yet.", table.Name);
+                }
+                if (table.ForeignKeys.Count > 0)
+                {
+                    Console.Error.WriteLine("WARNING: Table [{0}] has foreign keys. This is not supported yet.", table.Name);                    
                 }
                 AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
                 Column lastColumn = table.Columns.OfType<Column>().Last();

@@ -2,6 +2,8 @@ This file contains global TODOs for the next release that are not in the source 
 ====================================================================================
 
 Generate:
+	- handle multi-column unique constraints
+	- find a better way to determine if an INDEX is a PK
 	- set primarykey constraint name
 	- support FKs
 - SQLite
