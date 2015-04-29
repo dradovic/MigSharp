@@ -62,9 +62,31 @@ namespace MigSharp.Generate
                 HandleColumn(table, column, column == lastColumn, ref migration);
             }
 
+            foreach (ForeignKey foreignKey in table.ForeignKeys)
+            {
+                HandleForeignKey(table, foreignKey, ref migration);
+            }
             foreach (Index index in table.Indexes)
             {
                 HandleIndex(table, index, ref migration);
+            }
+            AppendLine(string.Empty, ref migration);
+        }
+
+        private static void HandleForeignKey(Table table, ForeignKey foreignKey, ref string migration)
+        {
+            AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.Tables[\"{1}\"].AddForeignKeyTo(\"{2}\")",
+                Indent(0),
+                table.Name,
+                foreignKey.ReferencedTable), ref migration);
+            ForeignKeyColumn lastColumn = foreignKey.Columns.Cast<ForeignKeyColumn>().Last();
+            foreach (ForeignKeyColumn column in foreignKey.Columns)
+            {
+                AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.Through(\"{1}\", \"{2}\"){3}",
+                    Indent(1),
+                    column.Name,
+                    column.ReferencedColumn,
+                    column == lastColumn ? ";" : string.Empty), ref migration);
             }
         }
 
