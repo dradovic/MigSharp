@@ -44,12 +44,12 @@ namespace MigSharp.Generate
                     continue;
                 }
 
-                migration = HandleTable(table, migration);
+                HandleTable(table, ref migration);
             }
             return migration;
         }
 
-        private string HandleTable(Table table, string migration)
+        private void HandleTable(Table table, ref string migration)
         {
             if (table.ForeignKeys.Count > 0)
             {
@@ -59,28 +59,32 @@ namespace MigSharp.Generate
             Column lastColumn = table.Columns.OfType<Column>().Last();
             foreach (Column column in table.Columns)
             {
-                try
-                {
-                    string dbTypeExpression = GetDbTypeExpression(column);
-                    string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
-                    string uniqueExpression = GetUniqueExpression(table, column);
-                    AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}{8}",
-                        Indent(1),
-                        columnKind,
-                        column.Name,
-                        dbTypeExpression,
-                        GetOfSize(column),
-                        column.Identity ? ".AsIdentity()" : string.Empty,
-                        uniqueExpression,
-                        !string.IsNullOrEmpty(column.Default) ? ".HavingDefault(" + column.Default + ")" : string.Empty,
-                        column == lastColumn ? ";" : string.Empty), ref migration);
-                }
-                catch (NotSupportedException x)
-                {
-                    _errors.Add(string.Format(CultureInfo.CurrentCulture, "In table {0} for column {1}: {2}", table.Name, column.Name, x.Message));
-                }
+                HandleColumn(table, ref migration, column, column == lastColumn);
             }
-            return migration;
+        }
+
+        private void HandleColumn(Table table, ref string migration, Column column, bool isLastColumn)
+        {
+            try
+            {
+                string dbTypeExpression = GetDbTypeExpression(column);
+                string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
+                string uniqueExpression = GetUniqueExpression(table, column);
+                AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}{8}",
+                    Indent(1),
+                    columnKind,
+                    column.Name,
+                    dbTypeExpression,
+                    GetOfSize(column),
+                    column.Identity ? ".AsIdentity()" : string.Empty,
+                    uniqueExpression,
+                    !string.IsNullOrEmpty(column.Default) ? ".HavingDefault(" + column.Default + ")" : string.Empty,
+                    isLastColumn ? ";" : string.Empty), ref migration);
+            }
+            catch (NotSupportedException x)
+            {
+                _errors.Add(string.Format(CultureInfo.CurrentCulture, "In table {0} for column {1}: {2}", table.Name, column.Name, x.Message));
+            }
         }
 
         private static string GetUniqueExpression(Table table, Column column)

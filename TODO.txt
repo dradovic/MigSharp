@@ -2,11 +2,7 @@ This file contains global TODOs for the next release that are not in the source 
 ====================================================================================
 
 Generate:
-	- handle indexes
-	- handle multi-column unique constraints
-	- find a better way to determine if an INDEX is a PK
-	- set primarykey constraint name
-	- support FKs
+	- support Indexes/FKs
 - SQLite
 	- Add support for foreign keys (see https://github.com/dradovic/MigSharp/issues/2)
 	- update wiki and all referencing pages to include SQLite support
