@@ -140,7 +140,7 @@ namespace MigSharp.Generate
             }
             else
             {
-                return string.Format(".Unique(\"{0}\")", uniqueIndex.Name);
+                return string.Format(CultureInfo.InvariantCulture, ".Unique(\"{0}\")", uniqueIndex.Name);
             }
         }
 

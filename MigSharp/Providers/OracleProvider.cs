@@ -45,6 +45,11 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
+            if (columns.Any(c => c.IsRowVersion))
+            {
+                throw new NotSupportedException("Oracle does not have a unique auto-increment row-version concept. Instead, create the table with the ROWDEPENDENCIES hind and query for ORA_ROWSCN."); // see: http://stackoverflow.com/questions/20487657/sql-server-rowversion-equivalent-in-oracle
+            }
+
             string commandText = string.Empty;
             string identityColumn = string.Empty;
             var primaryKeyColumns = new List<string>();

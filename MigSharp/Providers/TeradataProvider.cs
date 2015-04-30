@@ -49,6 +49,11 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
+            if (columns.Any(c => c.IsRowVersion))
+            {
+                throw new NotSupportedException("Teradata does not have a unique auto-increment row-version concept.");
+            }
+
             string commandText = string.Empty;
             var primaryKeyColumns = new List<string>();
             commandText += string.Format(@"{0}({1}", CreateTable(tableName), Environment.NewLine);

@@ -47,6 +47,11 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
+            if (columns.Any(c => c.IsRowVersion))
+            {
+                throw new NotSupportedException("SQLite does not have a unique auto-increment row-version concept. As a workaround, you can define the column as DATETIME DEFAULT CURRENT_TIMESTAMP."); // see: http://stackoverflow.com/questions/14461851/how-to-have-an-automatic-timestamp-in-sqlite
+            }
+
             yield return string.Format(CultureInfo.InvariantCulture, @"CREATE TABLE ""{0}"" ({1}{2}{1})",
                 tableName,
                 Environment.NewLine,

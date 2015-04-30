@@ -9,10 +9,7 @@ namespace MigSharp.NUnit.Integration
     {
         public void Up(IDatabase db)
         {
-            bool rowVersionColumnIsSupported = true; // db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 &&
-            //db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 &&
-            //db.Context.ProviderMetadata.Name != ProviderNames.Teradata &&
-            //db.Context.ProviderMetadata.Name != ProviderNames.TeradataOdbc;
+            bool rowVersionColumnIsSupported = db.Context.ProviderMetadata.Name.StartsWith("SqlServer", StringComparison.Ordinal); 
             if (!rowVersionColumnIsSupported)
             {
                 return;
@@ -25,8 +22,6 @@ namespace MigSharp.NUnit.Integration
 
             db.Execute(context =>
                 {
-                    //if (IntegrationTestContext.IsScripting) return;
-
                     IDbCommand command = context.Connection.CreateCommand();
                     command.Transaction = context.Transaction;
 
