@@ -28,7 +28,7 @@ namespace MigSharp.Generate
             string connectionString;
             try
             {
-                ParseCommandLineArguments(commandLineOptions, parser, ConfigurationManager.ConnectionStrings, out connectionString);
+                ParseCommandLineArguments(parser, ConfigurationManager.ConnectionStrings, out connectionString);
             }
             catch (InvalidCommandLineArgumentException x)
             {
@@ -49,7 +49,7 @@ namespace MigSharp.Generate
             Console.WriteLine("The generation of the migration was successful and is now available in your clipboard.");
         }
 
-        internal static void ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings, out string connectionString)
+        internal static void ParseCommandLineArguments(CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings, out string connectionString)
         {
             if (parser.Parameters.Length < 1 || // expect at least the target
                 parser.UnhandledSwitches.Length > 0)
@@ -87,9 +87,8 @@ namespace MigSharp.Generate
 
         private static string GetUsageMessage(CommandLineParser parser)
         {
-            string usage = "Migrate.exe <target> <assembly> [..<assembly>] [<Arguments>]" + Environment.NewLine + Environment.NewLine +
+            string usage = "Migrate.exe <target> [<Arguments>]" + Environment.NewLine + Environment.NewLine +
                            "target:     name of the connectionString as specified in Migrate.exe.config" + Environment.NewLine +
-                           "assembly:   space separated path(s) to the assembly dll(s) containing the migrations to execute" + Environment.NewLine +
                            Environment.NewLine + parser.GetUsage();
             return string.Format(CultureInfo.CurrentCulture, "Usage:{0}{1}", Environment.NewLine, usage);
         }
