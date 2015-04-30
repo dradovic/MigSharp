@@ -37,7 +37,8 @@ namespace MigSharp.Core.Commands
                                                      c.IsPrimaryKey,
                                                      GetEffectiveUniqueConstraintName(c),
                                                      c.IsIdentity,
-                                                     c.DefaultValue)),
+                                                     c.DefaultValue,
+                                                     c.IsRowVersion)),
                 effectivePkConstraintName);
         }
 

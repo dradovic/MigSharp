@@ -69,8 +69,12 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {1}.{0}", Escape(indexName), Escape(tableName));
         }
 
-        protected override string GetTypeSpecifier(DataType type)
+        protected override string GetTypeSpecifier(DataType type, bool isRowVersion)
         {
+            if (isRowVersion)
+            {
+                return "[rowversion]";
+            }
             switch (type.DbType)
             {
                 case DbType.Binary:

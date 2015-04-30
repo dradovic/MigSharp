@@ -35,7 +35,7 @@ namespace MigSharp.NUnit.Providers
         public void VerifyNewObjectNamesAreRecorded()
         {
             var provider = new RecordingProvider();
-            provider.CreateTable("Table", new[] { new CreatedColumn("Column", new DataType(DbType.Boolean), false, true, string.Empty, false, null) }, "MyPK").ToList();
+            provider.CreateTable("Table", new[] { new CreatedColumn("Column", new DataType(DbType.Boolean), false, true, string.Empty, false, null, false) }, "MyPK").ToList();
             CollectionAssert.AreEquivalent(new[] { "Table", "Column", "MyPK" }, provider.NewObjectNames.ToList());
         }
 
@@ -45,9 +45,9 @@ namespace MigSharp.NUnit.Providers
             var provider = new RecordingProvider();
             provider.CreateTable("Table", new[]
             {
-                new CreatedColumn("Primary Key Column", new DataType(DbType.Int32), false, true, string.Empty, false, null),
-                new CreatedColumn("Identity Column", new DataType(DbType.Int64), false, false, string.Empty, true, null),
-                new CreatedColumn("Column", new DataType(DbType.String, 10), false, false, string.Empty, false, null),
+                new CreatedColumn("Primary Key Column", new DataType(DbType.Int32), false, true, string.Empty, false, null, false),
+                new CreatedColumn("Identity Column", new DataType(DbType.Int64), false, false, string.Empty, true, null, false),
+                new CreatedColumn("Column", new DataType(DbType.String, 10), false, false, string.Empty, false, null, false),
             }, "MyPK").ToList();
             CollectionAssert.AreEquivalent(new[]
             {

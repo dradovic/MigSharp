@@ -45,7 +45,7 @@ namespace MigSharp.Providers
                 commandText += string.Format(CultureInfo.InvariantCulture, "{0}{1} {2} {3}{4}NULL{5}",
                     Identation,
                     Escape(column.Name),
-                    GetTypeSpecifier(column.DataType),
+                    GetTypeSpecifier(column.DataType, column.IsRowVersion),
                     column.IsIdentity ? "IDENTITY " : string.Empty,
                     column.IsNullable ? string.Empty : "NOT ",
                     defaultConstraintClause);
@@ -121,7 +121,7 @@ namespace MigSharp.Providers
             string defaultConstraintClause = GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue);
             commandText += string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}NULL{3}",
                 Escape(column.Name),
-                GetTypeSpecifier(column.DataType),
+                GetTypeSpecifier(column.DataType, false),
                 column.IsNullable ? string.Empty : "NOT ",
                 defaultConstraintClause);
             yield return commandText;
@@ -187,7 +187,7 @@ namespace MigSharp.Providers
             }
             yield return AlterTable(tableName) + string.Format(CultureInfo.InvariantCulture, " ALTER COLUMN [{0}] {1} {2}NULL",
                 column.Name,
-                GetTypeSpecifier(column.DataType),
+                GetTypeSpecifier(column.DataType, false),
                 column.IsNullable ? string.Empty : "NOT ");
             if (column.DefaultValue != null)
             {
@@ -283,6 +283,6 @@ namespace MigSharp.Providers
             return string.Format(CultureInfo.InvariantCulture, "[{0}]", name);
         }
 
-        protected abstract string GetTypeSpecifier(DataType dataType);
+        protected abstract string GetTypeSpecifier(DataType dataType, bool isRowVersion);
     }
 }

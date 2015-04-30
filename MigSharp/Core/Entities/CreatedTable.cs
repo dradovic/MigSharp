@@ -18,19 +18,25 @@ namespace MigSharp.Core.Entities
 
         ICreatedTableWithAddedColumn ICreatedTableBase.WithPrimaryKeyColumn(string columnName, DbType type)
         {
-            _command.Add(new CreateColumnCommand(_command, columnName, type, false, true));
+            _command.Add(new CreateColumnCommand(_command, columnName, type, false, true, false));
             return this;
         }
 
         ICreatedTableWithAddedColumn ICreatedTableBase.WithNotNullableColumn(string columnName, DbType type)
         {
-            _command.Add(new CreateColumnCommand(_command, columnName, type, false, false));
+            _command.Add(new CreateColumnCommand(_command, columnName, type, false, false, false));
             return this;
         }
 
         ICreatedTableWithAddedColumn ICreatedTableBase.WithNullableColumn(string columnName, DbType type)
         {
-            _command.Add(new CreateColumnCommand(_command, columnName, type, true, false));
+            _command.Add(new CreateColumnCommand(_command, columnName, type, true, false, false));
+            return this;
+        }
+
+        ICreatedTableWithAddedColumn ICreatedTableBase.WithRowVersionColumn(string columnName)
+        {
+            _command.Add(new CreateColumnCommand(_command, columnName, DbType.Binary, false, false, true));
             return this;
         }
 

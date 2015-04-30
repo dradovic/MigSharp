@@ -77,8 +77,12 @@ namespace MigSharp.Providers
         }
 
         // see: http://msdn.microsoft.com/en-us/library/cc716729.aspx
-        protected override string GetTypeSpecifier(DataType type)
+        protected override string GetTypeSpecifier(DataType type, bool isRowVersion)
         {
+            if (isRowVersion)
+            {
+                return "[rowversion]";
+            }
             switch (type.DbType)
             {
                 case DbType.AnsiString:

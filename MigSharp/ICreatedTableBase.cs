@@ -26,5 +26,8 @@ namespace MigSharp
         /// Adds a nullable column to the table being created.
         /// </summary>
         ICreatedTableWithAddedColumn WithNullableColumn(string columnName, DbType type);
+
+        ICreatedTableWithAddedColumn WithRowVersionColumn(string columnName);
+
     }
 }
