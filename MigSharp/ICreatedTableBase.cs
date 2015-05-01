@@ -27,6 +27,9 @@ namespace MigSharp
         /// </summary>
         ICreatedTableWithAddedColumn WithNullableColumn(string columnName, DbType type);
 
+        /// <summary>
+        /// Adds a row-version column. ATTENTION: this feature is only supported by SQL Server and SQL Server CE.
+        /// </summary>
         ICreatedTableWithAddedColumn WithRowVersionColumn(string columnName);
 
     }
