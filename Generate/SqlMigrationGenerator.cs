@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.SqlServer.Management.Smo;
@@ -107,15 +108,16 @@ namespace MigSharp.Generate
         {
             try
             {
-                string dbTypeExpression = GetDbTypeExpression(column);
-                string columnKind = column.InPrimaryKey ? "PrimaryKey" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not");
+                bool isRowVersionColumn = column.DataType.SqlDataType == SqlDataType.Timestamp;
+                string columnKind = column.InPrimaryKey ? "PrimaryKey" :
+                    (isRowVersionColumn ? "RowVersion" : string.Format(CultureInfo.InvariantCulture, "{0}Nullable", column.Nullable ? string.Empty : "Not"));
                 string uniqueExpression = GetUniqueExpression(table, column);
-                AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\", {3}){4}{5}{6}{7}{8}",
+                AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}.With{1}Column(\"{2}\"{3}){4}{5}{6}{7}{8}",
                     Indent(1),
                     columnKind,
                     column.Name,
-                    dbTypeExpression,
-                    GetOfSize(column),
+                    isRowVersionColumn ? string.Empty : ", " + GetDbTypeExpression(column),
+                    isRowVersionColumn ? string.Empty : GetOfSize(column),
                     column.Identity ? ".AsIdentity()" : string.Empty,
                     uniqueExpression,
                     !string.IsNullOrEmpty(column.Default) ? ".HavingDefault(" + column.Default + ")" : string.Empty,
@@ -190,6 +192,8 @@ namespace MigSharp.Generate
 
         private static DbType Convert(SqlDataType type)
         {
+            Debug.Assert(type != SqlDataType.Timestamp, "This case is handled elsewhere as RowVersion column.");
+
             // see: https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx
             switch (type)
             {
@@ -230,8 +234,6 @@ namespace MigSharp.Generate
                     //case SqlDataType.SmallMoney:
                     //    break;
                     //case SqlDataType.Text:
-                    //    break;
-                    //case SqlDataType.Timestamp:
                     //    break;
                 case SqlDataType.TinyInt:
                     return DbType.Byte;
