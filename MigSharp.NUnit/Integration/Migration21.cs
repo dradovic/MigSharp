@@ -32,7 +32,7 @@ namespace MigSharp.NUnit.Integration
                   .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
                   .WithNotNullableColumn("Version", DbType.Int64)
                   .WithNotNullableColumn("Content", DbType.String).OfSize(255);
-                db.Tables["Mig21b"].AddNotNullableColumn("Version", DbType.Int64);
+                db.Tables["Mig21b"].AddNotNullableColumn("Version", DbType.Int64).HavingDefault(1L);
             }
 
             db.Execute(context =>
