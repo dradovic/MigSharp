@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Write database migrations in your favorite .NET language and let Mig# generate the platform-dependent SQL code and update your schema. Features: fluent interface, automatic versioning, multi-module support, scripting to SQL files, validation framework for portability issues, suport for SQL Server, Oracle, Teradata, SQLite, legacy integration</description>
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
-    <tags>migration database platform agnostic fluent schema versioning sql server generator oracle teradata sqlite</tags>
+    <tags>mig# migsharp migration database platform agnostic fluent schema versioning sql server generator oracle teradata sqlite</tags>
     <releaseNotes>
 2.3.1
 - added support for row-version columns (new .WithRowVersionColumn(columnName) method)
@@ -83,4 +83,18 @@ BUG FIXES:
 Note: Mig# uses "Semantic Versioning" http://semver.org/ (by Tom Preston-Werner)
     </releaseNotes>
   </metadata>
+  <files>
+    <file src="..\bin\Release35\MigSharp.dll" target="lib\net35" />
+    <file src="..\bin\Release35\MigSharp.xml" target="lib\net35" />
+    <file src="..\bin\Release40\MigSharp.dll" target="lib\net40" />
+    <file src="..\bin\Release40\MigSharp.xml" target="lib\net40" />
+    <file src="..\bin\Release35\Migrate.exe" target="tools\net35" />
+    <file src="..\bin\Release35\Migrate.exe.config" target="tools\net35" />
+    <file src="..\bin\Release40\Migrate.exe" target="tools\net40" />
+    <file src="..\bin\Release40\Migrate.exe.config" target="tools\net40" />
+    <file src="..\bin\Release35\Generate.exe" target="tools\net35" />
+    <file src="..\bin\Release35\Generate.exe.config" target="tools\net35" />
+    <file src="..\bin\Release40\Generate.exe" target="tools\net40" />
+    <file src="..\bin\Release40\Generate.exe.config" target="tools\net40" />
+  </files>
 </package>
