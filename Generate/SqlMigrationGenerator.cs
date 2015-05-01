@@ -13,13 +13,15 @@ namespace MigSharp.Generate
     internal class SqlMigrationGenerator
     {
         private readonly string _connectionString;
+        private readonly string[] _excludedTables;
         private readonly List<string> _errors = new List<string>();
 
         public ReadOnlyCollection<string> Errors { get { return new ReadOnlyCollection<string>(_errors); } }
 
-        public SqlMigrationGenerator(string connectionString)
+        public SqlMigrationGenerator(string connectionString, string[] excludedTables)
         {
             _connectionString = connectionString;
+            _excludedTables = excludedTables;
         }
 
         public string Generate()
@@ -32,7 +34,8 @@ namespace MigSharp.Generate
             string migration = string.Empty;
             foreach (Table table in database.Tables)
             {
-                if (table.Name.StartsWith("__", StringComparison.Ordinal) ||
+                if (_excludedTables.Contains(table.Name) ||
+                    table.Name.StartsWith("__", StringComparison.Ordinal) ||
                     table.Name == "MigSharp")
                 {
                     // hide special tables such as the EF migration history table

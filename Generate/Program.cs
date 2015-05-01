@@ -17,18 +17,19 @@ namespace MigSharp.Generate
         [STAThreadAttribute] // for setting the clipboard
         private static void Main()
         {
-            CommandLineOptions commandLineOptions;
+            CommandLineOptions options;
             CommandLineParser parser;
-            if (DisplayHelp(Environment.CommandLine, out commandLineOptions, out parser))
+            if (DisplayHelp(Environment.CommandLine, out options, out parser))
             {
                 Console.WriteLine(GetUsageMessage(parser));
                 Environment.Exit(SuccessExitCode);
             }
 
             string connectionString;
+            string[] excludedTables;
             try
             {
-                ParseCommandLineArguments(parser, ConfigurationManager.ConnectionStrings, out connectionString);
+                ParseCommandLineArguments(options, parser, ConfigurationManager.ConnectionStrings, out connectionString, out excludedTables);
             }
             catch (InvalidCommandLineArgumentException x)
             {
@@ -36,7 +37,7 @@ namespace MigSharp.Generate
                 Environment.Exit(x.ExitCode);
                 throw; // will not be executed; just to satisfy R#
             }
-            var generator = new SqlMigrationGenerator(connectionString);
+            var generator = new SqlMigrationGenerator(connectionString, excludedTables);
             string migration = generator.Generate();
             if (generator.Errors.Any())
             {
@@ -49,7 +50,7 @@ namespace MigSharp.Generate
             Console.WriteLine("The generation of the migration was successful and is now available in your clipboard.");
         }
 
-        internal static void ParseCommandLineArguments(CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings, out string connectionString)
+        internal static void ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings, out string connectionString, out string[] excludedTables)
         {
             if (parser.Parameters.Length < 1 || // expect at least the target
                 parser.UnhandledSwitches.Length > 0)
@@ -74,6 +75,9 @@ namespace MigSharp.Generate
                     "Empty target: '{0}'. The entry in the configuration file is empty.", target),
                     InvalidTargetExitCode);
             }
+
+            // additional parameters
+            excludedTables = (options.Exclude ?? string.Empty).Split(',');
         }
 
         private static bool DisplayHelp(string commandLine, out CommandLineOptions options, out CommandLineParser parser)
@@ -88,7 +92,7 @@ namespace MigSharp.Generate
         private static string GetUsageMessage(CommandLineParser parser)
         {
             string usage = "Migrate.exe <target> [<Arguments>]" + Environment.NewLine + Environment.NewLine +
-                           "target:     name of the connectionString as specified in Migrate.exe.config" + Environment.NewLine +
+                           "target:     name of the connectionString as specified in Generate.exe.config" + Environment.NewLine +
                            Environment.NewLine + parser.GetUsage();
             return string.Format(CultureInfo.CurrentCulture, "Usage:{0}{1}", Environment.NewLine, usage);
         }
