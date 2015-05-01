@@ -51,7 +51,7 @@ namespace MigSharp.Providers
         {
             if (columns.Any(c => c.IsRowVersion))
             {
-                throw new NotSupportedException("Teradata does not have a unique auto-increment row-version concept.");
+                ThrowRowVersionNotSupportedException();
             }
 
             string commandText = string.Empty;
@@ -116,6 +116,11 @@ namespace MigSharp.Providers
             yield return commandText;
         }
 
+        private static void ThrowRowVersionNotSupportedException()
+        {
+            throw new NotSupportedException("Teradata does not have a unique auto-increment row-version concept.");
+        }
+
         public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
         {
             if (checkIfExists)
@@ -133,6 +138,11 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> AddColumn(string tableName, Column column)
         {
+            if (column.IsRowVersion)
+            {
+                ThrowRowVersionNotSupportedException();
+            }
+
             // assemble ALTER TABLE statements
             string commandText = string.Format(@"{0} ADD ", AlterTable(tableName));
             commandText += GetColumnString(column, false);

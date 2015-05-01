@@ -70,6 +70,11 @@ namespace MigSharp
         /// </summary>
         /// <param name="constraintName">Optionally, the name of the unique constraint. If null or empty, a default name will be generated.</param>
         IAddedUniqueConstraint AddUniqueConstraint(string constraintName);
+
+        /// <summary>
+        /// Adds a row-version column. ATTENTION: this feature is only supported by SQL Server and SQL Server CE.
+        /// </summary>
+        void AddRowVersionColumn(string columnName);
     }
 
     /// <summary>

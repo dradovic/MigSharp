@@ -1,8 +1,4 @@
-﻿using System.Data;
-
-using MigSharp.Core;
-
-namespace MigSharp.Providers
+﻿namespace MigSharp.Providers
 {
     public class Column
     {
@@ -10,19 +6,22 @@ namespace MigSharp.Providers
         private readonly DataType _dataType;
         private readonly bool _isNullable;
         private readonly object _defaultValue;
+        private readonly bool _isRowVersion;
 
         public string Name { get { return _name; } }
         public DataType DataType { get { return _dataType; } }
 
         public bool IsNullable { get { return _isNullable; } }
         public object DefaultValue { get { return _defaultValue; } }
+        public bool IsRowVersion { get { return _isRowVersion; } }
 
-        public Column(string name, DataType dataType, bool isNullable, object defaultValue)
+        public Column(string name, DataType dataType, bool isNullable, object defaultValue, bool isRowVersion)
         {
             _name = name;
             _dataType = dataType;
             _isNullable = isNullable;
             _defaultValue = defaultValue;
+            _isRowVersion = isRowVersion;
         }
     }
 }

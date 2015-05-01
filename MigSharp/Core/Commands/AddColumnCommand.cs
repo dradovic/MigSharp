@@ -12,10 +12,12 @@ namespace MigSharp.Core.Commands
         private readonly string _columnName;
         private readonly DbType _type;
         private readonly bool _isNullable;
+        private readonly bool _isRowVersion;
 
         public string ColumnName { get { return _columnName; } }
         public DbType Type { get { return _type; } }
         public bool IsNullable { get { return _isNullable; } }
+        public bool IsRowVersion { get { return _isRowVersion; } }
 
         public object DefaultValue { get; set; }
         public bool DropThereafter { get; set; }
@@ -24,12 +26,13 @@ namespace MigSharp.Core.Commands
 
         public new AlterTableCommand Parent { get { return (AlterTableCommand)base.Parent; } }
 
-        public AddColumnCommand(AlterTableCommand parent, string columnName, DbType type, bool isNullable)
+        public AddColumnCommand(AlterTableCommand parent, string columnName, DbType type, bool isNullable, bool isRowVersion)
             : base(parent)
         {
             _columnName = columnName;
             _type = type;
             _isNullable = isNullable;
+            _isRowVersion = isRowVersion;
         }
 
         public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
@@ -39,11 +42,8 @@ namespace MigSharp.Core.Commands
                 throw new InvalidCommandException("Adding nullable columns with default values is not supported: some database platforms (like SQL Server) leave missing values NULL and some update missing values to the default value. Consider adding the column first as not-nullable, and then altering it to nullable.");
             }
             string tableName = Parent.TableName;
-            var column = new Column(
-                ColumnName,
-                new DataType(Type, Size, Scale),
-                IsNullable,
-                DefaultValue);
+            var dataType = new DataType(Type, Size, Scale);
+            var column = new Column(ColumnName, dataType, IsNullable, DefaultValue, IsRowVersion);
             IEnumerable<string> commands = provider.AddColumn(tableName, column);
             if (DropThereafter)
             {
@@ -51,7 +51,7 @@ namespace MigSharp.Core.Commands
                     column.Name,
                     column.DataType,
                     column.IsNullable,
-                    null)));
+                    null, false)));
             }
             return commands;
         }

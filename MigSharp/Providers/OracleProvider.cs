@@ -47,7 +47,7 @@ namespace MigSharp.Providers
         {
             if (columns.Any(c => c.IsRowVersion))
             {
-                throw new NotSupportedException("Oracle does not have a unique auto-increment row-version concept. Instead, create the table with the ROWDEPENDENCIES hind and query for ORA_ROWSCN."); // see: http://stackoverflow.com/questions/20487657/sql-server-rowversion-equivalent-in-oracle
+                ThrowRowVersionNotSupportedException();
             }
 
             string commandText = string.Empty;
@@ -127,6 +127,11 @@ namespace MigSharp.Providers
             }
 
             return comands;
+        }
+
+        private static void ThrowRowVersionNotSupportedException()
+        {
+            throw new NotSupportedException("Oracle does not have a unique auto-increment row-version concept. Instead, create the table with the ROWDEPENDENCIES hind and query for ORA_ROWSCN."); // see: http://stackoverflow.com/questions/20487657/sql-server-rowversion-equivalent-in-oracle
         }
 
         private static string CreateTrigger(string tableName, string identityColumn, string sequenceName)
@@ -217,6 +222,11 @@ END;", Escape(tableName));
 
         public IEnumerable<string> AddColumn(string tableName, Column column)
         {
+            if (column.IsRowVersion)
+            {
+                ThrowRowVersionNotSupportedException();
+            }
+
             // assemble ALTER TABLE statements
             string commandText = string.Format(CultureInfo.InvariantCulture, @"{0} ADD ", AlterTable(tableName));
             commandText += GetColumnString(column);

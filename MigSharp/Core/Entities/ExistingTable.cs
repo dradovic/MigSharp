@@ -132,15 +132,21 @@ namespace MigSharp.Core.Entities
             return new AddedUniqueConstraint(command);
         }
 
+        public void AddRowVersionColumn(string columnName)
+        {
+            var command = new AddColumnCommand(_command, columnName, DbType.Binary, false, true);
+            _command.Add(command);
+        }
+
         IExistingTableWithAddedColumn IExistingTableBase.AddNotNullableColumn(string name, DbType type)
         {
-            _command.Add(new AddColumnCommand(_command, name, type, false));
+            _command.Add(new AddColumnCommand(_command, name, type, false, false));
             return this;
         }
 
         IExistingTableWithAddedColumn IExistingTableBase.AddNullableColumn(string name, DbType type)
         {
-            _command.Add(new AddColumnCommand(_command, name, type, true));
+            _command.Add(new AddColumnCommand(_command, name, type, true, false));
             return this;
         }
 

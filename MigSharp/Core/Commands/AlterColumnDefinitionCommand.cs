@@ -25,11 +25,9 @@ namespace MigSharp.Core.Commands
 
         public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
         {
-            return provider.AlterColumn(Parent.Parent.TableName, new Column(
-                Parent.ColumnName, 
-                new DataType(_type, Size, Scale), 
-                _isNullable,
-                DefaultValue));
+            var dataType = new DataType(_type, Size, Scale);
+            var column = new Column(Parent.ColumnName, dataType, _isNullable, DefaultValue, false);
+            return provider.AlterColumn(Parent.Parent.TableName, column);
         }
     }
 }

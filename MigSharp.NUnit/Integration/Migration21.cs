@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Globalization;
 using NUnit.Framework;
 
 namespace MigSharp.NUnit.Integration
@@ -13,19 +14,25 @@ namespace MigSharp.NUnit.Integration
         {
             _rowVersionColumnIsSupported = db.Context.ProviderMetadata.Name.StartsWith("SqlServer", StringComparison.Ordinal);
 
+            db.CreateTable("Mig21b")
+                  .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
+                  .WithNotNullableColumn("Content", DbType.String).OfSize(255);
+
             if (_rowVersionColumnIsSupported)
             {
-                db.CreateTable("Mig21")
+                db.CreateTable("Mig21a")
                   .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
                   .WithRowVersionColumn("Version")
                   .WithNotNullableColumn("Content", DbType.String).OfSize(255);
+                db.Tables["Mig21b"].AddRowVersionColumn("Version");
             }
             else
             {
-                db.CreateTable("Mig21")
+                db.CreateTable("Mig21a")
                   .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
-                  .WithNullableColumn("Version", DbType.Int64)
+                  .WithNotNullableColumn("Version", DbType.Int64)
                   .WithNotNullableColumn("Content", DbType.String).OfSize(255);
+                db.Tables["Mig21b"].AddNotNullableColumn("Version", DbType.Int64);
             }
 
             db.Execute(context =>
@@ -33,43 +40,49 @@ namespace MigSharp.NUnit.Integration
                     IDbCommand command = context.Connection.CreateCommand();
                     command.Transaction = context.Transaction;
 
-                    if (_rowVersionColumnIsSupported)
-                    {
-                        command.CommandText = "INSERT INTO \"Mig21\" ( \"Content\" ) VALUES ( 'First' )";
-                        context.CommandExecutor.ExecuteNonQuery(command);
-
-                        byte[] firstRowVersion;
-                        if (IntegrationTestContext.IsScripting)
-                        {
-                            firstRowVersion = BitConverter.GetBytes(1L);
-                        }
-                        else
-                        {
-                            command.CommandText = "SELECT Version FROM \"Mig21\"";
-                            firstRowVersion = (byte[])command.ExecuteScalar();
-                        }
-
-                        command.CommandText = "UPDATE \"Mig21\" SET Content = 'Updated'";
-                        context.CommandExecutor.ExecuteNonQuery(command);
-
-                        byte[] updatedRowVersion;
-                        if (IntegrationTestContext.IsScripting)
-                        {
-                            updatedRowVersion = BitConverter.GetBytes(2L);
-                        }
-                        else
-                        {
-                            command.CommandText = "SELECT Version FROM \"Mig21\"";
-                            updatedRowVersion = (byte[])command.ExecuteScalar();
-                        }
-                        CollectionAssert.AreNotEqual(firstRowVersion, updatedRowVersion, "The row version was not updated.");
-                    }
-                    else
-                    {
-                        command.CommandText = "INSERT INTO \"Mig21\" ( \"Content\", \"Version\" ) VALUES ( 'Updated', 1 )";
-                        context.CommandExecutor.ExecuteNonQuery(command);
-                    }
+                    InsertAndUpdateRow(command, "Mig21a", context);
+                    InsertAndUpdateRow(command, "Mig21b", context);
                 });
+        }
+
+        private static void InsertAndUpdateRow(IDbCommand command, string tableName, IRuntimeContext context)
+        {
+            if (_rowVersionColumnIsSupported)
+            {
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" ( \"Content\" ) VALUES ( 'First' )", tableName);
+                context.CommandExecutor.ExecuteNonQuery(command);
+
+                byte[] firstRowVersion;
+                if (IntegrationTestContext.IsScripting)
+                {
+                    firstRowVersion = BitConverter.GetBytes(1L);
+                }
+                else
+                {
+                    command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT Version FROM \"{0}\"", tableName);
+                    firstRowVersion = (byte[])command.ExecuteScalar();
+                }
+
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, "UPDATE \"{0}\" SET Content = 'Updated'", tableName);
+                context.CommandExecutor.ExecuteNonQuery(command);
+
+                byte[] updatedRowVersion;
+                if (IntegrationTestContext.IsScripting)
+                {
+                    updatedRowVersion = BitConverter.GetBytes(2L);
+                }
+                else
+                {
+                    command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT Version FROM \"{0}\"", tableName);
+                    updatedRowVersion = (byte[])command.ExecuteScalar();
+                }
+                CollectionAssert.AreNotEqual(firstRowVersion, updatedRowVersion, "The row version was not updated.");
+            }
+            else
+            {
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" ( \"Content\", \"Version\" ) VALUES ( 'Updated', 1 )", tableName);
+                context.CommandExecutor.ExecuteNonQuery(command);
+            }
         }
 
         public ExpectedTables Tables
@@ -78,12 +91,21 @@ namespace MigSharp.NUnit.Integration
             {
                 return new ExpectedTables
                     {
-                        new ExpectedTable("Mig21", "Id", "Version", "Content")
+                        new ExpectedTable("Mig21a", "Id", "Version", "Content")
                             {
-                                {1, new Func<object, bool>(v => !_rowVersionColumnIsSupported || BitConverter.ToUInt64((byte[])v, 0) > 0), "Updated"}
+                                {1, CheckRowVersionValue(), "Updated"}
+                            },
+                        new ExpectedTable("Mig21b", "Id", "Content", "Version")
+                            {
+                                {1, "Updated", CheckRowVersionValue()}
                             }
                     };
             }
+        }
+
+        private static Func<object, bool> CheckRowVersionValue()
+        {
+            return v => !_rowVersionColumnIsSupported || BitConverter.ToUInt64((byte[])v, 0) > 0;
         }
     }
 }

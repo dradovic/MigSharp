@@ -121,7 +121,7 @@ namespace MigSharp.Providers
             string defaultConstraintClause = GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue);
             commandText += string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}NULL{3}",
                 Escape(column.Name),
-                GetTypeSpecifier(column.DataType, false),
+                GetTypeSpecifier(column.DataType, column.IsRowVersion),
                 column.IsNullable ? string.Empty : "NOT ",
                 defaultConstraintClause);
             yield return commandText;
@@ -187,7 +187,7 @@ namespace MigSharp.Providers
             }
             yield return AlterTable(tableName) + string.Format(CultureInfo.InvariantCulture, " ALTER COLUMN [{0}] {1} {2}NULL",
                 column.Name,
-                GetTypeSpecifier(column.DataType, false),
+                GetTypeSpecifier(column.DataType, column.IsRowVersion),
                 column.IsNullable ? string.Empty : "NOT ");
             if (column.DefaultValue != null)
             {
