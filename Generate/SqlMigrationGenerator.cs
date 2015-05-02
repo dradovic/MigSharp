@@ -32,6 +32,9 @@ namespace MigSharp.Generate
             Database database = server.Databases[builder.InitialCatalog];
             database.Refresh(); // load the meta-data
             string migration = string.Empty;
+
+            // create tables
+            var tablesWithForeignKeys = new List<Table>();
             foreach (Table table in database.Tables)
             {
                 if (_excludedTables.Contains(table.Name) ||
@@ -49,6 +52,19 @@ namespace MigSharp.Generate
                 }
 
                 HandleTable(table, ref migration);
+                if (table.ForeignKeys.Count > 0)
+                {
+                    tablesWithForeignKeys.Add(table);
+                }
+            }
+
+            // create foreign keys between tables
+            foreach (var table in tablesWithForeignKeys)
+            {
+                foreach (ForeignKey foreignKey in table.ForeignKeys)
+                {
+                    HandleForeignKey(table, foreignKey, ref migration);
+                }
             }
             return migration;
         }
@@ -60,11 +76,6 @@ namespace MigSharp.Generate
             foreach (Column column in table.Columns)
             {
                 HandleColumn(table, column, column == lastColumn, ref migration);
-            }
-
-            foreach (ForeignKey foreignKey in table.ForeignKeys)
-            {
-                HandleForeignKey(table, foreignKey, ref migration);
             }
             foreach (Index index in table.Indexes)
             {
