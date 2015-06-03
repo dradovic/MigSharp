@@ -6,7 +6,7 @@
     public static class ProviderNames
     {
 #pragma warning disable 1591
-        public const string MySqlExperimental = "MySql"; // FIXME: remove Experimental
+        public const string MySqlExperimental = "MySql";
         public const string Oracle = "Oracle";
         public const string OracleOdbc = "OracleOdbc";
         public const string SQLite = "SQLite";
