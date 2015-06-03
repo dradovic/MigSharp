@@ -16,13 +16,8 @@ Releasing:
 - Tag the sources with AssemblyVersion
   git tag -a v1.0.0 -m "v1.0.0"
   git push origin v1.0.0
-- Grab the MigSharp-3.5-1.0.0.zip and MigSharp-4.0-1.0.0.zip artifacts from compilation configs
-- Verify downloads are okay (extracting the zip file works)
-- Publish NuGet package using the MigSharp.nuspec (see: http://docs.nuget.org/)
-  - Open nuget/MigSharp.nuspec in the NuGet Package Explorer
-  - Adjust package metadata as required
-  - Remove the .svn folder from the package content
-  - Add content using the following structure:
+- Grab the MigSharp.1.0.0.nupkg from TC artifacts and go to https://www.nuget.org/packages/upload
+- Verify upload was okay. The content should be:
     lib/
 	  net35/
 	    MigSharp.dll
@@ -34,10 +29,13 @@ Releasing:
 	  net35/
 		Migrate.exe
 		Migrate.exe.config
+		Generate.exe
+		Generate.exe.config
 	  net40/
 	    Migrate.exe
 		Migrate.exe.config
-  - File > Publish...
+		Generate.exe
+		Generate.exe.config
 
 Post-actions:
 -------------
