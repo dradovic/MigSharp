@@ -250,14 +250,15 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON [dbo].{1} WITH ( ONLINE = OFF )", Escape(indexName), Escape(tableName));            
         }
 
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName)
+        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
-            yield return AlterTable(tableName) + string.Format(CultureInfo.InvariantCulture, "  ADD  CONSTRAINT [{0}] FOREIGN KEY({1}){2}REFERENCES {3} ({4})",
+            yield return AlterTable(tableName) + string.Format(CultureInfo.InvariantCulture, "  ADD  CONSTRAINT [{0}] FOREIGN KEY({1}){2}REFERENCES {3} ({4}){5}",
                 constraintName,
                 string.Join(", ", columnNames.Select(n => Escape(n.ColumnName)).ToArray()),
                 Environment.NewLine,
                 Escape(referencedTableName),
-                string.Join(", ", columnNames.Select(n => Escape(n.ReferencedColumnName)).ToArray()));
+                string.Join(", ", columnNames.Select(n => Escape(n.ReferencedColumnName)).ToArray()),
+                cascadeOnDelete ? " ON DELETE CASCADE" : string.Empty);
         }
 
         public IEnumerable<string> DropForeignKey(string tableName, string constraintName)

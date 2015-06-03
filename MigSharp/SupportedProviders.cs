@@ -16,7 +16,6 @@ namespace MigSharp
     {
         private static readonly string[] DefaultProviderNames = new[]
         {
-            ProviderNames.MySqlExperimental,
             ProviderNames.Oracle,
             ProviderNames.OracleOdbc,
             ProviderNames.SQLite,
@@ -27,7 +26,7 @@ namespace MigSharp
             ProviderNames.SqlServerCe35,
             ProviderNames.SqlServerCe4,
             ProviderNames.Teradata,
-            ProviderNames.TeradataOdbc,
+            ProviderNames.TeradataOdbc
         };
 
         private readonly IProviderFactory _providerFactory;

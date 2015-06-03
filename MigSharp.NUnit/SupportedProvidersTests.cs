@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using NUnit.Framework;
 
 namespace MigSharp.NUnit
@@ -30,9 +29,11 @@ namespace MigSharp.NUnit
 
         private static IEnumerable<string> GetExpectedProviderNames()
         {
-            var result = new List<string>(typeof(ProviderNames).GetFields()
-                .Where(f => f.IsStatic)
-                .Select(f => (string)f.GetValue(null)));
+            var result = new List<string>(typeof(ProviderNames)
+                                              .GetFields()
+                                              .Where(f => f.IsStatic)
+                                              .Select(f => (string)f.GetValue(null))
+                                              .Except(new[] {"MySql"}));
             CollectionAssert.IsNotEmpty(result);
             return result;
         }

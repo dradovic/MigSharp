@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MigSharp</id>
-    <version>2.3.1-RC2</version>
+    <version>2.3.1-RC4</version>
     <title>Mig#</title>
     <authors>dradovic</authors>
     <owners />
@@ -15,7 +15,10 @@
     <releaseNotes>
 2.3.1
 - added support for row-version columns (new .WithRowVersionColumn(columnName) method)
+- added support for ON DELETE CASCADE (new .CascadeOnDelete() method on foreign keys) (thanks to Marko Binic)
 - new console application that generates a migration from an existing SQL Server database schema (Generate.exe)
+BUG FIXES:
+  - removed experimental MySql from the default list of supported providers
 2.3.0
 - new DropIfExists method on tables
 - DateTime2 columns respects OfSize parameter (#50)

@@ -18,5 +18,11 @@ namespace MigSharp.Core.Entities
             _addForeignKeyToCommand.ColumnNames.Add(new KeyValuePair<string, string>(columnName, referencedColumnName));
             return this;
         }
+
+        public IAddedForeignKey CascadeOnDelete()
+        {
+            _addForeignKeyToCommand.CascadeOnDelete = true;
+            return this;
+        }
     }
 }

@@ -312,7 +312,7 @@ namespace MigSharp.NUnit.Process
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName)
+            IEnumerable<string> IProvider.AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
             {
                 throw new NotSupportedException();
             }

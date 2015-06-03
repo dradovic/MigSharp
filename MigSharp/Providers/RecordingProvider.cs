@@ -127,7 +127,7 @@ namespace MigSharp.Providers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName)
+        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             AddMethodName();
             AddNewObjectNames(constraintName);

@@ -12,5 +12,13 @@
         /// This method is not called 'On', as 'On' is a reserved language keyword (see FxCop rule "Identifiers should not match keywords").
         /// </remarks>
         IAddedForeignKey Through(string columnName, string referencedColumnName);
+
+        /// <summary>
+        /// Sets cascade as the delete action.
+        /// </summary>
+        /// /// <remarks>
+        /// Corresponding rows will be deleted from the referencing table if the referenced row is deleted from the parent table.
+        /// </remarks>
+        IAddedForeignKey CascadeOnDelete();
     }
 }

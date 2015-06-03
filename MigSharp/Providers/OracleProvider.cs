@@ -341,7 +341,7 @@ END;", Escape(tableName));
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0}", Escape(indexName));
         }
 
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName)
+        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             string sourceCols = String.Empty;
             string targetCols = String.Empty;
@@ -354,7 +354,7 @@ END;", Escape(tableName));
             sourceCols = sourceCols.TrimEnd(',');
             targetCols = targetCols.TrimEnd(',');
 
-            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3}({4})", AlterTable(tableName), Escape(constraintName), sourceCols, Escape(referencedTableName), targetCols);
+            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3}({4}){5}", AlterTable(tableName), Escape(constraintName), sourceCols, Escape(referencedTableName), targetCols, cascadeOnDelete ? " ON DELETE CASCADE" : string.Empty);
         }
 
         public IEnumerable<string> DropForeignKey(string tableName, string constraintName)

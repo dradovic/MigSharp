@@ -183,7 +183,7 @@ namespace MigSharp.Providers
             yield return string.Format(CultureInfo.InvariantCulture, @"DROP INDEX ""{0}""", indexName);
         }
 
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName)
+        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             // Do nothing. SQLite only supports foreign keys under special circumstances (see: http://www.sqlite.org/foreignkeys.html).
             // We do not throw a NotSupportedException since not having foreign keys does not change anything about how the database is used.
