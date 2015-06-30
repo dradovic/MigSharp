@@ -12,7 +12,6 @@ namespace MigSharp.NUnit.Integration
 
         public void Up(IDatabase db)
         {
-            // renaming columns is not supported by SqlServerCe35, SqlServerCe4 and SQLite
             bool renameColumnIsSupported = db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 && 
                                            db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 && 
                                            db.Context.ProviderMetadata.Name != ProviderNames.SQLite && 

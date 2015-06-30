@@ -20,7 +20,7 @@ namespace MigSharp.MySql.NUnit
             get
             {
                 const string server = "MIGSHARP_MYSQL_SERVER";
-                return (ConfigurationManager.AppSettings[server] != null) ? ConfigurationManager.AppSettings[server] : "";
+                return GetEnvironmentVariable(server);
             }
         }
 
@@ -29,7 +29,7 @@ namespace MigSharp.MySql.NUnit
             get
             {
                 const string user = "MIGSHARP_MYSQL_USER";
-                return (ConfigurationManager.AppSettings[user] != null) ? ConfigurationManager.AppSettings[user] : "";
+                return GetEnvironmentVariable(user);
             }
         }
 
@@ -38,7 +38,7 @@ namespace MigSharp.MySql.NUnit
             get
             {
                 const string password = "MIGSHARP_MYSQL_PASSWORD";
-                return (ConfigurationManager.AppSettings[password] != null) ? ConfigurationManager.AppSettings[password] : "";
+                return GetEnvironmentVariable(password);
             }
         }
 
