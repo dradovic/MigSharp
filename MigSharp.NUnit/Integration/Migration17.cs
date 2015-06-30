@@ -21,6 +21,7 @@ namespace MigSharp.NUnit.Integration
             if (db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 &&
                 db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 &&
                 db.Context.ProviderMetadata.Name != ProviderNames.SQLite &&
+                db.Context.ProviderMetadata.Name != ProviderNames.MySqlExperimental &&
                 !db.Context.ProviderMetadata.Name.Contains("Teradata"))
             {
                 db.Tables[Tables[0].Name].PrimaryKey().Rename("PK_" + NewTableName);

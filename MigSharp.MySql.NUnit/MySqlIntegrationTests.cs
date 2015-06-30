@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using System.Globalization;
+using System.Configuration;
 
 using MigSharp.NUnit.Integration;
 
@@ -10,7 +11,7 @@ using NUnit.Framework;
 namespace MigSharp.MySql.NUnit
 {
     [TestFixture, Category("MySql")]
-    public class MySqlIntegrationTests : IntegrationTestsBase
+    public class MySqlIntegrationTests : MySqlIntegrationTestsBase
     {
         private const string TestDbName = "MigSharp_TestDb";
 
@@ -19,7 +20,7 @@ namespace MigSharp.MySql.NUnit
             get
             {
                 const string server = "MIGSHARP_MYSQL_SERVER";
-                return GetEnvironmentVariable(server);
+                return (ConfigurationManager.AppSettings[server] != null) ? ConfigurationManager.AppSettings[server] : "";
             }
         }
 
@@ -28,7 +29,7 @@ namespace MigSharp.MySql.NUnit
             get
             {
                 const string user = "MIGSHARP_MYSQL_USER";
-                return GetEnvironmentVariable(user);
+                return (ConfigurationManager.AppSettings[user] != null) ? ConfigurationManager.AppSettings[user] : "";
             }
         }
 
@@ -37,7 +38,7 @@ namespace MigSharp.MySql.NUnit
             get
             {
                 const string password = "MIGSHARP_MYSQL_PASSWORD";
-                return GetEnvironmentVariable(password);
+                return (ConfigurationManager.AppSettings[password] != null) ? ConfigurationManager.AppSettings[password] : "";
             }
         }
 

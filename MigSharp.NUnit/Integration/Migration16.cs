@@ -13,8 +13,11 @@ namespace MigSharp.NUnit.Integration
         public void Up(IDatabase db)
         {
             // renaming columns is not supported by SqlServerCe35, SqlServerCe4 and SQLite
-            bool renameColumnIsSupported = db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 && db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 && db.Context.ProviderMetadata.Name != ProviderNames.SQLite;
-
+            bool renameColumnIsSupported = db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 && 
+                                           db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 && 
+                                           db.Context.ProviderMetadata.Name != ProviderNames.SQLite && 
+                                           db.Context.ProviderMetadata.Name != ProviderNames.MySqlExperimental;
+            
             db.CreateTable(Tables[0].Name)
                 .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32)
                 .WithNotNullableColumn(renameColumnIsSupported ? Tables[0].Columns[2] : Tables[0].Columns[1], DbType.String).OfSize(10).HavingDefault(FirstDefaultValue);

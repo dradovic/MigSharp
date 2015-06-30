@@ -26,7 +26,8 @@ namespace MigSharp
             ProviderNames.SqlServerCe35,
             ProviderNames.SqlServerCe4,
             ProviderNames.Teradata,
-            ProviderNames.TeradataOdbc
+            ProviderNames.TeradataOdbc,
+            ProviderNames.MySqlExperimental
         };
 
         private readonly IProviderFactory _providerFactory;

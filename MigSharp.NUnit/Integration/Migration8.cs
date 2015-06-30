@@ -68,6 +68,15 @@ namespace MigSharp.NUnit.Integration
                 {
                     column.OfSize(support.MaximumSize, support.MaximumScale > 0 ? support.MaximumScale : (int?)null);
                 }
+
+                // having two maxlength strings exceeds the maximum table length in mysql (65535) - reduce the size of these columns
+                if (db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) {
+                    if (support.DbType == DbType.AnsiString ||
+                        support.DbType == DbType.String) {
+                        column.OfSize(support.MaximumSize / 3);
+                    }
+                }
+
                 columns.Add(columnName, support.DbType);
             }
 
@@ -82,6 +91,12 @@ namespace MigSharp.NUnit.Integration
                     {
                         DbType dbType;
                         object value = GetTestValue(column, db, out dbType);
+                        // MySQL only retains 8 digits for float values
+                        if (db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) {
+                            if (dbType == DbType.Single) {
+                                value = (float) Math.Round((float) value, 5);
+                            }
+                        }
                         command.AddParameter("@" + column.Key, (dbType == DbType.AnsiString && (db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe35 || db.Context.ProviderMetadata.Name == ProviderNames.SqlServerCe4)) ? DbType.String : dbType, value);
                         values.Add(value);
                     }
@@ -119,6 +134,16 @@ namespace MigSharp.NUnit.Integration
                         maximumSize = 450; // FEATURE: this information should be part of the SupportAttribute
                     }
                 }
+
+                if (db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) 
+                {
+                    // MySQL only allow PKs with a maximum length of 767 bytes
+                    if (support.DbType == DbType.AnsiString ||
+                        support.DbType == DbType.String) {
+                        maximumSize = 767; 
+                    }
+                }
+
                 ICreatedTableWithAddedColumn column = pkTable.WithPrimaryKeyColumn("Id", support.DbType);
                 if (maximumSize > 0)
                 {
@@ -151,12 +176,25 @@ namespace MigSharp.NUnit.Integration
             }
             if (db.Context.ProviderMetadata.Name.Contains("Oracle") ||
                 db.Context.ProviderMetadata.Name.Contains("Teradata") ||
-                db.Context.ProviderMetadata.Name == ProviderNames.SQLite)
+                db.Context.ProviderMetadata.Name == ProviderNames.SQLite ||
+                db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) 
             {
                 if (result is bool)
                 {
                     type = DbType.Int32;
                     return Convert.ToInt32((bool)result, CultureInfo.InvariantCulture);
+                }
+            }
+            if (db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) {
+                // MySQL only retains 8 digits for float values
+                if (result is Single) {
+                    return (float) Math.Round((float)result, 5);
+                }
+                // MySQL does not store fractional seconds
+                if (type == DbType.Time) {
+                    // truncation fractional seconds
+                    TimeSpan tmp = (TimeSpan) result;
+                    return new TimeSpan(tmp.Hours, tmp.Minutes, tmp.Seconds);
                 }
             }
             return result;
