@@ -34,3 +34,5 @@ MigSharp.*.NUnit/lib/
 MigSharp.SqlServerCe.NUnit/Ce*
 .svn
 MigSharp.nuspec
+packages
+

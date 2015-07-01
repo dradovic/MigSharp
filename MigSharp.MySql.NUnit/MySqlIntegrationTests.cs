@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using System.Globalization;
+using System.Configuration;
 
 using MigSharp.NUnit.Integration;
 
@@ -10,7 +11,7 @@ using NUnit.Framework;
 namespace MigSharp.MySql.NUnit
 {
     [TestFixture, Category("MySql")]
-    public class MySqlIntegrationTests : IntegrationTestsBase
+    public class MySqlIntegrationTests : MySqlIntegrationTestsBase
     {
         private const string TestDbName = "MigSharp_TestDb";
 

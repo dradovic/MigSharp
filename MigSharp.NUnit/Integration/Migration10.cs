@@ -34,6 +34,13 @@ namespace MigSharp.NUnit.Integration
                 // ensure that the default values have been droped
                 db.Execute(context =>
                     {
+                        // MySQL will not throw an error on insert unless strict mode is enabled
+                        if (db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) {
+                            IDbCommand command2 = context.Connection.CreateCommand();
+                            command2.Transaction = context.Transaction;
+                            command2.CommandText = "SET SQL_MODE = 'ANSI_QUOTES,STRICT_ALL_TABLES'";
+                            command2.ExecuteNonQuery();
+                        }
                         IDbCommand command = context.Connection.CreateCommand();
                         command.Transaction = context.Transaction;
                         command.CommandText = GetInsertStatement(1);
