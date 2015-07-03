@@ -32,7 +32,5 @@ _ReSharper*/
 Generate/lib/
 MigSharp.*.NUnit/lib/
 MigSharp.SqlServerCe.NUnit/Ce*
-.svn
-MigSharp.nuspec
 packages
-
+~$*
