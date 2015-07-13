@@ -1,65 +1,54 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Globalization;
-
 using MigSharp.Core;
-
 using NUnit.Framework;
 
 namespace MigSharp.NUnit.Integration
 {
     [MigrationExport(Tag = "Test decimals")]
-    internal class Migration11 : IIntegrationTestMigration
+    internal class Migration11 : IExclusiveIntegrationTestMigration
     {
         public void Up(IDatabase db)
         {
+            if (!this.IsFeatureSupported(db))
+            {
+                return;
+            }
+            MySqlHelper.ActivateStrictMode(db);
+
             db.CreateTable(Tables[0].Name)
-                .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
-                .WithNotNullableColumn(Tables[0].Columns[1], DbType.Decimal).OfSize(3)
-                .WithNotNullableColumn(Tables[0].Columns[2], DbType.Decimal).OfSize(5, 2);
+              .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
+              .WithNotNullableColumn(Tables[0].Columns[1], DbType.Decimal).OfSize(3)
+              .WithNotNullableColumn(Tables[0].Columns[2], DbType.Decimal).OfSize(5, 2);
 
-            if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite) // SQLite uses adaptiv algorithms for their data types: http://www.sqlite.org/datatype3.html
-            {
-                db.Execute(GetInsertStatement((decimal)Tables[0].Value(0, 2) + 0.003m)); // the extra precision should be cut off silently
-                db.Execute(context =>
+            db.Execute(GetInsertStatement((decimal)Tables[0].Value(0, 2) + 0.003m)); // the extra precision should be cut off silently
+            db.Execute(context =>
+                {
+                    IDbCommand command = context.Connection.CreateCommand();
+                    command.Transaction = context.Transaction;
+                    command.CommandText = GetInsertStatement(1000m);
+                    Log.Verbose(LogCategory.Sql, command.CommandText);
+                    try
                     {
-                        // MySQL will not throw an error on insert unless strict mode is enabled
-                        if (db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) {
-                            IDbCommand command2 = context.Connection.CreateCommand();
-                            command2.Transaction = context.Transaction;
-                            command2.CommandText = "SET SQL_MODE = 'ANSI_QUOTES,STRICT_ALL_TABLES'";
-                            command2.ExecuteNonQuery();
-                        }
-
-                        IDbCommand command = context.Connection.CreateCommand();
-                        command.Transaction = context.Transaction;
-                        command.CommandText = GetInsertStatement(1000m);
-                        Log.Verbose(LogCategory.Sql, command.CommandText);
-                        try
+                        command.ExecuteNonQuery();
+                        Assert.Fail("The previous query should have failed.");
+                    }
+                    catch (Exception x)
+                    {
+                        if (!x.IsDbException())
                         {
-                            command.ExecuteNonQuery();
-                            Assert.Fail("The previous query should have failed.");
+                            throw;
                         }
-                        catch (Exception x)
-                        {
-                            if (!x.IsDbException())
-                            {
-                                throw;
-                            }
-                        }
-                    });
-            }
-            else
-            {
-                db.Execute(GetInsertStatement((decimal)Tables[0].Value(0, 2)));
-            }
+                    }
+                });
         }
 
         private string GetInsertStatement(decimal value2)
         {
             return string.Format(CultureInfo.InvariantCulture,
-                @"INSERT INTO ""{0}"" (""{1}"", ""{2}"") VALUES ({3}, {4})", Tables[0].Name, Tables[0].Columns[1], Tables[0].Columns[2], Tables[0].Value(0, 1), value2);
+                                 @"INSERT INTO ""{0}"" (""{1}"", ""{2}"") VALUES ({3}, {4})", Tables[0].Name, Tables[0].Columns[1], Tables[0].Columns[2], Tables[0].Value(0, 1), value2);
         }
 
         public ExpectedTables Tables
@@ -67,13 +56,15 @@ namespace MigSharp.NUnit.Integration
             get
             {
                 return new ExpectedTables
-                {
-                    new ExpectedTable("Mig11", "Id", "Dec3", "Dec3_2")
                     {
-                        { 1, 333m, 333.33m },
-                    }
-                };
+                        new ExpectedTable("Mig11", "Id", "Dec3", "Dec3_2")
+                            {
+                                { 1, 333m, 333.33m },
+                            }
+                    };
             }
         }
+
+        public IEnumerable<string> ProvidersNotSupportingFeatureUnderTest { get { return new[] { ProviderNames.SQLite }; } } // SQLite uses adaptiv algorithms for their data types: http://www.sqlite.org/datatype3.html
     }
 }

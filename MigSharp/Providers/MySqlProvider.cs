@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.MySqlExperimental, InvariantName, MaximumDbObjectNameLength = MaximumDbObjectNameLength, EnableAnsiQuotesCommand = "SET SESSION sql_mode='ANSI_QUOTES'")]
+    [ProviderExport(ProviderNames.MySql, InvariantName, MaximumDbObjectNameLength = MaximumDbObjectNameLength, EnableAnsiQuotesCommand = "SET SESSION sql_mode='ANSI_QUOTES'", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = 65535, CanBeUsedAsPrimaryKey = true)] // maximum size 65,535 started in MySql 5.0.3 according to http://dev.mysql.com/doc/refman/5.0/en/char.html
     [Supports(DbType.AnsiString)] // translates to LONGTEXT without specifying the size
     [Supports(DbType.Binary)]
     [Supports(DbType.Byte, CanBeUsedAsPrimaryKey = true, CanBeUsedAsIdentity = true)]
-    [Supports(DbType.Boolean, CanBeUsedAsPrimaryKey = true,  Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
+    [Supports(DbType.Boolean, CanBeUsedAsPrimaryKey = true, Warning = "Requires custom ADO.NET code to convert to/from an Int32 (using System.Convert).")]
     [Supports(DbType.DateTime, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.Decimal, MaximumSize = 28, MaximumScale = 28, CanBeUsedAsPrimaryKey = true)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
     [Supports(DbType.Decimal, MaximumSize = 28, CanBeUsedAsPrimaryKey = true)] // this is a restriction of the decimal type of the CLR (see http://support.microsoft.com/kb/932288)
@@ -37,6 +36,8 @@ namespace MigSharp.Providers
 
         private const int MaximumDbObjectNameLength = 64; // http://stackoverflow.com/questions/6868302/maximum-length-of-a-table-name-in-mysql
 
+        private const bool PrefixUnicodeLiterals = true;
+
         public string ExistsTable(string databaseName, string tableName)
         {
             return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(TABLE_NAME)
@@ -47,7 +48,7 @@ namespace MigSharp.Providers
 
         public string ConvertToSql(object value, DbType targetDbType)
         {
-            return SqlScriptingHelper.ToSql(value, targetDbType);
+            return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
@@ -58,23 +59,24 @@ namespace MigSharp.Providers
 
             bool columnDelimiterIsNeeded = false;
             var primaryKeyColumns = new List<string>();
-            foreach (CreatedColumn column in columns) 
+            foreach (CreatedColumn column in columns)
             {
                 if (columnDelimiterIsNeeded) commandText += string.Format(CultureInfo.InvariantCulture, ",{0}", Environment.NewLine);
 
-                if (column.IsPrimaryKey) {
+                if (column.IsPrimaryKey)
+                {
                     primaryKeyColumns.Add(column.Name);
                 }
 
                 string defaultValue = GetDefaultValueAsString(column.DefaultValue);
 
                 commandText += string.Format(CultureInfo.InvariantCulture, "{0}{1} {2} {3} {4}NULL {5}",
-                    Identation,
-                    Escape(column.Name),
-                    GetTypeSpecifier(column.DataType),
-                    column.IsIdentity ? "AUTO_INCREMENT " : string.Empty,
-                    column.IsNullable ? string.Empty : "NOT ",
-                    defaultValue.Length > 0 ? "DEFAULT " + defaultValue : string.Empty );
+                                             Identation,
+                                             Escape(column.Name),
+                                             GetTypeSpecifier(column.DataType),
+                                             column.IsIdentity ? "AUTO_INCREMENT " : string.Empty,
+                                             column.IsNullable ? string.Empty : "NOT ",
+                                             defaultValue.Length > 0 ? "DEFAULT " + defaultValue : string.Empty);
 
                 columnDelimiterIsNeeded = true;
             }
@@ -85,7 +87,8 @@ namespace MigSharp.Providers
                 commandText += "PRIMARY KEY ";
                 commandText += string.Format(CultureInfo.InvariantCulture, "({0}", Environment.NewLine);
                 columnDelimiterIsNeeded = false;
-                foreach (string column in primaryKeyColumns) {
+                foreach (string column in primaryKeyColumns)
+                {
                     if (columnDelimiterIsNeeded) commandText += string.Format(CultureInfo.InvariantCulture, ",{0}", Environment.NewLine);
 
                     // FEATURE: make sort order configurable
@@ -101,9 +104,9 @@ namespace MigSharp.Providers
                 .GroupBy(c => c.UniqueConstraint))
             {
                 commandText += string.Format(CultureInfo.InvariantCulture, ",{0} UNIQUE KEY {1} {2}",
-                    Environment.NewLine,
-                    Escape(uniqueColumns.Key),
-                    Environment.NewLine);
+                                             Environment.NewLine,
+                                             Escape(uniqueColumns.Key),
+                                             Environment.NewLine);
 
                 commandText += string.Format(CultureInfo.InvariantCulture, "({0}", Environment.NewLine);
 
@@ -122,21 +125,24 @@ namespace MigSharp.Providers
             yield return commandText;
         }
 
-        private string GetDefaultValueAsString(object value) 
+        private string GetDefaultValueAsString(object value)
         {
-
-            if (value is SpecialDefaultValue) {
-                switch ((SpecialDefaultValue)value) {
+            if (value is SpecialDefaultValue)
+            {
+                switch ((SpecialDefaultValue)value)
+                {
                     case SpecialDefaultValue.CurrentDateTime:
-                        throw new ArgumentOutOfRangeException("Default value of current datetime is not supported");
+                        return "NOW()"; // works as of MySQL 5.6 (see: http://stackoverflow.com/questions/5818423/set-now-as-default-value-for-datetime-datatype)
                     default:
-                        throw new ArgumentOutOfRangeException("Invalid special default value");
+                        throw new ArgumentOutOfRangeException("value", "Invalid special default value");
                 }
             }
-            else if (value is DateTime) {
+            else if (value is DateTime)
+            {
                 return ConvertToSql(value, DbType.DateTime);
             }
-            else if (value is string) {
+            else if (value is string)
+            {
                 return ConvertToSql(value, DbType.String);
             }
             return Convert.ToString(value, CultureInfo.InvariantCulture);
@@ -151,104 +157,103 @@ namespace MigSharp.Providers
         public IEnumerable<string> AddColumn(string tableName, Column column)
         {
             string commandText = string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE {0} ADD {1}",
-                Escape(tableName),
-                GetColumnSpec(column));
+                                               Escape(tableName),
+                                               GetColumnSpec(column));
             yield return commandText;
         }
 
-        private string GetColumnSpec(Column column) {
-
+        private string GetColumnSpec(Column column)
+        {
             string defaultValue = GetDefaultValueAsString(column.DefaultValue);
 
             return string.Format(CultureInfo.InvariantCulture, @"{0} {1} {2}NULL {3}",
-                Escape(column.Name),
-                GetTypeSpecifier(column.DataType),
-                column.IsNullable ? string.Empty : "NOT ",
-                defaultValue.Length > 0 ? "DEFAULT " + defaultValue : string.Empty);
+                                 Escape(column.Name),
+                                 GetTypeSpecifier(column.DataType),
+                                 column.IsNullable ? string.Empty : "NOT ",
+                                 defaultValue.Length > 0 ? "DEFAULT " + defaultValue : string.Empty);
         }
 
         public IEnumerable<string> RenameTable(string oldName, string newName)
         {
-            yield return string.Format("RENAME TABLE {0} TO {1}", Escape(oldName), Escape(newName));            
+            yield return string.Format("RENAME TABLE {0} TO {1}", Escape(oldName), Escape(newName));
         }
 
         public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
         {
-            // mysql requires the data type for column rename - this set of commands works
-            // however, "Allow User Variables=True" must be attached to the connection string
-            // string text = "SELECT @DB := DATABASE();\n";
-            // text += "SELECT @CTYPE := COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @DB AND TABLE_NAME = '{0}' AND COLUMN_NAME = '{1}';\n";
-            // text += "SET @STMT = CONCAT('ALTER TABLE {0} CHANGE {1} {2} ', @CTYPE);\n";
-            // text += "PREPARE REN_STMT FROM @STMT;\n";
-            // text += "EXECUTE REN_STMT;\n";
-            // text += "DEALLOCATE PREPARE REN_STMT;\n";
-            // yield return string.Format(text, tableName, oldName, Escape(tableName), Escape(oldName), Escape(newName));
+            // MySQL requires the full column definition (including data type, nullability, default value) for column rename
+            // (see: http://stackoverflow.com/questions/8553130/rename-a-column-in-mysql-table-without-having-to-repeat-its-type-definition).
+            // The set of commands works but requires "Allow User Variables=True" in the connection string and it loses
+            // all extra column definitions.
+//            yield return string.Format(CultureInfo.InvariantCulture, @"SELECT @DB := DATABASE();
+//SELECT @CTYPE := COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @DB AND TABLE_NAME = '{3}' AND COLUMN_NAME = '{4}';
+//SET @STMT = CONCAT('ALTER TABLE {0} CHANGE {1} {2} ', @CTYPE);
+//PREPARE REN_STMT FROM @STMT;
+//EXECUTE REN_STMT;
+//DEALLOCATE PREPARE REN_STMT;", Escape(tableName), Escape(oldName), Escape(newName), tableName, oldName);
 
             throw new NotSupportedException("Rename column is not supported by the MySQL provider.");
         }
 
         public virtual IEnumerable<string> DropColumn(string tableName, string columnName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP COLUMN {1}", 
-                Escape(tableName), 
-                Escape(columnName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP COLUMN {1}",
+                                       Escape(tableName),
+                                       Escape(columnName));
         }
 
         public IEnumerable<string> AlterColumn(string tableName, Column column)
         {
-            string defaultValue = GetDefaultValueAsString(column.DefaultValue);
-
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} MODIFY COLUMN {1}", 
-                Escape(tableName),
-                GetColumnSpec(column));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} MODIFY COLUMN {1}",
+                                       Escape(tableName),
+                                       GetColumnSpec(column));
         }
 
-        public IEnumerable<string> DropDefault(string tableName, Column column) 
+        public IEnumerable<string> DropDefault(string tableName, Column column)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT", 
-                Escape(tableName), 
-                Escape(column.Name));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT",
+                                       Escape(tableName),
+                                       Escape(column.Name));
         }
 
         public IEnumerable<string> AddIndex(string tableName, IEnumerable<string> columnNames, string indexName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "CREATE INDEX {0} ON {1} ({2})",
-                Escape(indexName),
-                Escape(tableName),
-                string.Join(", ", columnNames.Select(n => Escape(n)).ToArray()));
+                                       Escape(indexName),
+                                       Escape(tableName),
+                                       string.Join(", ", columnNames.Select(Escape).ToArray()));
         }
 
         public IEnumerable<string> DropIndex(string tableName, string indexName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON {1}", 
-                Escape(indexName), 
-                Escape(tableName));            
+            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON {1}",
+                                       Escape(indexName),
+                                       Escape(tableName));
         }
 
         public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) {3} REFERENCES {4} ({5}) {6}",
-                Escape(tableName),
-                Escape(constraintName),
-                string.Join(", ", columnNames.Select(n => Escape(n.ColumnName)).ToArray()),
-                Environment.NewLine,
-                Escape(referencedTableName),
-                string.Join(", ", columnNames.Select(n => Escape(n.ReferencedColumnName)).ToArray()),
-                cascadeOnDelete ? " ON DELETE CASCADE" : string.Empty);
+                                       Escape(tableName),
+                                       Escape(constraintName),
+                                       string.Join(", ", columnNames.Select(n => Escape(n.ColumnName)).ToArray()),
+                                       Environment.NewLine,
+                                       Escape(referencedTableName),
+                                       string.Join(", ", columnNames.Select(n => Escape(n.ReferencedColumnName)).ToArray()),
+                                       cascadeOnDelete ? " ON DELETE CASCADE" : string.Empty);
         }
 
         public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP FOREIGN KEY {1}", 
-                Escape(tableName), 
-                Escape(constraintName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP FOREIGN KEY {1}",
+                                       Escape(tableName),
+                                       Escape(constraintName));
         }
 
         public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ADD PRIMARY KEY({1})", 
-                Escape(tableName),
-                string.Join(", ", columnNames.Select(n => Escape(n)).ToArray()));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ADD PRIMARY KEY({1})",
+                                       Escape(tableName),
+                                       string.Join(", ", columnNames.Select(Escape).ToArray()));
         }
 
         public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
@@ -259,23 +264,23 @@ namespace MigSharp.Providers
 
         public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP PRIMARY KEY", 
-                Escape(tableName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP PRIMARY KEY",
+                                       Escape(tableName));
         }
 
         public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ADD UNIQUE KEY {1} ({2})",
-                Escape(tableName),
-                Escape(constraintName), 
-                string.Join(", ", columnNames.Select(n => Escape(n)).ToArray()));
+                                       Escape(tableName),
+                                       Escape(constraintName),
+                                       string.Join(", ", columnNames.Select(Escape).ToArray()));
         }
 
         public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP KEY {1}", 
-                Escape(tableName), 
-                Escape(constraintName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP KEY {1}",
+                                       Escape(tableName),
+                                       Escape(constraintName));
         }
 
         protected static string Escape(string name)
@@ -317,7 +322,7 @@ namespace MigSharp.Providers
                     }
                     else
                     {
-                        return string.Format(CultureInfo.InvariantCulture, "NUMERIC({0})", type.Size);                        
+                        return string.Format(CultureInfo.InvariantCulture, "NUMERIC({0})", type.Size);
                     }
                 case DbType.Double:
                     return "DOUBLE";

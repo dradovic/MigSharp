@@ -123,11 +123,11 @@ namespace MigSharp.SqlServer.NUnit
             }
             else if (value is DateTime)
             {
-                return SqlScriptingHelper.ToSql(value, DbType.DateTime);
+                return SqlScriptingHelper.ToSql(value, DbType.DateTime, true);
             }
             else if (value is string)
             {
-                return SqlScriptingHelper.ToSql(value, DbType.String);
+                return SqlScriptingHelper.ToSql(value, DbType.String, true);
             }
             return System.Convert.ToString(value, CultureInfo.InvariantCulture);
         }

@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.Teradata, InvariantName, MaximumDbObjectNameLength = 30, SupportsTransactions = false, ParameterExpression = "?")]
+    [ProviderExport(ProviderNames.Teradata, InvariantName, MaximumDbObjectNameLength = 30, SupportsTransactions = false, ParameterExpression = "?", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions.")]
     [Supports(DbType.Binary)]
@@ -26,6 +26,8 @@ namespace MigSharp.Providers
     internal class TeradataProvider : IProvider
     {
         public const string InvariantName = "Teradata.Client.Provider";
+        protected const bool PrefixUnicodeLiterals = false;
+
         private const string Identation = "\t";
         private const string Identity = @"GENERATED ALWAYS AS IDENTITY
                 (START WITH 1
@@ -44,7 +46,7 @@ namespace MigSharp.Providers
                 return string.Format(CultureInfo.InvariantCulture, "TIMESTAMP '{0}'",
                     ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
             }
-            return SqlScriptingHelper.ToSql(value, targetDbType);
+            return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)

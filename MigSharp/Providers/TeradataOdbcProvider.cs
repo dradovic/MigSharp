@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.TeradataOdbc, "System.Data.Odbc", SupportsTransactions = false, ParameterExpression = "?")]
+    [ProviderExport(ProviderNames.TeradataOdbc, "System.Data.Odbc", SupportsTransactions = false, ParameterExpression = "?", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     internal class TeradataOdbcProvider : TeradataProvider
     {
         public override string ExistsTable(string databaseName, string tableName)

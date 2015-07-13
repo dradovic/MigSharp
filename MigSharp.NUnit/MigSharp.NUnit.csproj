@@ -87,6 +87,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\StringHelperTests.cs" />
+    <Compile Include="Integration\IExclusiveIntegrationTestMigration.cs" />
+    <Compile Include="Integration\Migration23.cs" />
     <Compile Include="Integration\Migration21.cs" />
     <Compile Include="Integration\ExceptionExtensions.cs" />
     <Compile Include="Integration\Migration20.cs" />
@@ -116,6 +118,7 @@
     <Compile Include="Integration\Migration8.cs" />
     <Compile Include="Integration\Migration9.cs" />
     <Compile Include="Integration\BypassMigration.cs" />
+    <Compile Include="Integration\MySqlHelper.cs" />
     <Compile Include="Migrate\CommandLineParsingTests.cs" />
     <Compile Include="Migrate\MigrateProcess.cs" />
     <Compile Include="Migrate\ConsoleTests.cs" />

@@ -1,11 +1,6 @@
 ﻿using System.Data.Common;
 using System.Globalization;
-using System.Configuration;
-
-using MigSharp.NUnit.Integration;
-
 using MySql.Data.MySqlClient;
-
 using NUnit.Framework;
 
 namespace MigSharp.MySql.NUnit
@@ -54,33 +49,33 @@ namespace MigSharp.MySql.NUnit
             get
             {
                 var builder = new MySqlConnectionStringBuilder
-                {
-                    Server = Server,
-                    Database = TestDbName,
-                    UserID = User,
-                    Password = Password,
-                };
+                    {
+                        Server = Server,
+                        Database = TestDbName,
+                        UserID = User,
+                        Password = Password,
+                    };
                 return builder.ConnectionString;
             }
         }
 
-        private string MasterConnectionString
+        private static string MasterConnectionString
         {
             get
             {
                 var builder = new MySqlConnectionStringBuilder
-                {
-                    Server = Server,
-                    UserID = User,
-                    Password = Password
-                };
+                    {
+                        Server = Server,
+                        UserID = User,
+                        Password = Password
+                    };
                 return builder.ConnectionString;
             }
         }
 
         protected override string ProviderName
         {
-            get { return ProviderNames.MySqlExperimental; }
+            get { return ProviderNames.MySql; }
         }
 
         public override void Setup()
@@ -112,9 +107,8 @@ namespace MigSharp.MySql.NUnit
             }
 
             MySqlConnection.ClearAllPools();
-            
+
             base.Teardown();
         }
-
     }
 }

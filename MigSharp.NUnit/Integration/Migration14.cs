@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.Common;
 using System.Globalization;
 
 using MigSharp.Core;
@@ -14,6 +13,8 @@ namespace MigSharp.NUnit.Integration
     {
         public void Up(IDatabase db)
         {
+            MySqlHelper.ActivateStrictMode(db);
+
             db.CreateTable(Tables[0].Name)
                 .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32).AsIdentity()
                 .WithNotNullableColumn(Tables[0].Columns[1], DbType.String);
@@ -34,14 +35,6 @@ namespace MigSharp.NUnit.Integration
             {
                 db.Execute(context =>
                     {
-                        // MySQL will not throw an error on insert unless strict mode is enabled
-                        if (db.Context.ProviderMetadata.Name == ProviderNames.MySqlExperimental) {
-                            IDbCommand command2 = context.Connection.CreateCommand();
-                            command2.Transaction = context.Transaction;
-                            command2.CommandText = "SET SQL_MODE = 'ANSI_QUOTES,STRICT_ALL_TABLES'";
-                            command2.ExecuteNonQuery();
-                        }
-
                         IDbCommand command = context.Connection.CreateCommand();
                         command.Transaction = context.Transaction;
                         command.CommandText = GetInsertStatement((string)Tables[0].Value(0, 1));

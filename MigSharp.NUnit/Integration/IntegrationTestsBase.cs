@@ -248,6 +248,12 @@ namespace MigSharp.NUnit.Integration
             // assert all tables have been created with the expected content
             foreach (IIntegrationTestMigration migration in Migrations.OfType<IIntegrationTestMigration>())
             {
+                IExclusiveIntegrationTestMigration exclusiveIntegrationTestMigration = migration as IExclusiveIntegrationTestMigration;
+                if (exclusiveIntegrationTestMigration != null && exclusiveIntegrationTestMigration.ProvidersNotSupportingFeatureUnderTest.Contains(ProviderName))
+                {
+                    continue; // do not check result of an unsupported migration
+                }
+
                 foreach (ExpectedTable expectedTable in migration.Tables)
                 {
                     DataTable table = GetTable(expectedTable.Name);

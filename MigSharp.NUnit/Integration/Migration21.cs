@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using NUnit.Framework;
@@ -6,34 +7,24 @@ using NUnit.Framework;
 namespace MigSharp.NUnit.Integration
 {
     [MigrationExport(Tag = "Test RowVersionColumn.")]
-    internal class Migration21 : IIntegrationTestMigration
+    internal class Migration21 : IExclusiveIntegrationTestMigration
     {
-        private static bool _rowVersionColumnIsSupported;
-
         public void Up(IDatabase db)
         {
-            _rowVersionColumnIsSupported = db.Context.ProviderMetadata.Name.StartsWith("SqlServer", StringComparison.Ordinal);
+            if (!this.IsFeatureSupported(db))
+            {
+                return;
+            }
 
             db.CreateTable("Mig21b")
-                  .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
-                  .WithNotNullableColumn("Content", DbType.String).OfSize(255);
+              .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
+              .WithNotNullableColumn("Content", DbType.String).OfSize(255);
 
-            if (_rowVersionColumnIsSupported)
-            {
-                db.CreateTable("Mig21a")
-                  .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
-                  .WithRowVersionColumn("Version")
-                  .WithNotNullableColumn("Content", DbType.String).OfSize(255);
-                db.Tables["Mig21b"].AddRowVersionColumn("Version");
-            }
-            else
-            {
-                db.CreateTable("Mig21a")
-                  .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
-                  .WithNotNullableColumn("Version", DbType.Int64)
-                  .WithNotNullableColumn("Content", DbType.String).OfSize(255);
-                db.Tables["Mig21b"].AddNotNullableColumn("Version", DbType.Int64).HavingDefault(1L);
-            }
+            db.CreateTable("Mig21a")
+              .WithPrimaryKeyColumn("Id", DbType.Int32).AsIdentity()
+              .WithRowVersionColumn("Version")
+              .WithNotNullableColumn("Content", DbType.String).OfSize(255);
+            db.Tables["Mig21b"].AddRowVersionColumn("Version");
 
             db.Execute(context =>
                 {
@@ -47,42 +38,34 @@ namespace MigSharp.NUnit.Integration
 
         private static void InsertAndUpdateRow(IDbCommand command, string tableName, IRuntimeContext context)
         {
-            if (_rowVersionColumnIsSupported)
+            command.CommandText = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" ( \"Content\" ) VALUES ( 'First' )", tableName);
+            context.CommandExecutor.ExecuteNonQuery(command);
+
+            byte[] firstRowVersion;
+            if (IntegrationTestContext.IsScripting)
             {
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" ( \"Content\" ) VALUES ( 'First' )", tableName);
-                context.CommandExecutor.ExecuteNonQuery(command);
-
-                byte[] firstRowVersion;
-                if (IntegrationTestContext.IsScripting)
-                {
-                    firstRowVersion = BitConverter.GetBytes(1L);
-                }
-                else
-                {
-                    command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT Version FROM \"{0}\"", tableName);
-                    firstRowVersion = (byte[])command.ExecuteScalar();
-                }
-
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, "UPDATE \"{0}\" SET Content = 'Updated'", tableName);
-                context.CommandExecutor.ExecuteNonQuery(command);
-
-                byte[] updatedRowVersion;
-                if (IntegrationTestContext.IsScripting)
-                {
-                    updatedRowVersion = BitConverter.GetBytes(2L);
-                }
-                else
-                {
-                    command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT Version FROM \"{0}\"", tableName);
-                    updatedRowVersion = (byte[])command.ExecuteScalar();
-                }
-                CollectionAssert.AreNotEqual(firstRowVersion, updatedRowVersion, "The row version was not updated.");
+                firstRowVersion = BitConverter.GetBytes(1L);
             }
             else
             {
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, "INSERT INTO \"{0}\" ( \"Content\", \"Version\" ) VALUES ( 'Updated', 1 )", tableName);
-                context.CommandExecutor.ExecuteNonQuery(command);
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT Version FROM \"{0}\"", tableName);
+                firstRowVersion = (byte[])command.ExecuteScalar();
             }
+
+            command.CommandText = string.Format(CultureInfo.InvariantCulture, "UPDATE \"{0}\" SET Content = 'Updated'", tableName);
+            context.CommandExecutor.ExecuteNonQuery(command);
+
+            byte[] updatedRowVersion;
+            if (IntegrationTestContext.IsScripting)
+            {
+                updatedRowVersion = BitConverter.GetBytes(2L);
+            }
+            else
+            {
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT Version FROM \"{0}\"", tableName);
+                updatedRowVersion = (byte[])command.ExecuteScalar();
+            }
+            CollectionAssert.AreNotEqual(firstRowVersion, updatedRowVersion, "The row version was not updated.");
         }
 
         public ExpectedTables Tables
@@ -93,11 +76,11 @@ namespace MigSharp.NUnit.Integration
                     {
                         new ExpectedTable("Mig21a", "Id", "Version", "Content")
                             {
-                                {1, CheckRowVersionValue(), "Updated"}
+                                { 1, CheckRowVersionValue(), "Updated" }
                             },
                         new ExpectedTable("Mig21b", "Id", "Content", "Version")
                             {
-                                {1, "Updated", CheckRowVersionValue()}
+                                { 1, "Updated", CheckRowVersionValue() }
                             }
                     };
             }
@@ -105,7 +88,23 @@ namespace MigSharp.NUnit.Integration
 
         private static Func<object, bool> CheckRowVersionValue()
         {
-            return v => !_rowVersionColumnIsSupported || BitConverter.ToUInt64((byte[])v, 0) > 0;
+            return v => BitConverter.ToUInt64((byte[])v, 0) > 0;
+        }
+
+        public IEnumerable<string> ProvidersNotSupportingFeatureUnderTest
+        {
+            get
+            {
+                return new[]
+                    {
+                        ProviderNames.MySql,
+                        ProviderNames.SQLite,
+                        ProviderNames.Oracle,
+                        ProviderNames.OracleOdbc,
+                        ProviderNames.Teradata,
+                        ProviderNames.TeradataOdbc,
+                    };
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ namespace MigSharp.MySql.NUnit
 {
     public abstract class MySqlIntegrationTestsBase : IntegrationTestsBase 
     {
-        protected override string ProviderName { get { return ProviderNames.MySqlExperimental; } }
+        protected override string ProviderName { get { return ProviderNames.MySql; } }
 
         [Test]
         public override void TestMigration1UsingConsoleApp() {

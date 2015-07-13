@@ -32,8 +32,7 @@ namespace MigSharp.NUnit
             var result = new List<string>(typeof(ProviderNames)
                                               .GetFields()
                                               .Where(f => f.IsStatic)
-                                              .Select(f => (string)f.GetValue(null))
-                                              .Except(new[] {"MySql"}));
+                                              .Select(f => (string)f.GetValue(null)));
             CollectionAssert.IsNotEmpty(result);
             return result;
         }

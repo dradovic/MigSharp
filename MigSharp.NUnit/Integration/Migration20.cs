@@ -1,19 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using NUnit.Framework;
 
 namespace MigSharp.NUnit.Integration
 {
     [MigrationExport(Tag = "Test DropIfExists.")]
-    internal class Migration20 : IIntegrationTestMigration
+    internal class Migration20 : IExclusiveIntegrationTestMigration
     {
         public void Up(IDatabase db)
         {
-            bool dropTableIfExistsIsSupported = db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe35 &&
-                                                db.Context.ProviderMetadata.Name != ProviderNames.SqlServerCe4 &&
-                                                db.Context.ProviderMetadata.Name != ProviderNames.Teradata &&
-                                                db.Context.ProviderMetadata.Name != ProviderNames.TeradataOdbc;
-            if (!dropTableIfExistsIsSupported)
+            if (!this.IsFeatureSupported(db))
             {
                 return;
             }
@@ -74,5 +71,19 @@ namespace MigSharp.NUnit.Integration
         }
 
         public ExpectedTables Tables { get { return new ExpectedTables(); } }
+
+        public IEnumerable<string> ProvidersNotSupportingFeatureUnderTest
+        {
+            get
+            {
+                return new[]
+                    {
+                        ProviderNames.SqlServerCe35,
+                        ProviderNames.SqlServerCe4,
+                        ProviderNames.Teradata,
+                        ProviderNames.TeradataOdbc,
+                    };
+            }
+        }
     }
 }

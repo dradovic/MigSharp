@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.SQLite, InvariantName, MaximumDbObjectNameLength = 128)]
+    [ProviderExport(ProviderNames.SQLite, InvariantName, MaximumDbObjectNameLength = 128, PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = int.MaxValue, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString)]
     [Supports(DbType.Binary)]
@@ -31,9 +31,12 @@ namespace MigSharp.Providers
     [Supports(DbType.VarNumeric)]
     [Supports(DbType.AnsiStringFixedLength, MaximumSize = int.MaxValue, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.StringFixedLength, MaximumSize = int.MaxValue, CanBeUsedAsPrimaryKey = true)]
+// ReSharper disable InconsistentNaming
     internal class SQLiteProvider : IProvider
+// ReSharper restore InconsistentNaming
     {
         public const string InvariantName = "System.Data.SQLite";
+        private const bool PrefixUnicodeLiterals = false;
 
         public string ExistsTable(string databaseName, string tableName)
         {
@@ -42,7 +45,7 @@ namespace MigSharp.Providers
 
         public string ConvertToSql(object value, DbType targetDbType)
         {
-            return SqlScriptingHelper.ToSql(value, targetDbType);
+            return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)

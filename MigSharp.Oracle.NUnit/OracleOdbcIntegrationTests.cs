@@ -58,6 +58,8 @@ namespace MigSharp.Oracle.NUnit
         [SetUp]
         public override void Setup()
         {
+            Environment.SetEnvironmentVariable("ORA_NCHAR_LITERAL_REPLACE", "TRUE"); // required for N'...' literals (Migration23) (only works for the ODBC driver)
+
             TestDbName = GetUniqueDbName();
             User = TestDbName;
             base.Setup();

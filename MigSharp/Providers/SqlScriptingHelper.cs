@@ -6,7 +6,7 @@ namespace MigSharp.Providers
 {
     internal static class SqlScriptingHelper
     {
-        public static string ToSql(object value, DbType dbType)
+        public static string ToSql(object value, DbType dbType, bool prefixUnicodeLiterals)
         {
             if (value == null) throw new ArgumentNullException("value");
 
@@ -15,7 +15,7 @@ namespace MigSharp.Providers
                 return "NULL";
             }
 
-            Func<object, string> script = GetScriptingFunction(dbType);
+            Func<object, string> script = GetScriptingFunction(dbType, prefixUnicodeLiterals);
             if (script == null)
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Values of type {0} cannot be scripted.", dbType));
@@ -23,15 +23,16 @@ namespace MigSharp.Providers
             return script(value);
         }
 
-        private static Func<object, string> GetScriptingFunction(DbType dbType)
+        private static Func<object, string> GetScriptingFunction(DbType dbType, bool prefixUnicodeLiterals)
         {
+            string unicodePrefix = ((dbType == DbType.String || dbType == DbType.StringFixedLength) && prefixUnicodeLiterals) ? "N" : string.Empty;
             switch (dbType)
             {
                 case DbType.AnsiString:
                 case DbType.AnsiStringFixedLength:
                 case DbType.String:
                 case DbType.StringFixedLength:
-                    return value => "'" + Convert.ToString(value, CultureInfo.InvariantCulture).Replace("'", "''") + "'";
+                    return value => unicodePrefix + "'" + Convert.ToString(value, CultureInfo.InvariantCulture).Replace("'", "''") + "'";
                 case DbType.Byte:
                     return value => Convert.ToByte(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
                 case DbType.Boolean:
@@ -54,7 +55,7 @@ namespace MigSharp.Providers
                             {
                                 return "'" + ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture) + "'"; // ISO 8601
                             }
-                        };          
+                        };
                 case DbType.Double:
                     return value => Convert.ToDouble(value, CultureInfo.InvariantCulture).ToString("r", CultureInfo.InvariantCulture);
                 case DbType.Int16:
@@ -80,7 +81,7 @@ namespace MigSharp.Providers
 
         internal static bool IsScriptable(DbType dbType)
         {
-            return GetScriptingFunction(dbType) != null;
+            return GetScriptingFunction(dbType, true) != null;
         }
     }
 }

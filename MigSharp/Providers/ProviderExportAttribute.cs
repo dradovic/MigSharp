@@ -47,6 +47,11 @@ namespace MigSharp.Providers
         public string EnableAnsiQuotesCommand { get; set; }
 
         /// <summary>
+        /// Gets an indication if Unicode literals should be prefixed such as N'...'.
+        /// </summary>
+        public bool PrefixUnicodeLiterals { get; set; }
+
+        /// <summary>
         /// Initializes a new instance.
         /// </summary>
         public ProviderExportAttribute(string name, string invariantName) : base(typeof(IProvider))

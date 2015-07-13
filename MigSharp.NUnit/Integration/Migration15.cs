@@ -5,63 +5,43 @@ using System.Globalization;
 namespace MigSharp.NUnit.Integration
 {
     [MigrationExport(Tag = "Adding and Dropping of Primary Keys")]
-    internal class Migration15 : IIntegrationTestMigration
+    internal class Migration15 : IExclusiveIntegrationTestMigration
     {
-        private static bool _onlyExpectOneRecord;
-
         public void Up(IDatabase db)
         {
-            if (!db.Context.ProviderMetadata.Name.Contains("Teradata") && db.Context.ProviderMetadata.Name != ProviderNames.SQLite)
+            if (!this.IsFeatureSupported(db))
             {
-                db.CreateTable(Tables[0].Name)
-                    .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32)
-                    .WithNotNullableColumn(Tables[0].Columns[1], DbType.Int32)
-                    .WithNotNullableColumn(Tables[0].Columns[2], DbType.Int32);
+                return;
             }
-            else
-            {
-                // Teradata and SQLite do not allow adding/dropping primary keys
-                db.CreateTable(Tables[0].Name)
-                    .WithNotNullableColumn(Tables[0].Columns[0], DbType.Int32)
-                    .WithNotNullableColumn(Tables[0].Columns[1], DbType.Int32)
-                    .WithNotNullableColumn(Tables[0].Columns[2], DbType.Int32);
-            }
+
+            db.CreateTable(Tables[0].Name)
+              .WithPrimaryKeyColumn(Tables[0].Columns[0], DbType.Int32)
+              .WithNotNullableColumn(Tables[0].Columns[1], DbType.Int32)
+              .WithNotNullableColumn(Tables[0].Columns[2], DbType.Int32);
 
             // insert first record
             db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" VALUES({1}, {2}, {3})",
-                Tables[0].Name,
-                Tables[0].Value(0, 0),
-                Tables[0].Value(0, 1),
-                Tables[0].Value(0, 2)));
+                                     Tables[0].Name,
+                                     Tables[0].Value(0, 0),
+                                     Tables[0].Value(0, 1),
+                                     Tables[0].Value(0, 2)));
 
             // add and drop primary keys
-            if (!db.Context.ProviderMetadata.Name.Contains("Teradata") && db.Context.ProviderMetadata.Name != ProviderNames.SQLite)
-            {
-                db.Tables[Tables[0].Name].PrimaryKey().Drop();
+            db.Tables[Tables[0].Name].PrimaryKey().Drop();
 
-                db.Tables[Tables[0].Name].AddPrimaryKey("Test Mig15")
-                    .OnColumn(Tables[0].Columns[1]);
-                db.Tables[Tables[0].Name].PrimaryKey("Test Mig15").Drop();
+            db.Tables[Tables[0].Name].AddPrimaryKey("Test Mig15")
+                                     .OnColumn(Tables[0].Columns[1]);
+            db.Tables[Tables[0].Name].PrimaryKey("Test Mig15").Drop();
 
-                db.Tables[Tables[0].Name].AddPrimaryKey()
-                    .OnColumn(Tables[0].Columns[2]);
-                db.Tables[Tables[0].Name].PrimaryKey().Drop();
-            }
+            db.Tables[Tables[0].Name].AddPrimaryKey()
+                                     .OnColumn(Tables[0].Columns[2]);
+            db.Tables[Tables[0].Name].PrimaryKey().Drop();
 
-            // there should be no primary key now, so adding the same values should be ok
-            if (db.Context.ProviderMetadata.Name != ProviderNames.TeradataOdbc) // the Teradata *ODBC* driver auto-creates *unique* primary indexes which would lead to a "Duplicate row error"
-            {
-                db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" VALUES({1}, {2}, {3})",
-                    Tables[0].Name,
-                    Tables[0].Value(0, 0),
-                    Tables[0].Value(0, 1),
-                    Tables[0].Value(0, 2)));
-                _onlyExpectOneRecord = false;
-            }
-            else
-            {
-                _onlyExpectOneRecord = true;
-            }
+            db.Execute(string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" VALUES({1}, {2}, {3})",
+                                     Tables[0].Name,
+                                     Tables[0].Value(0, 0),
+                                     Tables[0].Value(0, 1),
+                                     Tables[0].Value(0, 2)));
         }
 
         public ExpectedTables Tables
@@ -69,18 +49,27 @@ namespace MigSharp.NUnit.Integration
             get
             {
                 var expectedTables = new ExpectedTables
-                {
-                    new ExpectedTable("Mig15", "Col1", "Col2", "Col3")
                     {
-                        { 1, 2, 3 },
-                        { 1, 2, 3 },
-                    }
-                };
-                if (_onlyExpectOneRecord)
-                {
-                    expectedTables[0].RemoveAt(0);
-                }
+                        new ExpectedTable("Mig15", "Col1", "Col2", "Col3")
+                            {
+                                { 1, 2, 3 },
+                                { 1, 2, 3 },
+                            }
+                    };
                 return expectedTables;
+            }
+        }
+
+        public IEnumerable<string> ProvidersNotSupportingFeatureUnderTest
+        {
+            get
+            {
+                return new[]
+                    {
+                        ProviderNames.SQLite,
+                        ProviderNames.Teradata,
+                        ProviderNames.TeradataOdbc,
+                    };
             }
         }
     }

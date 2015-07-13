@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.Oracle, "Oracle.DataAccess.Client", MaximumDbObjectNameLength = MaximumDbObjectNameLength, ParameterExpression = ":p")]
+    [ProviderExport(ProviderNames.Oracle, "Oracle.DataAccess.Client", MaximumDbObjectNameLength = MaximumDbObjectNameLength, ParameterExpression = ":p", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions (e.g. columns using this data type cannot appear in a WHERE clause without converting using the Oracle 'to_char' function).")]
     [Supports(DbType.Binary)]
@@ -26,6 +26,8 @@ namespace MigSharp.Providers
     internal class OracleProvider : IProvider
     {
         private const int MaximumDbObjectNameLength = 30;
+        protected const bool PrefixUnicodeLiterals = true;
+
         private const string Identation = "\t";
 
         public string ExistsTable(string databaseName, string tableName)
@@ -40,7 +42,7 @@ namespace MigSharp.Providers
                 return string.Format(CultureInfo.InvariantCulture, "TO_DATE('{0}','DD-MON-YYYY HH24:MI:SS')",
                     ((DateTime)value).ToString("dd-MMM-yyyy HH:mm:ss", CultureInfo.InvariantCulture));
             }
-            return SqlScriptingHelper.ToSql(value, targetDbType);
+            return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)

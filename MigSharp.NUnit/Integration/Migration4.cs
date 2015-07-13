@@ -24,7 +24,7 @@ namespace MigSharp.NUnit.Integration
                     CreateTableWithOneRecord(support, db, true);
                 }
                 if (db.Context.ProviderMetadata.Name != ProviderNames.SQLite &&
-                    db.Context.ProviderMetadata.Name != ProviderNames.MySqlExperimental) // MySql and SQLite do not support identity on non-primary key columns
+                    db.Context.ProviderMetadata.Name != ProviderNames.MySql) // MySql and SQLite do not support identity on non-primary key columns
                 {
                     CreateTableWithOneRecord(support, db, false);
                 }

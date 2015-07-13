@@ -40,6 +40,11 @@ namespace MigSharp
         /// Gets a command-text to be executed on opening the connection to the database to enable ANSI quoting.
         /// </summary>
         string EnableAnsiQuotesCommand { get; }
+
+        /// <summary>
+        /// Gets an indication if Unicode literals should be prefixed such as N'...'.
+        /// </summary>
+        bool PrefixUnicodeLiterals { get; }
     }
 
     internal static class ProviderMetadataExtensions

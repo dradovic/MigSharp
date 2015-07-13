@@ -10,6 +10,7 @@ namespace MigSharp.Providers
     internal abstract class SqlServerProviderBase : IProvider
     {
         public const int MaximumDbObjectNameLength = 128;
+        protected const bool PrefixUnicodeLiterals = true;
 
         private const string Identation = "\t";
 
@@ -23,7 +24,7 @@ namespace MigSharp.Providers
 
         public string ConvertToSql(object value, DbType targetDbType)
         {
-            return SqlScriptingHelper.ToSql(value, targetDbType);
+            return SqlScriptingHelper.ToSql(value, targetDbType, true);
         }
 
         public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
