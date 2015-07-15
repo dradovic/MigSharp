@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MigSharp</id>
-    <version>2.3.1</version>
+    <version>2.3.3</version>
     <title>Mig#</title>
     <authors>dradovic</authors>
     <owners />
@@ -11,8 +11,14 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Write database migrations and/or schema modifications in your favorite .NET language and let Mig# generate the platform-dependent SQL code and update your schema. Features: fluent interface, automatic versioning, multi-module support, scripting to SQL files, validation framework for portability issues, suport for SQL Server, Oracle, Teradata, SQLite, legacy integration</description>
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
-    <tags>mig# migsharp migration database platform agnostic fluent schema versioning sql server generator oracle teradata sqlite</tags>
+    <tags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</tags>
     <releaseNotes>
+2.3.3
+- ships correct assembly versions in NuGet
+2.3.2
+- added support for MySql (thanks to mediocreguy)
+BUG FIXES:
+  - fixed scripting of Unicode literals
 2.3.1
 - added support for row-version columns (new .WithRowVersionColumn(columnName) method)
 - added support for ON DELETE CASCADE (new .CascadeOnDelete() method on foreign keys) (thanks to Marko Binic)
