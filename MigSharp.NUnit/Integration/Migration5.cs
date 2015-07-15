@@ -49,7 +49,6 @@ namespace MigSharp.NUnit.Integration
                     {
                         new ExpectedTable("Mig5", "Id", "First", "Second", "Third")
                             {
-                                //{ 1, "Test Row", "Unicodović", "Something" }, // FIXME: don, non LATIN-1 chars should work too
                                 { 1, "Test Row", "Irgendöppis", "Something" },
                                 { 2, "Only one desc", DBNull.Value, "New non-null value" },
                                 { 3, "Another one", DBNull.Value, Default3 },
