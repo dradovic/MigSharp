@@ -336,7 +336,7 @@ namespace MigSharp.Providers
 
             if (!isIdentity && !GetTypeSpecifier(column.DataType).EndsWith("LOB", StringComparison.OrdinalIgnoreCase))
             {
-                string defaultValue = column.DefaultValue == null ? "NULL" : GetDefaultValueAsString(column.DefaultValue);
+                string defaultValue = column.DefaultValue == null ? "NULL" : GetDefaultValueAsString(column.DefaultValue, column.DataType);
 
                 defaultConstraintClause = string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", defaultValue);
             }
@@ -355,7 +355,7 @@ namespace MigSharp.Providers
             return commandText;
         }
 
-        private string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value, DataType dataType)
         {
             if (value is SpecialDefaultValue)
             {
@@ -367,15 +367,10 @@ namespace MigSharp.Providers
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            else if (value is DateTime)
+            else
             {
-                return ConvertToSql(value, DbType.DateTime);
+                return ConvertToSql(value, dataType.DbType);
             }
-            else if (value is string)
-            {
-                return ConvertToSql(value, DbType.String);
-            }
-            return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         private static string GetCsList(IEnumerable<string> columnNames)

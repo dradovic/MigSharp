@@ -42,7 +42,7 @@ namespace MigSharp.Providers
                     primaryKeyColumns.Add(column.Name);
                 }
 
-                string defaultConstraintClause = GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue);
+                string defaultConstraintClause = GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue, column.DataType);
                 commandText += string.Format(CultureInfo.InvariantCulture, "{0}{1} {2} {3}{4}NULL{5}",
                     Identation,
                     Escape(column.Name),
@@ -119,7 +119,7 @@ namespace MigSharp.Providers
         {
             // assemble ALTER TABLE statements
             string commandText = string.Format(CultureInfo.InvariantCulture, @"{0} ADD ", AlterTable(tableName));
-            string defaultConstraintClause = GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue);
+            string defaultConstraintClause = GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue, column.DataType);
             commandText += string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}NULL{3}",
                 Escape(column.Name),
                 GetTypeSpecifier(column.DataType, column.IsRowVersion),
@@ -130,13 +130,13 @@ namespace MigSharp.Providers
 
         protected abstract IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists);
 
-        private string GetDefaultConstraintClause(string tableName, string columnName, object value)
+        private string GetDefaultConstraintClause(string tableName, string columnName, object value, DataType dataType)
         {
             string constraintName = GetDefaultConstraintName(tableName, columnName);
             string defaultConstraintClause = string.Empty;
             if (value != null)
             {
-                string defaultValue = GetDefaultValueAsString(value);
+                string defaultValue = GetDefaultValueAsString(value, dataType);
                 defaultConstraintClause = string.Format(CultureInfo.InvariantCulture, " CONSTRAINT [{0}]  DEFAULT {1}", constraintName, defaultValue);
             }
             return defaultConstraintClause;
@@ -147,7 +147,7 @@ namespace MigSharp.Providers
             return ObjectNameHelper.GetObjectName(tableName, "DF", MaximumDbObjectNameLength, columnName);
         }
 
-        private string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value, DataType dataType)
         {
             if (value is SpecialDefaultValue)
             {
@@ -159,15 +159,7 @@ namespace MigSharp.Providers
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            else if (value is DateTime)
-            {
-                return ConvertToSql(value, DbType.DateTime);
-            }
-            else if (value is string)
-            {
-                return ConvertToSql(value, DbType.String);
-            }
-            return Convert.ToString(value, CultureInfo.InvariantCulture);
+            return ConvertToSql(value, dataType.DbType);
         }
 
         public abstract IEnumerable<string> RenameTable(string oldName, string newName);
@@ -193,7 +185,7 @@ namespace MigSharp.Providers
             if (column.DefaultValue != null)
             {
                 yield return AlterTable(tableName) + string.Format(CultureInfo.InvariantCulture, " ADD {0} FOR {1}",
-                    GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue),
+                    GetDefaultConstraintClause(tableName, column.Name, column.DefaultValue, column.DataType),
                     Escape(column.Name));
             }
         }

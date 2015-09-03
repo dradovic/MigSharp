@@ -110,6 +110,7 @@
     <Compile Include="Integration\Migration19.cs" />
     <Compile Include="Integration\Migration2.cs" />
     <Compile Include="Integration\Migration22.cs" />
+    <Compile Include="Integration\Migration24.cs" />
     <Compile Include="Integration\Migration3.cs" />
     <Compile Include="Integration\Migration4.cs" />
     <Compile Include="Integration\Migration5.cs" />

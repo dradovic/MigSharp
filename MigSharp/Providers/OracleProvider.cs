@@ -186,7 +186,7 @@ END;", Escape(tableName));
             string commandText = string.Empty;
             if (column.DefaultValue != null)
             {
-                string defaultValue = GetDefaultValueAsString(column.DefaultValue);
+                string defaultValue = GetDefaultValueAsString(column.DefaultValue, column.DataType);
 
                 defaultConstraintClause = string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", defaultValue);
             }
@@ -199,7 +199,7 @@ END;", Escape(tableName));
             return commandText;
         }
 
-        private string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value, DataType dataType)
         {
             if (value is SpecialDefaultValue)
             {
@@ -211,15 +211,10 @@ END;", Escape(tableName));
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            else if (value is DateTime)
+            else
             {
-                return ConvertToSql(value, DbType.DateTime);
+                return ConvertToSql(value, dataType.DbType);
             }
-            else if (value is string)
-            {
-                return ConvertToSql(value, DbType.String);
-            }
-            return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         public IEnumerable<string> AddColumn(string tableName, Column column)
@@ -324,7 +319,7 @@ END;", Escape(tableName));
             query = query.Replace(Environment.NewLine, " ");
             string colN = column.IsNullable ? "NULL" : "";
             string colY = column.IsNullable ? "" : "NOT NULL";
-            string defaultConstraintClause = (column.DefaultValue == null) ? "DEFAULT NULL" : string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", GetDefaultValueAsString(column.DefaultValue).Replace("'", "''"));
+            string defaultConstraintClause = (column.DefaultValue == null) ? "DEFAULT NULL" : string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", GetDefaultValueAsString(column.DefaultValue, column.DataType).Replace("'", "''"));
             yield return string.Format(CultureInfo.InvariantCulture, query, tableName, column.Name, GetTypeSpecifier(column.DataType), colN, colY, defaultConstraintClause);
         }
 

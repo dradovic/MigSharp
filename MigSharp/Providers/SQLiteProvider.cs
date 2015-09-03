@@ -104,10 +104,10 @@ namespace MigSharp.Providers
             // INTEGER column as PK is automatically AUTOINCREMENT: http://www.sqlite.org/autoinc.html
             return string.Format(CultureInfo.InvariantCulture, "{0}{1}",
                 createdColumn != null && createdColumn.IsIdentity ? string.Empty : (column.IsNullable ? " NULL" : " NOT NULL"),
-                column.DefaultValue != null ? " DEFAULT " + GetDefaultValueAsString(column.DefaultValue) : string.Empty);
+                column.DefaultValue != null ? " DEFAULT " + GetDefaultValueAsString(column.DefaultValue, column.DataType) : string.Empty);
         }
 
-        private string GetDefaultValueAsString(object value)
+        private string GetDefaultValueAsString(object value, DataType dataType)
         {
             if (value is SpecialDefaultValue)
             {
@@ -119,15 +119,10 @@ namespace MigSharp.Providers
                         throw new ArgumentOutOfRangeException("value");
                 }
             }
-            else if (value is DateTime)
+            else
             {
-                return ConvertToSql(value, DbType.DateTime);
+                return ConvertToSql(value, dataType.DbType);
             }
-            else if (value is string)
-            {
-                return ConvertToSql(value, DbType.String);
-            }
-            return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
