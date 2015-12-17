@@ -63,7 +63,7 @@ namespace MigSharp
         /// </summary>
         /// <param name="referencedTableName">The name of the referenced table.</param>
         /// <param name="constraintName">Optionally, the name of the foreign key constraint. If null or empty, a default name will be generated.</param>
-        IAddedForeignKey AddForeignKeyTo(string referencedTableName, string constraintName); // FIXME: da, give possibility to reference table from another schema
+        IAddedForeignKey AddForeignKeyTo(string referencedTableName, string constraintName);
 
         /// <summary>
         /// Adds an unique constraint to the table.
