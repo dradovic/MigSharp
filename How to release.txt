@@ -19,20 +19,12 @@ Releasing:
 - Grab the MigSharp.1.0.0.nupkg from TC artifacts and go to https://www.nuget.org/packages/upload
 - Verify upload was okay. The content should be:
     lib/
-	  net35/
-	    MigSharp.dll
-		MigSharp.xml
-      net40/
+	  net45/
 	    MigSharp.dll
 		MigSharp.xml
 	tools/
-	  net35/
+	  net45/
 		Migrate.exe
-		Migrate.exe.config
-		Generate.exe
-		Generate.exe.config
-	  net40/
-	    Migrate.exe
 		Migrate.exe.config
 		Generate.exe
 		Generate.exe.config
