@@ -6,6 +6,6 @@ namespace MigSharp.Core
 {
     internal interface ITranslatableCommand : ICommand
     {
-        IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context);
+        IEnumerable<string> ToSql(IProvider provider, IMigrationContext context);
     }
 }

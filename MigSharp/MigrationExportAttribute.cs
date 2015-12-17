@@ -39,6 +39,14 @@ namespace MigSharp
         public string Tag { get; set; }
 
         /// <summary>
+        /// Indicates if the module name should be used as the default schema if no other schema name was specified for a command. SQL Server only.
+        /// <p>
+        /// ATTENTION: never change this setting for migration that has already been executed.
+        /// </p>
+        /// </summary>
+        public bool UseModuleNameAsDefaultSchema { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the attribute.
         /// </summary>
         public MigrationExportAttribute()

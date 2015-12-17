@@ -35,13 +35,13 @@ namespace MigSharp.Core.Commands
             _isRowVersion = isRowVersion;
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
             if (IsNullable && DefaultValue != null)
             {
                 throw new InvalidCommandException("Adding nullable columns with default values is not supported: some database platforms (like SQL Server) leave missing values NULL and some update missing values to the default value. Consider adding the column first as not-nullable, and then altering it to nullable.");
             }
-            string tableName = Parent.TableName;
+            TableName tableName = new TableName(Parent.TableName, Parent.Schema ?? context.GetDefaultSchema());
             var dataType = new DataType(Type, Size, Scale);
             var column = new Column(ColumnName, dataType, IsNullable, DefaultValue, IsRowVersion);
             IEnumerable<string> commands = provider.AddColumn(tableName, column);

@@ -21,7 +21,7 @@ namespace MigSharp.Process
         public IScheduledMigrationMetadata Metadata { get { return _metadata; } }
 
         public MigrationStep(IMigration migration, IScheduledMigrationMetadata metadata, ConnectionInfo connectionInfo, IProvider provider, IProviderMetadata providerMetadata, IDbConnectionFactory connectionFactory, ISqlDispatcher sqlDispatcher)
-            : base(migration, provider, providerMetadata)
+            : base(migration, provider, providerMetadata, metadata)
         {
             _metadata = metadata;
             _connectionInfo = connectionInfo;
@@ -29,10 +29,12 @@ namespace MigSharp.Process
             _sqlDispatcher = sqlDispatcher;
         }
 
+        IScheduledMigrationMetadata IMigrationReporter.MigrationMetadata { get { return _metadata; } }
+
         public IMigrationReport Report(IMigrationContext context)
         {
             Database database = GetDatabaseContainingMigrationChanges(_metadata.Direction, context);
-            return MigrationReport.Create(database, MigrationName);
+            return MigrationReport.Create(database, MigrationName, context);
         }
 
         /// <summary>

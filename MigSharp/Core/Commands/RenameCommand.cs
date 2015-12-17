@@ -10,28 +10,28 @@ namespace MigSharp.Core.Commands
     {
         private readonly string _newName;
 
-        public RenameCommand(ICommand parent, string newName) 
+        public RenameCommand(Command parent, string newName) 
             : base(parent)
         {
             _newName = newName;
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
             AlterTableCommand parentAlterTableCommand;
             AlterColumnCommand parentAlterColumnCommand;
             AlterPrimaryKeyCommand parentAlterPrimaryKeyCommand;
             if ((parentAlterTableCommand = Parent as AlterTableCommand) != null)
             {
-                return provider.RenameTable(parentAlterTableCommand.TableName, _newName);
+                return provider.RenameTable(new TableName(parentAlterTableCommand.TableName, parentAlterTableCommand.Schema ?? context.GetDefaultSchema()), _newName);
             }
             else if ((parentAlterColumnCommand = Parent as AlterColumnCommand) != null)
             {
-                return provider.RenameColumn(parentAlterColumnCommand.Parent.TableName, parentAlterColumnCommand.ColumnName, _newName);
+                return provider.RenameColumn(new TableName(parentAlterColumnCommand.Parent.TableName, parentAlterColumnCommand.Parent.Schema ?? context.GetDefaultSchema()), parentAlterColumnCommand.ColumnName, _newName);
             }
             else if ((parentAlterPrimaryKeyCommand = Parent as AlterPrimaryKeyCommand) != null)
             {
-                return provider.RenamePrimaryKey(parentAlterPrimaryKeyCommand.Parent.TableName, parentAlterPrimaryKeyCommand.ConstraintName, _newName);
+                return provider.RenamePrimaryKey(new TableName(parentAlterPrimaryKeyCommand.Parent.TableName, parentAlterPrimaryKeyCommand.Parent.Schema ?? context.GetDefaultSchema()), parentAlterPrimaryKeyCommand.ConstraintName, _newName);
             }
             else
             {

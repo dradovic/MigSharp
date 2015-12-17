@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-
+using FakeItEasy;
 using MigSharp.Core;
 using MigSharp.Process;
-
 using NUnit.Framework;
-
-using Rhino.Mocks;
 
 namespace MigSharp.NUnit.Process
 {
@@ -18,16 +15,18 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void TestRegularCase()
         {
-            var migration = MockRepository.GenerateStub<IMigration>();
-            ImportedMigration[] importedMigrations = {
-                new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null)),
-            };
-            IMigrationMetadata[] executedMigrations = {
-                new MigrationMetadata(1, DefaultModuleName, null),
-                new MigrationMetadata(2, DefaultModuleName, null),
-            };
+            var migration = A.Fake<IMigration>();
+            ImportedMigration[] importedMigrations =
+                {
+                    new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null), false),
+                };
+            IMigrationMetadata[] executedMigrations =
+                {
+                    new MigrationMetadata(1, DefaultModuleName, null),
+                    new MigrationMetadata(2, DefaultModuleName, null),
+                };
 
             var selector = new MigrationSelector(importedMigrations, executedMigrations);
 
@@ -44,16 +43,18 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void TestGapsAreFound()
         {
-            var migration = MockRepository.GenerateStub<IMigration>();
-            ImportedMigration[] importedMigrations = {
-                new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null)),
-            };
-            IMigrationMetadata[] executedMigrations = {
-                new MigrationMetadata(1, DefaultModuleName, null),
-                new MigrationMetadata(3, DefaultModuleName, null),
-            };
+            var migration = A.Fake<IMigration>();
+            ImportedMigration[] importedMigrations =
+                {
+                    new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null), false),
+                };
+            IMigrationMetadata[] executedMigrations =
+                {
+                    new MigrationMetadata(1, DefaultModuleName, null),
+                    new MigrationMetadata(3, DefaultModuleName, null),
+                };
 
             var selector = new MigrationSelector(importedMigrations, executedMigrations);
 
@@ -70,17 +71,19 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void TestReverting()
         {
-            var migration = MockRepository.GenerateStub<IReversibleMigration>();
-            ImportedMigration[] importedMigrations = {
-                new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null)),
-            };
-            IMigrationMetadata[] executedMigrations = {
-                new MigrationMetadata(1, DefaultModuleName, null),
-                new MigrationMetadata(2, DefaultModuleName, null),
-                new MigrationMetadata(3, DefaultModuleName, null),
-            };
+            var migration = A.Fake<IReversibleMigration>();
+            ImportedMigration[] importedMigrations =
+                {
+                    new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null), false),
+                };
+            IMigrationMetadata[] executedMigrations =
+                {
+                    new MigrationMetadata(1, DefaultModuleName, null),
+                    new MigrationMetadata(2, DefaultModuleName, null),
+                    new MigrationMetadata(3, DefaultModuleName, null),
+                };
 
             var selector = new MigrationSelector(importedMigrations, executedMigrations);
 
@@ -97,17 +100,19 @@ namespace MigSharp.NUnit.Process
         [Test, ExpectedException(typeof(IrreversibleMigrationException))]
         public void TestRevertingThrowsWhenImpossible()
         {
-            var migration = MockRepository.GenerateStub<IMigration>();
-            ImportedMigration[] importedMigrations = {
-                new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null)),
-            };
-            IMigrationMetadata[] executedMigrations = {
-                new MigrationMetadata(1, DefaultModuleName, null),
-                new MigrationMetadata(2, DefaultModuleName, null),
-                new MigrationMetadata(3, DefaultModuleName, null),
-            };
+            var migration = A.Fake<IMigration>();
+            ImportedMigration[] importedMigrations =
+                {
+                    new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null), false),
+                };
+            IMigrationMetadata[] executedMigrations =
+                {
+                    new MigrationMetadata(1, DefaultModuleName, null),
+                    new MigrationMetadata(2, DefaultModuleName, null),
+                    new MigrationMetadata(3, DefaultModuleName, null),
+                };
 
             var selector = new MigrationSelector(importedMigrations, executedMigrations);
 
@@ -119,17 +124,19 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void TestUnidentifiedMigrations()
         {
-            var migration = MockRepository.GenerateStub<IReversibleMigration>();
-            ImportedMigration[] importedMigrations = {
-                new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null)),
-            };
-            IMigrationMetadata[] executedMigrations = {
-                new MigrationMetadata(1, DefaultModuleName, null),
-                new MigrationMetadata(2, DefaultModuleName, null),
-                new MigrationMetadata(13, DefaultModuleName, null),
-            };
+            var migration = A.Fake<IMigration>();
+            ImportedMigration[] importedMigrations =
+                {
+                    new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(2, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(3, DefaultModuleName, null), false),
+                };
+            IMigrationMetadata[] executedMigrations =
+                {
+                    new MigrationMetadata(1, DefaultModuleName, null),
+                    new MigrationMetadata(2, DefaultModuleName, null),
+                    new MigrationMetadata(13, DefaultModuleName, null),
+                };
 
             var selector = new MigrationSelector(importedMigrations, executedMigrations);
 
@@ -147,13 +154,15 @@ namespace MigSharp.NUnit.Process
         [Test, ExpectedException(typeof(InvalidMigrationExportException), ExpectedMessage = "The migration with timestamp 1 and module name '" + MigrationExportAttribute.DefaultModuleName + "' is defined more than once.")]
         public void TestDuplicateMigrationsThrowInvalidMigrationException()
         {
-            var migration = MockRepository.GenerateStub<IMigration>();
-            ImportedMigration[] importedMigrations = {
-                new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null)),
-                new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null)),
-            };
-            IMigrationMetadata[] executedMigrations = {
-            };
+            var migration = A.Fake<IMigration>();
+            ImportedMigration[] importedMigrations =
+                {
+                    new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null), false),
+                    new ImportedMigration(migration, new MigrationMetadata(1, DefaultModuleName, null), false),
+                };
+            IMigrationMetadata[] executedMigrations =
+                {
+                };
 
             var selector = new MigrationSelector(importedMigrations, executedMigrations);
             Assert.IsNotNull(selector, "Just to satisfy R# and FxCop.");

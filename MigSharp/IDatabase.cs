@@ -14,12 +14,23 @@ namespace MigSharp
         IMigrationContext Context { get; }
 
         /// <summary>
-        /// Gets existing tables.
+        /// Gets existing database schemas. SQL Server only.
+        /// </summary>
+        IExistingSchemaCollection Schemata { get; }
+
+        /// <summary>
+        /// Creates a new schema on the database. SQL Server only.
+        /// </summary>
+        /// <param name="schemaName">The name of the new schema.</param>
+        void CreateSchema(string schemaName);
+
+        /// <summary>
+        /// Gets existing tables within the default schema.
         /// </summary>
         IExistingTableCollection Tables { get; }
 
         /// <summary>
-        /// Creates a new table on the database.
+        /// Creates a new table on the database within the default schema.
         /// </summary>
         /// <param name="tableName">The name of the new table.</param>
         /// <param name="primaryKeyConstraintName">Optionally, the name of the primary key constraint.</param>
@@ -44,7 +55,7 @@ namespace MigSharp
     public static class DatabaseExtensions
     {
         /// <summary>
-        /// Creates a new table on the database with a default primary key constraint name.
+        /// Creates a new table on the database within the default schema with a default primary key constraint name.
         /// </summary>
         public static ICreatedTable CreateTable(this IDatabase database, string tableName)
         {

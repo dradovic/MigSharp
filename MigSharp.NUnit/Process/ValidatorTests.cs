@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
-
+using FakeItEasy;
+using MigSharp.Core;
 using MigSharp.Process;
 using MigSharp.Providers;
 
 using NUnit.Framework;
-
-using Rhino.Mocks;
 
 namespace MigSharp.NUnit.Process
 {
     [TestFixture, Category("smoke")]
     public class ValidatorTests
     {
-        private const string ProviderName = "TestProvider";
+        private static readonly DbPlatform Platform = DbPlatform.SqlServer2008;
         private const int MaximumSupportedLength = 10;
         private const string MigrationName = "TestMigration";
 
@@ -25,10 +24,10 @@ namespace MigSharp.NUnit.Process
         {
             const string longestName = "Some very long name";
 
-            IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
-            migration.Expect(m => m.NewObjectNames).Return(new[] { longestName, longestName.Substring(1) });
-            migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<UsedDataType>());
-            migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
+            IRecordedMigration migration = A.Fake<IRecordedMigration>();
+            A.CallTo(() => migration.NewObjectNames).Returns(new[] { longestName, longestName.Substring(1) });
+            //A.CallTo(() => migration.DataTypes).Returns(Enumerable.Empty<UsedDataType>());
+            //migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             var report = new MigrationReport(MigrationName, "Some other validation error.", migration);
 
             string errors;
@@ -37,7 +36,7 @@ namespace MigSharp.NUnit.Process
 
             Assert.AreEqual(
                 string.Format(CultureInfo.CurrentCulture, "Error in migration '{0}': Some other validation error.", MigrationName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' contains object names that are longer than what is supported by '{1}' ('{2}': {3}, supported: {4}).", MigrationName, ProviderName, longestName, longestName.Length, MaximumSupportedLength),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' contains object names that are longer than what is supported by '{1}' ('{2}': {3}, supported: {4}).", MigrationName, Platform, longestName, longestName.Length, MaximumSupportedLength),
                 errors);
             Assert.IsNullOrEmpty(warnings);
         }
@@ -59,65 +58,67 @@ namespace MigSharp.NUnit.Process
                 new UsedDataType(new DataType(DbType.Decimal, 8, 2), false, true), // as identity -> *not* ok with scale
                 new UsedDataType(new DataType(DbType.Decimal, 8), false, true), // as identity -> ok without scale
             };
-            IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
-            migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
+            IRecordedMigration migration = A.Fake<IRecordedMigration>();
+            A.CallTo(() => migration.DataTypes).Returns(dataTypes);
+            //migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
             string errors;
             string warnings;
             Validate(report, out errors, out warnings);
 
-            string expected = string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Currency, ProviderName) + Environment.NewLine +
-                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum size of 10 supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName) + Environment.NewLine +
-                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum scale of 5 supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName) + Environment.NewLine +
-                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' for a primary key which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName) + Environment.NewLine +
-                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(8,2)' for an identity column which is not supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName);
+            string expected = string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Currency, Platform) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum size of 10 supported by '{2}'.", MigrationName, DbType.Decimal, Platform) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(20,10)' which exceeds the maximum scale of 5 supported by '{2}'.", MigrationName, DbType.Decimal, Platform) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' for a primary key which is not supported by '{2}'.", MigrationName, DbType.String, Platform) + Environment.NewLine +
+                              string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(8,2)' for an identity column which is not supported by '{2}'.", MigrationName, DbType.Decimal, Platform);
             Assert.AreEqual(expected, errors);
         }
 
         [Test]
         public void VerifyWarningsForSupportedDataTypesAreReported()
         {
-            MigrationOptions options = GetOptions();
+            IEnumerable<ProviderInfo> providerInfos;
+            MigrationOptions options = GetOptions(out providerInfos);
             string warnings;
-            string errors = GetWarnings(options, out warnings);
+            string errors = GetWarnings(providerInfos, options, out warnings);
 
             Assert.IsNullOrEmpty(errors);
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.Guid, ProviderName, ProviderStub.WarningMessage) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.String, ProviderName, ProviderStub.WarningMessageWithoutSize),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.Guid, Platform, ProviderStub.WarningMessage) + Environment.NewLine +
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.String, Platform, ProviderStub.WarningMessageWithoutSize),
                 warnings);
         }
 
         [Test]
         public void VerifyWarningsForSupportedDataTypesAreReportedUnlessSuppressed()
         {
-            MigrationOptions options = GetOptions();
-            options.SuppressWarning(ProviderName, DbType.Guid, SuppressCondition.WhenSpecifiedWithoutSize);
+            IEnumerable<ProviderInfo> providerInfos;
+            MigrationOptions options = GetOptions(out providerInfos);
+            options.SuppressWarning(Platform, DbType.Guid, SuppressCondition.WhenSpecifiedWithoutSize);
             string warnings;
-            string errors = GetWarnings(options, out warnings);
+            string errors = GetWarnings(providerInfos, options, out warnings);
 
             Assert.IsNullOrEmpty(errors);
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.String, ProviderName, ProviderStub.WarningMessageWithoutSize),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.String, Platform, ProviderStub.WarningMessageWithoutSize),
                 warnings);
         }
 
-        private static string GetWarnings(MigrationOptions options, out string warnings)
+        private static string GetWarnings(IEnumerable<ProviderInfo> providerInfos, MigrationOptions options, out string warnings)
         {
             var dataTypes = new List<UsedDataType>
             {
                 new UsedDataType(new DataType(DbType.Guid), false, false),
                 new UsedDataType(new DataType(DbType.String), false, false),
             };
-            IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
-            migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
+            IRecordedMigration migration = A.Fake<IRecordedMigration>();
+            A.CallTo(() => migration.DataTypes).Returns(dataTypes);
+            //migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
             string errors;
-            Validate(options, report, out errors, out warnings);
+            Validate(providerInfos, options, report, out errors, out warnings);
             return errors;
         }
 
@@ -128,9 +129,9 @@ namespace MigSharp.NUnit.Process
             {
                 new UsedDataType(new DataType(DbType.Int64), false, false),
             };
-            IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
-            migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
+            IRecordedMigration migration = A.Fake<IRecordedMigration>();
+            A.CallTo(() => migration.DataTypes).Returns(dataTypes);
+            //migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
             string errors;
@@ -139,7 +140,7 @@ namespace MigSharp.NUnit.Process
 
             Assert.IsNullOrEmpty(errors);
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': Int64 is not supported for DbParameters with ODBC; requires calling ToString to directly inline the value in the CommandText.", MigrationName, DbType.Int64, ProviderName),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': Int64 is not supported for DbParameters with ODBC; requires calling ToString to directly inline the value in the CommandText.", MigrationName, DbType.Int64, Platform),
                 warnings);
         }
 
@@ -152,9 +153,9 @@ namespace MigSharp.NUnit.Process
                 new UsedDataType(new DataType(DbType.String, null, 777), false, false),
                 new UsedDataType(new DataType(DbType.Decimal), false, false),
             };
-            IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
-            migration.Expect(m => m.DataTypes).Return(dataTypes);
-            migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
+            IRecordedMigration migration = A.Fake<IRecordedMigration>();
+            A.CallTo(() => migration.DataTypes).Returns(dataTypes);
+            //migration.Expect(m => m.Methods).Return(Enumerable.Empty<string>());
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
             string errors;
@@ -162,9 +163,9 @@ namespace MigSharp.NUnit.Process
             Validate(report, out errors, out warnings);
 
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(777)' which is not supported by '{2}'.", MigrationName, DbType.Int32, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(null,777)' which is not supported by '{2}'.", MigrationName, DbType.String, ProviderName) + Environment.NewLine +
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Decimal, ProviderName),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(777)' which is not supported by '{2}'.", MigrationName, DbType.Int32, Platform) + Environment.NewLine +
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(null,777)' which is not supported by '{2}'.", MigrationName, DbType.String, Platform) + Environment.NewLine +
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Decimal, Platform),
                 errors);
             Assert.IsNullOrEmpty(warnings);
         }
@@ -188,9 +189,9 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void VerifyUnsupportedMethodsAreReported()
         {
-            IRecordedMigration migration = MockRepository.GenerateStub<IRecordedMigration>();
-            migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<UsedDataType>());
-            migration.Expect(m => m.Methods).Return(new[] { "CreateTable", "AddColumn" });
+            IRecordedMigration migration = A.Fake<IRecordedMigration>();
+            //migration.Expect(m => m.DataTypes).Return(Enumerable.Empty<UsedDataType>());
+            A.CallTo(() => migration.Methods).Returns(new[] { "CreateTable", "AddColumn" });
             MigrationReport report = new MigrationReport(MigrationName, string.Empty, migration);
 
             string errors;
@@ -198,44 +199,43 @@ namespace MigSharp.NUnit.Process
             Validate(report, out errors, out warnings);
 
             Assert.AreEqual(
-                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' calls the '{1}' method which is not supported by '{2}': AddColumn is not supported because this is just a test.", MigrationName, "AddColumn", ProviderName),
+                string.Format(CultureInfo.CurrentCulture, "Migration '{0}' calls the '{1}' method which is not supported by '{2}': AddColumn is not supported because this is just a test.", MigrationName, "AddColumn", Platform),
                 errors);
             Assert.IsNullOrEmpty(warnings);
         }
 
-        private static MigrationOptions GetOptions()
+        private static MigrationOptions GetOptions(out IEnumerable<ProviderInfo> providerInfos)
         {
-            IProviderMetadata returnedMetadata = MockRepository.GenerateStub<IProviderMetadata>();
-            returnedMetadata.Expect(m => m.MaximumDbObjectNameLength).Return(MaximumSupportedLength);
-            returnedMetadata.Expect(m => m.Name).Return(ProviderName);
-            returnedMetadata.Expect(m => m.InvariantName).Return("System.Data.Odbc"); // for the Odbc specific tests
+            IProviderMetadata metadata = A.Fake<IProviderMetadata>();
+            A.CallTo(() => metadata.MaximumDbObjectNameLength).Returns(MaximumSupportedLength);
+            A.CallTo(() => metadata.MajorVersion).Returns(Platform.MajorVersion);
+            A.CallTo(() => metadata.InvariantName).Returns("System.Data.Odbc"); // for the Odbc specific tests
 
             IProvider provider = new ProviderStub();
 
-            IProviderFactory providerFactory = MockRepository.GenerateStub<IProviderFactory>();
-            IProviderMetadata passedMetadata;
-            providerFactory.Expect(f => f.GetProvider(ProviderName, out passedMetadata)).OutRef(returnedMetadata).Return(provider);
-
-            var supportedProviders = new SupportedProviders(providerFactory);
-            supportedProviders.Add(ProviderName);
+            IProviderFactory providerFactory = A.Fake<IProviderFactory>();
+            A.CallTo(() => providerFactory.GetProvider(metadata)).Returns(provider);
+            providerInfos = new[] { new ProviderInfo(provider, metadata) };
 
             var options = new MigrationOptions();
-            options.SupportedProviders = supportedProviders;
+            options.SupportedPlatforms.AddOrReplaceMinimumRequirement(Platform);
             return options;
         }
 
-        private static void Validate(MigrationOptions options, IMigrationReport report, out string errors, out string warnings)
+        private static void Validate(IEnumerable<ProviderInfo> providerInfos, MigrationOptions options, IMigrationReport report, out string errors, out string warnings)
         {
-            var validator = new Validator(options);
-            IMigrationReporter reporter = MockRepository.GenerateStub<IMigrationReporter>();
-            reporter.Expect(r => r.Report(null)).IgnoreArguments().Return(report);
+            var validator = new Validator(providerInfos, options);
+            IMigrationReporter reporter = A.Fake<IMigrationReporter>();
+            A.CallTo(() => reporter.Report(A<IMigrationContext>._)).Returns(report);
             IMigrationReporter[] reporters = new[] { reporter };
             validator.Validate(reporters, out errors, out warnings);
         }
 
         private static void Validate(IMigrationReport report, out string errors, out string warnings)
         {
-            Validate(GetOptions(), report, out errors, out warnings);
+            IEnumerable<ProviderInfo> providerInfos;
+            MigrationOptions options = GetOptions(out providerInfos);
+            Validate(providerInfos, options, report, out errors, out warnings);
         }
 
         [Supports(DbType.Int32)]
@@ -253,7 +253,7 @@ namespace MigSharp.NUnit.Process
 
             #region Implementation of IProvider
 
-            string IProvider.ExistsTable(string databaseName, string tableName)
+            string IProvider.ExistsTable(string databaseName, TableName tableName)
             {
                 return string.Empty;
             }
@@ -263,12 +263,12 @@ namespace MigSharp.NUnit.Process
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
+            IEnumerable<string> IProvider.CreateTable(TableName tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
             {
                 yield break;
             }
 
-            IEnumerable<string> IProvider.DropTable(string tableName, bool checkIfExists)
+            IEnumerable<string> IProvider.DropTable(TableName tableName, bool checkIfExists)
             {
                 if (checkIfExists)
                 {
@@ -277,77 +277,87 @@ namespace MigSharp.NUnit.Process
                 return Enumerable.Empty<string>();
             }
 
-            IEnumerable<string> IProvider.AddColumn(string tableName, Column column)
+            IEnumerable<string> IProvider.AddColumn(TableName tableName, Column column)
             {
                 throw new NotSupportedException(NotSupportedMessageForAddColumn);
             }
 
-            IEnumerable<string> IProvider.RenameTable(string oldName, string newName)
+            IEnumerable<string> IProvider.RenameTable(TableName oldName, string newName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.RenameColumn(string tableName, string oldName, string newName)
+            IEnumerable<string> IProvider.RenameColumn(TableName tableName, string oldName, string newName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.DropColumn(string tableName, string columnName)
+            IEnumerable<string> IProvider.DropColumn(TableName tableName, string columnName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.AlterColumn(string tableName, Column column)
+            IEnumerable<string> IProvider.AlterColumn(TableName tableName, Column column)
             {
                 throw new NotSupportedException();
             }
 
-            public IEnumerable<string> AddIndex(string tableName, IEnumerable<string> columnNames, string indexName)
+            public IEnumerable<string> AddIndex(TableName tableName, IEnumerable<string> columnNames, string indexName)
             {
                 throw new NotSupportedException();
             }
 
-            public IEnumerable<string> DropIndex(string tableName, string indexName)
+            public IEnumerable<string> DropIndex(TableName tableName, string indexName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
+            IEnumerable<string> IProvider.AddForeignKey(TableName tableName, TableName referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.DropForeignKey(string tableName, string constraintName)
+            IEnumerable<string> IProvider.DropForeignKey(TableName tableName, string constraintName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
+            IEnumerable<string> IProvider.AddPrimaryKey(TableName tableName, IEnumerable<string> columnNames, string constraintName)
             {
                 throw new NotSupportedException();
             }
 
-            public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+            public IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.DropPrimaryKey(string tableName, string constraintName)
+            IEnumerable<string> IProvider.DropPrimaryKey(TableName tableName, string constraintName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)
+            IEnumerable<string> IProvider.AddUniqueConstraint(TableName tableName, IEnumerable<string> columnNames, string constraintName)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerable<string> IProvider.DropUniqueConstraint(string tableName, string constraintName)
+            IEnumerable<string> IProvider.DropUniqueConstraint(TableName tableName, string constraintName)
             {
                 throw new NotSupportedException();
             }
 
-            public IEnumerable<string> DropDefault(string tableName, Column column)
+            public IEnumerable<string> DropDefault(TableName tableName, Column column)
+            {
+                throw new NotSupportedException();
+            }
+
+            public IEnumerable<string> CreateSchema(string schemaName)
+            {
+                throw new NotSupportedException();
+            }
+
+            public IEnumerable<string> DropSchema(string schemaName)
             {
                 throw new NotSupportedException();
             }

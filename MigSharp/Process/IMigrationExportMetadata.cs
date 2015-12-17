@@ -14,5 +14,10 @@
         /// Gets the module name of the migration.
         /// </summary>
         string ModuleName { get; }
+
+        /// <summary>
+        /// Indicates if the module name should be used as the default schema if no other schema name was specified for a command. SQL Server only.
+        /// </summary>
+        bool UseModuleNameAsDefaultSchema { get; }
     }
 }

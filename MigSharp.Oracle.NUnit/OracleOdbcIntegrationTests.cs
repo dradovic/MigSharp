@@ -3,10 +3,7 @@ using System.Data.Common;
 using System.Data.Odbc;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Threading;
-
 using MigSharp.NUnit.Integration;
-
 using NUnit.Framework;
 
 namespace MigSharp.Oracle.NUnit
@@ -52,7 +49,7 @@ namespace MigSharp.Oracle.NUnit
             //Oracle only allows 30 chars for database name and a guid is 38 so we use this shortened form
             //Oracle requires name to start with a letter no longer a true short guid as we use substring added timestamp to ensure unique and remove illegal chars
             return string.Format(CultureInfo.InvariantCulture, "A{0}{1}", Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 22).Replace("/", "_")
-                .Replace("+", "_"), DateTime.Now.Minute.ToString(CultureInfo.CurrentCulture) + DateTime.Now.Second + DateTime.Now.Millisecond);
+                                                                                 .Replace("+", "_"), DateTime.Now.Minute.ToString(CultureInfo.CurrentCulture) + DateTime.Now.Second + DateTime.Now.Millisecond);
         }
 
         [SetUp]
@@ -75,7 +72,7 @@ namespace MigSharp.Oracle.NUnit
             CreateDatabase(TestDbName);
         }
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
         {
             var adapter = new OdbcDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), OdbcConnectionString);
             builder = new OdbcCommandBuilder(adapter);
@@ -88,7 +85,7 @@ namespace MigSharp.Oracle.NUnit
 
         protected override string ConnectionString { get { return OdbcConnectionString; } }
 
-        protected override string ProviderName { get { return ProviderNames.OracleOdbc; } }
+        protected override DbPlatform DbPlatform { get { return new DbPlatform(Platform.Oracle, 10, Driver.Odbc); } }
 
         [TearDown]
         public override void Teardown()
@@ -125,28 +122,9 @@ namespace MigSharp.Oracle.NUnit
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        public static int DropDatabase(string databaseName)
+        public int DropDatabase(string databaseName)
         {
-            try
-            {
-                OdbcConnection.ReleaseObjectPool();
-                //Clean up any connections that have not been disposed yet
-                GC.Collect();
-                //give databse a chance to release connections
-                GC.WaitForPendingFinalizers();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Can't clear pools error: " + ex.Message);
-            }
-            //Oracle likes to keep connections open stopping you from droppign the database.
-            //KillConnections(User);
-
-            //Clean up any connections that have not been disposed yet
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            //give databse a chance to release connections
-            Thread.Sleep(1000);
+            OdbcIntegrationTestHelper.CloseAllOdbcConnections();
 
             using (var con = new OdbcConnection(MasterConnectionString))
             {
@@ -156,6 +134,7 @@ namespace MigSharp.Oracle.NUnit
                 {
                     try
                     {
+                        Console.WriteLine("Executing: {0}", com.CommandText);
                         return com.ExecuteNonQuery();
                     }
                     catch (OdbcException)

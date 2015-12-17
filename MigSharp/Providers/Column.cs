@@ -1,6 +1,6 @@
 ﻿namespace MigSharp.Providers
 {
-    public class Column
+    internal class Column
     {
         private readonly string _name;
         private readonly DataType _dataType;

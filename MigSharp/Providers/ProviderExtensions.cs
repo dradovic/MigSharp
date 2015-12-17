@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
@@ -36,7 +37,7 @@ namespace MigSharp.Providers
             }
             try
             {
-                provider.DropTable(string.Empty, true);
+                provider.DropTable(new TableName("dummy", null), true);
             }
             catch (NotSupportedException x)
             {
@@ -73,6 +74,10 @@ namespace MigSharp.Providers
                 else if (parameter.ParameterType == typeof(Column))
                 {
                     parameters.Add(new Column(string.Empty, new DataType(0), false, null, false));
+                }
+                else if (parameter.ParameterType == typeof(TableName))
+                {
+                    parameters.Add(new TableName("dummy", null));
                 }
                 else
                 {

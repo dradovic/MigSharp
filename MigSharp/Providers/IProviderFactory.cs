@@ -1,7 +1,10 @@
+using System.Collections.Generic;
+
 namespace MigSharp.Providers
 {
     internal interface IProviderFactory
     {
-        IProvider GetProvider(string providerName, out IProviderMetadata metadata);
+        IProvider GetProvider(IProviderMetadata metadata);
+        IEnumerable<IProviderMetadata> GetProviderMetadatas();
     }
 }

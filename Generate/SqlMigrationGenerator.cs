@@ -35,7 +35,7 @@ namespace MigSharp.Generate
 
             // create tables
             var tablesWithForeignKeys = new List<Table>();
-            foreach (Table table in database.Tables)
+            foreach (Table table in database.Tables.Cast<Table>().OrderBy(t => t.Schema).ThenBy(t => t.Name))
             {
                 if (_excludedTables.Contains(table.Name) ||
                     table.Name.StartsWith("__", StringComparison.Ordinal) ||
@@ -43,11 +43,6 @@ namespace MigSharp.Generate
                 {
                     // hide special tables such as the EF migration history table
                     Console.WriteLine("Skipping [{0}]", table.Name);
-                    continue;
-                }
-                if (table.Schema != "dbo")
-                {
-                    Console.Error.WriteLine("WARNING: Skipping [{0}].[{1}] as non-dbo schemas are not supported yet.", table.Schema, table.Name);
                     continue;
                 }
 
@@ -59,6 +54,10 @@ namespace MigSharp.Generate
             }
 
             // create foreign keys between tables
+            AppendLine(string.Empty, ref migration);
+            AppendLine(Indent(0) + "//", ref migration);
+            AppendLine(Indent(0) + "// Foreign Keys", ref migration);
+            AppendLine(Indent(0) + "//", ref migration);
             foreach (var table in tablesWithForeignKeys)
             {
                 foreach (ForeignKey foreignKey in table.ForeignKeys)
@@ -71,7 +70,7 @@ namespace MigSharp.Generate
 
         private void HandleTable(Table table, ref string migration)
         {
-            AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.CreateTable(\"{1}\")", Indent(0), table.Name), ref migration);
+            AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.Schemata[\"{1}\"].CreateTable(\"{2}\")", Indent(0), table.Schema, table.Name), ref migration);
             Column lastColumn = table.Columns.OfType<Column>().Last();
             foreach (Column column in table.Columns)
             {
@@ -86,8 +85,9 @@ namespace MigSharp.Generate
 
         private static void HandleForeignKey(Table table, ForeignKey foreignKey, ref string migration)
         {
-            AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.Tables[\"{1}\"].AddForeignKeyTo(\"{2}\")",
+            AppendLine(string.Format(CultureInfo.InvariantCulture, "{0}db.Schemata[\"{1}\"].Tables[\"{2}\"].AddForeignKeyTo(\"{3}\")",
                 Indent(0),
+                table.Schema,
                 table.Name,
                 foreignKey.ReferencedTable), ref migration);
             ForeignKeyColumn lastColumn = foreignKey.Columns.Cast<ForeignKeyColumn>().Last();
@@ -105,7 +105,7 @@ namespace MigSharp.Generate
         {
             if (index.IndexKeyType == IndexKeyType.DriPrimaryKey || index.IsUnique) return; // handled in HandleColumn
 
-            string line = string.Format(CultureInfo.InvariantCulture, "{0}db.Tables[\"{1}\"].AddIndex()", Indent(0), table.Name);
+            string line = string.Format(CultureInfo.InvariantCulture, "{0}db.Schemata[\"{1}\"].Tables[\"{2}\"].AddIndex()", Indent(0), table.Schema, table.Name);
             foreach (IndexedColumn column in index.IndexedColumns)
             {
                 line += string.Format(CultureInfo.InvariantCulture, ".OnColumn(\"{0}\")", column.Name);
@@ -135,7 +135,7 @@ namespace MigSharp.Generate
             }
             catch (NotSupportedException x)
             {
-                _errors.Add(string.Format(CultureInfo.CurrentCulture, "In table {0} for column {1}: {2}", table.Name, column.Name, x.Message));
+                _errors.Add(string.Format(CultureInfo.CurrentCulture, "In table {0}.{1} for column {2}: {3}", table.Schema, table.Name, column.Name, x.Message));
             }
         }
 

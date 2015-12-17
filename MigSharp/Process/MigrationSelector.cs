@@ -16,7 +16,7 @@ namespace MigSharp.Process
         {
             var duplicateMigration = importedMigrations
                 .GroupBy(m => m.Metadata, (metadata, enumerable) => new { metadata.Timestamp, metadata.ModuleName, Count = enumerable.Count() }, new MigrationMetadataComparer())
-                .Where(m => m.Count > 1).FirstOrDefault();
+                .FirstOrDefault(m => m.Count > 1);
             if (duplicateMigration != null)
             {
                 throw new InvalidMigrationExportException(string.Format(CultureInfo.CurrentCulture,
@@ -40,14 +40,14 @@ namespace MigSharp.Process
                 where m.Metadata.Timestamp <= timestamp &&
                       !_executedMigrations.Any(x => comparer.Equals(x, m.Metadata))
                 orderby m.Metadata.Timestamp ascending
-                select new ApplicableMigration(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Up)));
+                select new ApplicableMigration(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Up, m.UseModuleNameAsDefaultSchema)));
 
             var applicableDownMigrations = new List<ApplicableMigration>(
                 from m in moduleMigrations
                 where m.Metadata.Timestamp > timestamp &&
                       _executedMigrations.Any(x => comparer.Equals(x, m.Metadata))
                 orderby m.Metadata.Timestamp descending
-                select new ApplicableMigration(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Down)));
+                select new ApplicableMigration(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Down, m.UseModuleNameAsDefaultSchema)));
 
             if (applicableDownMigrations.Any(m => !(m.Implementation is IReversibleMigration)))
             {
@@ -64,7 +64,7 @@ namespace MigSharp.Process
                                                     a.Metadata.Timestamp == m.Timestamp)
                 orderby m.Timestamp
                 select m);
-            if (unidentifiedMigrations.Count() > 0)
+            if (unidentifiedMigrations.Any())
             {
                 Log.Warning("Found {0} migration(s) that were executed in the database but are not contained in the application.", unidentifiedMigrations.Count());
             }

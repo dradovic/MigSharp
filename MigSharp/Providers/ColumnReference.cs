@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a pair of column names which is used as an element of a foreign key relationship.
     /// </summary>
-    public class ColumnReference
+    internal class ColumnReference
     {
         private readonly string _columnName;
         private readonly string _referencedColumnName;

@@ -9,11 +9,11 @@ namespace MigSharp.Process
     {
         private readonly string _migrationName;
         private readonly DataType _dataType;
-        private readonly string _providerName;
+        private readonly DbPlatform _dbPlatform;
         private readonly string _warning;
 
         public DataType DataType { get { return _dataType; } }
-        public string ProviderName { get { return _providerName; } }
+        public DbPlatform DbPlatform { get { return _dbPlatform; } }
 
         public string Message
         {
@@ -23,16 +23,16 @@ namespace MigSharp.Process
                     "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}",
                     _migrationName,
                     _dataType,
-                    _providerName,
+                    _dbPlatform,
                     _warning);
             }
         }
 
-        public ValidationWarning(string migrationName, DataType dataType, string providerName, string warning)
+        public ValidationWarning(string migrationName, DataType dataType, DbPlatform dbPlatform, string warning)
         {
             _migrationName = migrationName;
             _dataType = dataType;
-            _providerName = providerName;
+            _dbPlatform = dbPlatform;
             _warning = warning;
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace MigSharp.Providers
 {
-    public class CreatedColumn : Column
+    internal class CreatedColumn : Column
     {
         private readonly bool _isPrimaryKey;
         private readonly bool _isIdentity;

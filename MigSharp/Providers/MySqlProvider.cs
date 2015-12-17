@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.MySql, InvariantName, MaximumDbObjectNameLength = MaximumDbObjectNameLength, EnableAnsiQuotesCommand = "SET SESSION sql_mode='ANSI_QUOTES'", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
+    [ProviderExport(Platform.MySql, 5, InvariantName, MaximumDbObjectNameLength = MaximumDbObjectNameLength, EnableAnsiQuotesCommand = "SET SESSION sql_mode='ANSI_QUOTES'", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = 65535, CanBeUsedAsPrimaryKey = true)] // maximum size 65,535 started in MySql 5.0.3 according to http://dev.mysql.com/doc/refman/5.0/en/char.html
     [Supports(DbType.AnsiString)] // translates to LONGTEXT without specifying the size
     [Supports(DbType.Binary)]
@@ -38,12 +39,12 @@ namespace MigSharp.Providers
 
         private const bool PrefixUnicodeLiterals = true;
 
-        public string ExistsTable(string databaseName, string tableName)
+        public string ExistsTable(string databaseName, TableName tableName)
         {
             return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(TABLE_NAME)
                 FROM information_schema.tables
                 WHERE table_schema = '{0}'
-                AND table_name = '{1}';", databaseName, tableName);
+                AND table_name = '{1}';", databaseName, tableName.Name);
         }
 
         public string ConvertToSql(object value, DbType targetDbType)
@@ -51,9 +52,9 @@ namespace MigSharp.Providers
             return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
-        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
+        public IEnumerable<string> CreateTable(TableName tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
-            string commandText = string.Format(CultureInfo.InvariantCulture, "CREATE TABLE {0}", Escape(tableName));
+            string commandText = string.Format(CultureInfo.InvariantCulture, "CREATE TABLE {0}", Escape(tableName.Name));
 
             commandText += string.Format(CultureInfo.InvariantCulture, "({0}", Environment.NewLine);
 
@@ -149,15 +150,15 @@ namespace MigSharp.Providers
         }
 
 
-        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
+        public IEnumerable<string> DropTable(TableName tableName, bool checkIfExists)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0} {1}", checkIfExists ? "IF EXISTS " : string.Empty, Escape(tableName));
+            yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0} {1}", checkIfExists ? "IF EXISTS " : string.Empty, Escape(tableName.Name));
         }
 
-        public IEnumerable<string> AddColumn(string tableName, Column column)
+        public IEnumerable<string> AddColumn(TableName tableName, Column column)
         {
             string commandText = string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE {0} ADD {1}",
-                                               Escape(tableName),
+                                               Escape(tableName.Name),
                                                GetColumnSpec(column));
             yield return commandText;
         }
@@ -173,12 +174,12 @@ namespace MigSharp.Providers
                                  defaultValue.Length > 0 ? "DEFAULT " + defaultValue : string.Empty);
         }
 
-        public IEnumerable<string> RenameTable(string oldName, string newName)
+        public IEnumerable<string> RenameTable(TableName oldName, string newName)
         {
-            yield return string.Format("RENAME TABLE {0} TO {1}", Escape(oldName), Escape(newName));
+            yield return string.Format("RENAME TABLE {0} TO {1}", Escape(oldName.Name), Escape(newName));
         }
 
-        public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
+        public IEnumerable<string> RenameColumn(TableName tableName, string oldName, string newName)
         {
             // MySQL requires the full column definition (including data type, nullability, default value) for column rename
             // (see: http://stackoverflow.com/questions/8553130/rename-a-column-in-mysql-table-without-having-to-repeat-its-type-definition).
@@ -194,92 +195,102 @@ namespace MigSharp.Providers
             throw new NotSupportedException("Rename column is not supported by the MySQL provider.");
         }
 
-        public virtual IEnumerable<string> DropColumn(string tableName, string columnName)
+        public virtual IEnumerable<string> DropColumn(TableName tableName, string columnName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP COLUMN {1}",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        Escape(columnName));
         }
 
-        public IEnumerable<string> AlterColumn(string tableName, Column column)
+        public IEnumerable<string> AlterColumn(TableName tableName, Column column)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} MODIFY COLUMN {1}",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        GetColumnSpec(column));
         }
 
-        public IEnumerable<string> DropDefault(string tableName, Column column)
+        public IEnumerable<string> DropDefault(TableName tableName, Column column)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        Escape(column.Name));
         }
 
-        public IEnumerable<string> AddIndex(string tableName, IEnumerable<string> columnNames, string indexName)
+        public IEnumerable<string> CreateSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported. On MySQL, the schema is an equivalent of the database.");
+        }
+
+        public IEnumerable<string> DropSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported. On MySQL, the schema is an equivalent of the database.");
+        }
+
+        public IEnumerable<string> AddIndex(TableName tableName, IEnumerable<string> columnNames, string indexName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "CREATE INDEX {0} ON {1} ({2})",
                                        Escape(indexName),
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        string.Join(", ", columnNames.Select(Escape).ToArray()));
         }
 
-        public IEnumerable<string> DropIndex(string tableName, string indexName)
+        public IEnumerable<string> DropIndex(TableName tableName, string indexName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON {1}",
                                        Escape(indexName),
-                                       Escape(tableName));
+                                       Escape(tableName.Name));
         }
 
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
+        public IEnumerable<string> AddForeignKey(TableName tableName, TableName referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) {3} REFERENCES {4} ({5}) {6}",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        Escape(constraintName),
                                        string.Join(", ", columnNames.Select(n => Escape(n.ColumnName)).ToArray()),
                                        Environment.NewLine,
-                                       Escape(referencedTableName),
+                                       Escape(referencedTableName.Name),
                                        string.Join(", ", columnNames.Select(n => Escape(n.ReferencedColumnName)).ToArray()),
                                        cascadeOnDelete ? " ON DELETE CASCADE" : string.Empty);
         }
 
-        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(TableName tableName, string constraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP FOREIGN KEY {1}",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        Escape(constraintName));
         }
 
-        public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddPrimaryKey(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ADD PRIMARY KEY({1})",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        string.Join(", ", columnNames.Select(Escape).ToArray()));
         }
 
-        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        public IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName)
         {
             // http://dev.mysql.com/doc/refman/5.0/en/drop-index.html
             throw new NotSupportedException("The primary key name is always PRIMARY.");
         }
 
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(TableName tableName, string constraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP PRIMARY KEY",
-                                       Escape(tableName));
+                                       Escape(tableName.Name));
         }
 
-        public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddUniqueConstraint(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} ADD UNIQUE KEY {1} ({2})",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        Escape(constraintName),
                                        string.Join(", ", columnNames.Select(Escape).ToArray()));
         }
 
-        public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropUniqueConstraint(TableName tableName, string constraintName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP KEY {1}",
-                                       Escape(tableName),
+                                       Escape(tableName.Name),
                                        Escape(constraintName));
         }
 

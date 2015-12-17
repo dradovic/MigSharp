@@ -5,6 +5,6 @@ namespace MigSharp.SqlServer.NUnit
     [TestFixture, Category("SqlServer2005")]
     public class SqlServer2005IntegrationTests : SqlServerIntegrationTests
     {
-        protected override string ProviderName { get { return ProviderNames.SqlServer2005; } }
+        protected override DbPlatform DbPlatform { get { return DbPlatform.SqlServer2005; } }
     }
 }

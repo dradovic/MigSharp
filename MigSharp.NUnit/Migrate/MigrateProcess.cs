@@ -13,7 +13,7 @@ namespace MigSharp.NUnit.Migrate
 {
     internal static class MigrateProcess
     {
-        public static int Execute(string connectionString, string providerName, Assembly assembly, long timestamp)
+        public static int Execute(string connectionString, DbPlatform dbPlatform, Assembly assembly, long timestamp)
         {
             string pathToExe = GetPathToAssembly(typeof(Program).Assembly);
             Configuration migrateExeConfig = ConfigurationManager.OpenExeConfiguration(pathToExe);
@@ -31,10 +31,12 @@ namespace MigSharp.NUnit.Migrate
                 migrateExeConfig.Save();
 
                 // call Migrate.exe
-                return Execute(string.Format(CultureInfo.InvariantCulture, "{0} {1} -provider {2} -to {3} -traceLevel Verbose",
+                return Execute(string.Format(CultureInfo.InvariantCulture, "{0} {1} -platform {2} -version {3} -driver {4} -to {5} -traceLevel Verbose",
                     testTarget,
                     GetPathToAssembly(assembly),
-                    providerName,
+                    dbPlatform.Platform,
+                    dbPlatform.MajorVersion,
+                    dbPlatform.Driver,
                     timestamp));
             }
             finally

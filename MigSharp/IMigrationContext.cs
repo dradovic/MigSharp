@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace MigSharp
 {
     /// <summary>
@@ -8,6 +10,12 @@ namespace MigSharp
         /// <summary>
         /// Gets the metadata describing the underlying provider.
         /// </summary>
+        [NotNull]
         IProviderMetadata ProviderMetadata { get; }
+
+        /// <summary>
+        /// Gets the migration metadata. Only available in the context of versioned migrations.
+        /// </summary>
+        IScheduledMigrationMetadata MigrationMetadata { get; }
     }
 }

@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Data;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
     /// <summary>
     /// Represents a type that knows how to provide database-specific DDL statements.
     /// </summary>
-    public interface IProvider
+    internal interface IProvider
     {
         /// <summary>
         /// Checks whether a user created table exists on the database. The returned SQL command must yield 0 if the table does not exist.
@@ -14,7 +15,7 @@ namespace MigSharp.Providers
         /// <param name="databaseName">The database name.</param>
         /// <param name="tableName">The table name.</param>
         /// <returns>The SQL command to be executed.</returns>
-        string ExistsTable(string databaseName, string tableName);
+        string ExistsTable(string databaseName, TableName tableName);
 
         /// <summary>
         /// Converts an object to its SQL representation for scripting.
@@ -28,102 +29,114 @@ namespace MigSharp.Providers
         /// <param name="columns">The columns of the new table.</param>
         /// <param name="primaryKeyConstraintName">Empty if there are no primary key columns.</param>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName);
+        IEnumerable<string> CreateTable(TableName tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName);
 
         /// <summary>
         /// Drops a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropTable(string tableName, bool checkIfExists);
+        IEnumerable<string> DropTable(TableName tableName, bool checkIfExists);
 
         /// <summary>
         /// Adds columns to an existing table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> AddColumn(string tableName, Column column);
+        IEnumerable<string> AddColumn(TableName tableName, Column column);
 
         /// <summary>
         /// Renames an existing table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> RenameTable(string oldName, string newName);
+        IEnumerable<string> RenameTable(TableName oldName, string newName);
 
         /// <summary>
         /// Renames a column of an existing table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> RenameColumn(string tableName, string oldName, string newName);
+        IEnumerable<string> RenameColumn(TableName tableName, string oldName, string newName);
 
         /// <summary>
         /// Removes a column from an existing table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropColumn(string tableName, string columnName);
+        IEnumerable<string> DropColumn(TableName tableName, string columnName);
 
         /// <summary>
         /// Changes the data type of a column.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> AlterColumn(string tableName, Column column);
+        IEnumerable<string> AlterColumn(TableName tableName, Column column);
 
         /// <summary>
         /// Adds an index to a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> AddIndex(string tableName, IEnumerable<string> columnNames, string indexName);
+        IEnumerable<string> AddIndex(TableName tableName, IEnumerable<string> columnNames, string indexName);
 
         /// <summary>
         /// Drops an index from a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropIndex(string tableName, string indexName);
+        IEnumerable<string> DropIndex(TableName tableName, string indexName);
 
         /// <summary>
         /// Adds a foreign key constraint to a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete);
+        IEnumerable<string> AddForeignKey(TableName tableName, TableName referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete);
 
         /// <summary>
         /// Drops a foreign key constraint from a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropForeignKey(string tableName, string constraintName);
+        IEnumerable<string> DropForeignKey(TableName tableName, string constraintName);
 
         /// <summary>
         /// Adds a primary key constraint to a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName);
+        IEnumerable<string> AddPrimaryKey(TableName tableName, IEnumerable<string> columnNames, string constraintName);
 
         /// <summary>
         /// Renames the primary key.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName);
+        IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName);
 
         /// <summary>
         /// Drops a primary key constraint from a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropPrimaryKey(string tableName, string constraintName);
+        IEnumerable<string> DropPrimaryKey(TableName tableName, string constraintName);
 
         /// <summary>
         /// Adds an unique constraint to a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName);
+        IEnumerable<string> AddUniqueConstraint(TableName tableName, IEnumerable<string> columnNames, string constraintName);
 
         /// <summary>
         /// Drops a unique constraint from a table.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName);
+        IEnumerable<string> DropUniqueConstraint(TableName tableName, string constraintName);
 
         /// <summary>
         /// Drops the default value (constraint) from a column.
         /// </summary>
         /// <returns>The SQL commands to be executed.</returns>
-        IEnumerable<string> DropDefault(string tableName, Column column);
+        IEnumerable<string> DropDefault(TableName tableName, Column column);
+
+        /// <summary>
+        /// Creates a database schema.
+        /// </summary>
+        /// <returns>The SQL commands to be executed.</returns>
+        IEnumerable<string> CreateSchema(string schemaName);
+
+        /// <summary>
+        /// Drops a database schema.
+        /// </summary>
+        /// <returns>The SQL commands to be executed.</returns>
+        IEnumerable<string> DropSchema(string schemaName);
     }
 }

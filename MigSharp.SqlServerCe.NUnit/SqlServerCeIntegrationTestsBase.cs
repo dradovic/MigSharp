@@ -3,7 +3,6 @@ using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-
 using MigSharp.NUnit.Integration;
 
 using NUnit.Framework;
@@ -70,7 +69,7 @@ namespace MigSharp.SqlServerCe.NUnit
             }
         }
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
         {
             DbDataAdapter adapter = (DbDataAdapter)CreateInstance("SqlCeDataAdapter", string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString);
             builder = (DbCommandBuilder)CreateInstance("SqlCeCommandBuilder", adapter);

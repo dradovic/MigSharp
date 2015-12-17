@@ -22,14 +22,14 @@ namespace MigSharp.Core.Commands
             _columnNames.Add(columnName);
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
             if (_columnNames.Count == 0)
             {
                 throw new InvalidCommandException("At least one column must be added to the AddIndex command.");
             }
             string effectiveIndexName = GetEffectiveIndexName();
-            return provider.AddIndex(Parent.TableName, _columnNames, effectiveIndexName);
+            return provider.AddIndex(new TableName(Parent.TableName, Parent.Schema ?? context.GetDefaultSchema()), _columnNames, effectiveIndexName);
         }
 
         private string GetEffectiveIndexName()

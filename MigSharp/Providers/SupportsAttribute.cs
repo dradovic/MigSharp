@@ -7,7 +7,7 @@ namespace MigSharp.Providers
     /// Declares the support of a specific data type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public sealed class SupportsAttribute : Attribute
+    internal sealed class SupportsAttribute : Attribute
     {
         private readonly DbType _dbType;
 

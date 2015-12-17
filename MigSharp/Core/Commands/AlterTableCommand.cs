@@ -1,15 +1,15 @@
 namespace MigSharp.Core.Commands
 {
-    internal class AlterTableCommand : Command
+    internal class AlterTableCommand : TableCommand
     {
-        private readonly string _tableName;
-
-        public string TableName { get { return _tableName; } }
-
-        public AlterTableCommand(ICommand parent, string tableName)
-            : base(parent)
+        public AlterTableCommand(MigrateCommand parent, string tableName)
+            : base(parent, tableName)
         {
-            _tableName = tableName;
+        }
+
+        public AlterTableCommand(AlterSchemaCommand parent, string tableName)
+            : base(parent, tableName)
+        {
         }
     }
 }

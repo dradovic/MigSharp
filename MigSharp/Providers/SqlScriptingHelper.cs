@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Data;
 using System.Globalization;
+using JetBrains.Annotations;
 
 namespace MigSharp.Providers
 {
     internal static class SqlScriptingHelper
     {
+        [Pure]
         public static string ToSql(object value, DbType dbType, bool prefixUnicodeLiterals)
         {
             if (value == null) throw new ArgumentNullException("value");
@@ -20,7 +22,14 @@ namespace MigSharp.Providers
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Values of type {0} cannot be scripted.", dbType));
             }
-            return script(value);
+            try
+            {
+                return script(value);
+            }
+            catch (FormatException x)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Could not convert '{0}' of type {1} to a SQL expression of type {2}.", value, value.GetType(), dbType), x);
+            }
         }
 
         private static Func<object, string> GetScriptingFunction(DbType dbType, bool prefixUnicodeLiterals)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
@@ -29,11 +30,20 @@ namespace MigSharp.Providers
     internal abstract class SqlServerProvider : SqlServerProviderBase
     {
         public override bool SpecifyWith { get { return true; } }
-        public override string Dbo { get { return "[dbo]."; } }
 
-        protected override IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
+        public override string GetSchemaPrefix(TableName tableName)
         {
-            string constraintName = GetDefaultConstraintName(tableName, columnName);
+            return string.Format(CultureInfo.InvariantCulture, "[{0}].", tableName.Schema ?? "dbo");
+        }
+
+        public override string ExistsTable(string databaseName, TableName tableName)
+        {
+            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}' AND TABLE_SCHEMA = '{1}'", tableName.Name, tableName.Schema ?? "dbo");
+        }
+
+        protected override IEnumerable<string> DropDefaultConstraint(TableName tableName, string columnName, bool checkIfExists)
+        {
+            string constraintName = GetDefaultConstraintName(tableName.Name, columnName);
             string commandText = DropConstraint(tableName, constraintName);
             if (checkIfExists)
             {
@@ -47,33 +57,43 @@ namespace MigSharp.Providers
             return string.Format(CultureInfo.InvariantCulture, "IF OBJECT_ID('{0}') IS NOT NULL ", objectName) + commandTextToBePrefixed;
         }
 
-        public override IEnumerable<string> RenameTable(string oldName, string newName)
+        public override IEnumerable<string> RenameTable(TableName oldName, string newName)
         {
-            yield return string.Format("EXEC dbo.sp_rename @objname = N'[dbo].{0}', @newname = N'{1}', @objtype = N'OBJECT'", Escape(oldName), newName);
+            yield return string.Format("EXEC dbo.sp_rename @objname = N'{0}', @newname = N'{1}', @objtype = N'OBJECT'", GetTableQualifier(oldName), newName);
         }
 
-        public override IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
+        public override IEnumerable<string> RenameColumn(TableName tableName, string oldName, string newName)
         {
-            string defaultConstraintName = GetDefaultConstraintName(tableName, oldName);
-            string renameDefaultConstraintName = string.Format("EXEC dbo.sp_rename @objname = N'{0}', @newname = N'{1}', @objtype = N'OBJECT'", Escape(defaultConstraintName), GetDefaultConstraintName(tableName, newName));
+            string defaultConstraintName = GetDefaultConstraintName(tableName.Name, oldName);
+            string renameDefaultConstraintName = string.Format("EXEC dbo.sp_rename @objname = N'{0}', @newname = N'{1}', @objtype = N'OBJECT'", Escape(defaultConstraintName), GetDefaultConstraintName(tableName.Name, newName));
             yield return PrefixIfObjectExists(defaultConstraintName, renameDefaultConstraintName);
-            yield return string.Format("EXEC dbo.sp_rename @objname=N'[dbo].{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", Escape(tableName), Escape(oldName), newName);
+            yield return string.Format("EXEC dbo.sp_rename @objname=N'{0}.{1}', @newname=N'{2}', @objtype=N'COLUMN'", GetTableQualifier(tableName), Escape(oldName), newName);
         }
 
-        public override IEnumerable<string> DropColumn(string tableName, string columnName)
+        public override IEnumerable<string> DropColumn(TableName tableName, string columnName)
         {
             return DropDefaultConstraint(tableName, columnName, true)
                 .Concat(base.DropColumn(tableName, columnName));
         }
 
-        public override IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        public override IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName)
         {
-            yield return string.Format("EXEC sp_rename N'[dbo].{0}.{1}', N'{2}', N'INDEX'", Escape(tableName), Escape(oldName), newName);
+            yield return string.Format("EXEC sp_rename N'{0}.{1}', N'{2}', N'INDEX'", GetTableQualifier(tableName), Escape(oldName), newName);
         }
 
-        public override IEnumerable<string> DropIndex(string tableName, string indexName)
+        public override IEnumerable<string> DropIndex(TableName tableName, string indexName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON [dbo].{1} WITH ( ONLINE = OFF )", Escape(indexName), Escape(tableName));
+            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON {1} WITH ( ONLINE = OFF )", Escape(indexName), GetTableQualifier(tableName));
+        }
+
+        public override IEnumerable<string> CreateSchema(string schemaName)
+        {
+            yield return string.Format(CultureInfo.InvariantCulture, "CREATE SCHEMA {0}", Escape(schemaName));
+        }
+
+        public override IEnumerable<string> DropSchema(string schemaName)
+        {
+            yield return string.Format(CultureInfo.InvariantCulture, "DROP SCHEMA {0}", Escape(schemaName));
         }
 
         // see: http://msdn.microsoft.com/en-us/library/cc716729.aspx

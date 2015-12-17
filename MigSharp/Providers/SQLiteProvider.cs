@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.SQLite, InvariantName, MaximumDbObjectNameLength = 128, PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
+    [ProviderExport(Platform.SQLite, 3, InvariantName, MaximumDbObjectNameLength = 128, PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = int.MaxValue, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString)]
     [Supports(DbType.Binary)]
@@ -38,9 +39,9 @@ namespace MigSharp.Providers
         public const string InvariantName = "System.Data.SQLite";
         private const bool PrefixUnicodeLiterals = false;
 
-        public string ExistsTable(string databaseName, string tableName)
+        public string ExistsTable(string databaseName, TableName tableName)
         {
-            return string.Format(CultureInfo.InvariantCulture, "SELECT 1 FROM sqlite_master WHERE name='{0}'", tableName);
+            return string.Format(CultureInfo.InvariantCulture, "SELECT 1 FROM sqlite_master WHERE name='{0}'", tableName.Name);
         }
 
         public string ConvertToSql(object value, DbType targetDbType)
@@ -48,7 +49,7 @@ namespace MigSharp.Providers
             return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
-        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
+        public IEnumerable<string> CreateTable(TableName tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
             if (columns.Any(c => c.IsRowVersion))
             {
@@ -56,10 +57,10 @@ namespace MigSharp.Providers
             }
 
             yield return string.Format(CultureInfo.InvariantCulture, @"CREATE TABLE ""{0}"" ({1}{2}{1})",
-                tableName,
-                Environment.NewLine,
-                string.Join(", " + Environment.NewLine, columns.Select(GetColumnDefinition)
-                    .Concat(GetTableConstraints(columns, primaryKeyConstraintName)).ToArray()));
+                                       tableName.Name,
+                                       Environment.NewLine,
+                                       string.Join(", " + Environment.NewLine, columns.Select(GetColumnDefinition)
+                                                                                      .Concat(GetTableConstraints(columns, primaryKeyConstraintName)).ToArray()));
             foreach (IGrouping<string, CreatedColumn> uniqueColumns in columns
                 .Where(c => !string.IsNullOrEmpty(c.UniqueConstraint))
                 .GroupBy(c => c.UniqueConstraint))
@@ -78,17 +79,17 @@ namespace MigSharp.Providers
             if (columns.Any(c => c.IsPrimaryKey))
             {
                 yield return string.Format(CultureInfo.InvariantCulture, @" CONSTRAINT ""{0}"" PRIMARY KEY ({1})",
-                    primaryKeyConstraintName,
-                    string.Join(", ", columns.Where(c => c.IsPrimaryKey).Select(c => "\"" + c.Name + "\"").ToArray()));
+                                           primaryKeyConstraintName,
+                                           string.Join(", ", columns.Where(c => c.IsPrimaryKey).Select(c => "\"" + c.Name + "\"").ToArray()));
             }
         }
 
         private string GetColumnDefinition(Column column)
         {
             return string.Format(CultureInfo.InvariantCulture, @"""{0}"" {1}{2}",
-                column.Name,
-                GetTypeSpecifier(column.DataType),
-                GetColumnConstraint(column));
+                                 column.Name,
+                                 GetTypeSpecifier(column.DataType),
+                                 GetColumnConstraint(column));
         }
 
         private string GetColumnConstraint(Column column)
@@ -103,8 +104,8 @@ namespace MigSharp.Providers
 
             // INTEGER column as PK is automatically AUTOINCREMENT: http://www.sqlite.org/autoinc.html
             return string.Format(CultureInfo.InvariantCulture, "{0}{1}",
-                createdColumn != null && createdColumn.IsIdentity ? string.Empty : (column.IsNullable ? " NULL" : " NOT NULL"),
-                column.DefaultValue != null ? " DEFAULT " + GetDefaultValueAsString(column.DefaultValue, column.DataType) : string.Empty);
+                                 createdColumn != null && createdColumn.IsIdentity ? string.Empty : (column.IsNullable ? " NULL" : " NOT NULL"),
+                                 column.DefaultValue != null ? " DEFAULT " + GetDefaultValueAsString(column.DefaultValue, column.DataType) : string.Empty);
         }
 
         private string GetDefaultValueAsString(object value, DataType dataType)
@@ -125,63 +126,63 @@ namespace MigSharp.Providers
             }
         }
 
-        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
+        public IEnumerable<string> DropTable(TableName tableName, bool checkIfExists)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}""{1}""", checkIfExists ? "IF EXISTS ": string.Empty, tableName);
+            yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}""{1}""", checkIfExists ? "IF EXISTS " : string.Empty, tableName.Name);
         }
 
-        public IEnumerable<string> AddColumn(string tableName, Column column)
+        public IEnumerable<string> AddColumn(TableName tableName, Column column)
         {
             if (column.IsRowVersion)
             {
                 ThrowRowVersionNotSupportedException();
             }
-            yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE ""{0}"" ADD COLUMN {1}", tableName, GetColumnDefinition(column));
+            yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE ""{0}"" ADD COLUMN {1}", tableName.Name, GetColumnDefinition(column));
         }
 
-        public IEnumerable<string> RenameTable(string oldName, string newName)
+        public IEnumerable<string> RenameTable(TableName oldName, string newName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE ""{0}"" RENAME TO ""{1}""", oldName, newName);
+            yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE ""{0}"" RENAME TO ""{1}""", oldName.Name, newName);
         }
 
-        public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
-        {
-            // http://stackoverflow.com/questions/805363/how-do-i-rename-a-column-in-a-sqlite-database-table
-            throw new NotSupportedException("Rename the table, create a new table with the correct columns, and copy the contents from the renamed table.");
-        }
-
-        public IEnumerable<string> DropColumn(string tableName, string columnName)
+        public IEnumerable<string> RenameColumn(TableName tableName, string oldName, string newName)
         {
             // http://stackoverflow.com/questions/805363/how-do-i-rename-a-column-in-a-sqlite-database-table
             throw new NotSupportedException("Rename the table, create a new table with the correct columns, and copy the contents from the renamed table.");
         }
 
-        public IEnumerable<string> AlterColumn(string tableName, Column column)
+        public IEnumerable<string> DropColumn(TableName tableName, string columnName)
+        {
+            // http://stackoverflow.com/questions/805363/how-do-i-rename-a-column-in-a-sqlite-database-table
+            throw new NotSupportedException("Rename the table, create a new table with the correct columns, and copy the contents from the renamed table.");
+        }
+
+        public IEnumerable<string> AlterColumn(TableName tableName, Column column)
         {
             // http://www.sqlite.org/omitted.html
             throw new NotSupportedException("Rename the table, create a new table with the correct columns, and copy the contents from the renamed table.");
         }
 
-        public IEnumerable<string> AddIndex(string tableName, IEnumerable<string> columnNames, string indexName)
+        public IEnumerable<string> AddIndex(TableName tableName, IEnumerable<string> columnNames, string indexName)
         {
             yield return AddIndex(tableName, columnNames, indexName, false);
         }
 
-        private static string AddIndex(string tableName, IEnumerable<string> columnNames, string indexName, bool unique)
+        private static string AddIndex(TableName tableName, IEnumerable<string> columnNames, string indexName, bool unique)
         {
             return string.Format(CultureInfo.InvariantCulture, @"CREATE{0} INDEX ""{1}"" ON ""{2}"" ({3})",
-                unique ? " UNIQUE" : string.Empty,
-                indexName,
-                tableName,
-                string.Join(", ", columnNames.ToArray()));
+                                 unique ? " UNIQUE" : string.Empty,
+                                 indexName,
+                                 tableName.Name,
+                                 string.Join(", ", columnNames.ToArray()));
         }
 
-        public IEnumerable<string> DropIndex(string tableName, string indexName)
+        public IEnumerable<string> DropIndex(TableName tableName, string indexName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, @"DROP INDEX ""{0}""", indexName);
         }
 
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
+        public IEnumerable<string> AddForeignKey(TableName tableName, TableName referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             // Do nothing. SQLite only supports foreign keys under special circumstances (see: http://www.sqlite.org/foreignkeys.html).
             // We do not throw a NotSupportedException since not having foreign keys does not change anything about how the database is used.
@@ -189,42 +190,52 @@ namespace MigSharp.Providers
             return Enumerable.Empty<string>();
         }
 
-        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(TableName tableName, string constraintName)
         {
             return Enumerable.Empty<string>(); // see comments in AddForeignKey
         }
 
-        public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddPrimaryKey(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
             // http://stackoverflow.com/questions/946011/sqlite-add-primary-key
             throw new NotSupportedException("Primary keys cannot be added/removed/renamed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
         }
 
-        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        public IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName)
         {
             throw new NotSupportedException("Primary keys cannot be added/removed/renamed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
         }
 
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(TableName tableName, string constraintName)
         {
             // http://stackoverflow.com/questions/849269/sqlite-how-to-remove-an-unamed-primary-key
             throw new NotSupportedException("Primary keys cannot be added/removed/renamed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
         }
 
-        public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddUniqueConstraint(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
             yield return AddIndex(tableName, columnNames, constraintName, true);
         }
 
-        public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropUniqueConstraint(TableName tableName, string constraintName)
         {
             return DropIndex(tableName, constraintName);
         }
 
-        public IEnumerable<string> DropDefault(string tableName, Column column)
+        public IEnumerable<string> DropDefault(TableName tableName, Column column)
         {
             // http://www.sqlite.org/omitted.html
             throw new NotSupportedException("Rename the table, create a new table with the correct columns, and copy the contents from the renamed table.");
+        }
+
+        public IEnumerable<string> CreateSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported.");
+        }
+
+        public IEnumerable<string> DropSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported.");
         }
 
         private static string GetTypeSpecifier(DataType type)

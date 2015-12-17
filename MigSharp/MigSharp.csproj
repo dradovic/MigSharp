@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <TargetFX>
-    </TargetFX>
-  </PropertyGroup>
-  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
@@ -14,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MigSharp</RootNamespace>
     <AssemblyName>MigSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Open.snk</AssemblyOriginatorKeyFile>
@@ -48,6 +44,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -58,17 +55,15 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\MigSharp.xml</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFX) == '3.5'">
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" Condition="$(TargetFrameworkVersion) == 'v4.0'" />
-    <Reference Include="System.ComponentModel.Composition, Version=2010.2.11.0, Culture=neutral, processorArchitecture=MSIL" Condition="$(TargetFrameworkVersion) == 'v3.5'">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\System.ComponentModel.Composition.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=8.0.5.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
     </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -82,8 +77,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Commands\AlterSchemaCommand.cs" />
+    <Compile Include="Core\Commands\CreateSchemaCommand.cs" />
+    <Compile Include="Core\Commands\TableCommand.cs" />
     <Compile Include="Core\Entities\Check.cs" />
+    <Compile Include="Core\Entities\ExistingSchema.cs" />
+    <Compile Include="Core\Entities\SchemaCollection.cs" />
+    <Compile Include="DbSchema.cs" />
+    <Compile Include="DbAltererOptions.cs" />
     <Compile Include="DefaultMigrationTimestampProvider.cs" />
+    <Compile Include="Driver.cs" />
+    <Compile Include="ICreatedSchema.cs" />
+    <Compile Include="IExistingSchema.cs" />
+    <Compile Include="IExistingSchemaCollection.cs" />
     <Compile Include="IMigrationTimestampProvider.cs" />
     <Compile Include="IMigrationTimestampProviderExportMetadata.cs" />
     <Compile Include="InvalidMigrationExportException.cs" />
@@ -98,6 +104,9 @@
     <Compile Include="Core\Commands\InvalidCommandException.cs" />
     <Compile Include="IMigrationMetadata.cs" />
     <Compile Include="Core\MigrationMetadata.cs" />
+    <Compile Include="DbAlterer.cs" />
+    <Compile Include="Options.cs" />
+    <Compile Include="Process\IValidator.cs" />
     <Compile Include="Process\NoVersioning.cs" />
     <Compile Include="Process\ApplicableMigration.cs" />
     <Compile Include="Process\DbConnectionWrapper.cs" />
@@ -106,8 +115,12 @@
     <Compile Include="Core\ScheduledMigrationMetadata.cs" />
     <Compile Include="Process\MigrationSelector.cs" />
     <Compile Include="Process\UsedDataType.cs" />
+    <Compile Include="Process\ValidatorFactory.cs" />
+    <Compile Include="DbPlatform.cs" />
     <Compile Include="Providers\MySqlProvider.cs" />
     <Compile Include="Providers\ProviderExtensions.cs" />
+    <Compile Include="Providers\ProviderInfo.cs" />
+    <Compile Include="Providers\ProviderLocator.cs" />
     <Compile Include="Providers\SqlScriptingHelper.cs" />
     <Compile Include="Core\StringHelper.cs" />
     <Compile Include="Core\Entities\AddedIndex.cs" />
@@ -147,7 +160,6 @@
     <Compile Include="IRuntimeContext.cs" />
     <Compile Include="IUniqueConstraint.cs" />
     <Compile Include="IUniqueConstraintCollection.cs" />
-    <Compile Include="Process\BootstrapMetadata.cs" />
     <Compile Include="Process\BootstrapMigration.cs" />
     <Compile Include="Process\BootstrapMigrationStep.cs" />
     <Compile Include="Process\DbCommandExtensions.cs" />
@@ -159,11 +171,12 @@
     <Compile Include="Providers\SqlServer2012Provider.cs" />
     <Compile Include="Providers\SqlServerCe35Provider.cs" />
     <Compile Include="Providers\SqlServerCeProviderBase.cs" />
+    <Compile Include="Core\TableName.cs" />
     <Compile Include="Providers\UnsupportedMethod.cs" />
     <Compile Include="Process\ValidationWarning.cs" />
     <Compile Include="Process\Validator.cs" />
     <Compile Include="Process\Versioning.cs" />
-    <Compile Include="ProviderNames.cs" />
+    <Compile Include="Platform.cs" />
     <Compile Include="IMigration.cs" />
     <Compile Include="IMigrationContext.cs" />
     <Compile Include="IrreversibleMigrationException.cs" />
@@ -221,10 +234,11 @@
     <Compile Include="Providers\SupportsAttribute.cs" />
     <Compile Include="Process\FileScripter.cs" />
     <Compile Include="Process\ScriptingOptions.cs" />
-    <Compile Include="SupportedProviders.cs" />
+    <Compile Include="RuntimeContextExtensions.cs" />
+    <Compile Include="SupportedPlatforms.cs" />
     <Compile Include="Providers\Column.cs" />
     <Compile Include="Providers\ColumnReference.cs" />
-    <Compile Include="Providers\SpecialDefaultValue.cs" />
+    <Compile Include="SpecialDefaultValue.cs" />
     <Compile Include="Providers\TeradataOdbcProvider.cs" />
     <Compile Include="Providers\OracleProvider.cs" />
     <Compile Include="Providers\OracleOdbcProvider.cs" />
@@ -245,11 +259,7 @@
     <Compile Include="Core\Entities\TableCollection.cs" />
     <Compile Include="Process\MigrationStep.cs" />
     <Compile Include="MigrationTimestampProviderExportAttribute.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="lib\System.ComponentModel.Composition.dll" />
-    <Content Include="lib\System.ComponentModel.Composition.pdb" />
-    <Content Include="lib\System.ComponentModel.Composition.xml" />
+    <Compile Include="SuppressCondition.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -268,12 +278,9 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild" Condition="$(TargetFX) == '3.5'">
-    <CreateItem Include="@(ReferencePath)" Condition="'%(CopyLocal)'=='true'">
-      <Output TaskParameter="Include" ItemName="IlmergeAssemblies" />
-    </CreateItem>
-    <Exec Command="&quot;$(ProjectDir)lib\ILmerge.exe&quot; /keyfile:&quot;$(SolutionDir)Open.snk&quot; /internalize /out:@(MainAssembly) &quot;@(IntermediateAssembly)&quot; @(IlmergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
-  </Target>
   <Target Name="_CopyFilesMarkedCopyLocal" />
 </Project>

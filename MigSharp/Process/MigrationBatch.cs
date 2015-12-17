@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-
 using MigSharp.Core;
 
 namespace MigSharp.Process
@@ -12,8 +11,8 @@ namespace MigSharp.Process
     {
         private readonly IEnumerable<IMigrationStep> _migrations;
         private readonly ReadOnlyCollection<IMigrationMetadata> _unidentifiedMigrations;
+        private readonly IValidator _validator;
         private readonly IVersioning _versioning;
-        private readonly MigrationOptions _options;
 
         public event EventHandler<MigrationEventArgs> StepExecuting;
         public event EventHandler<MigrationEventArgs> StepExecuted;
@@ -28,14 +27,14 @@ namespace MigSharp.Process
         public MigrationBatch(
             IEnumerable<IMigrationStep> migrations,
             IEnumerable<IMigrationMetadata> unidentifiedMigrations,
-            IVersioning versioning,
-            MigrationOptions options)
+            IValidator validator,
+            IVersioning versioning)
         {
             _migrations = migrations;
             _scheduledMigrations = new ReadOnlyCollection<IScheduledMigrationMetadata>(_migrations.Select(s => s.Metadata).ToList());
             _unidentifiedMigrations = new ReadOnlyCollection<IMigrationMetadata>(unidentifiedMigrations.ToList());
+            _validator = validator;
             _versioning = versioning;
-            _options = options;
         }
 
         public void Execute()
@@ -44,12 +43,9 @@ namespace MigSharp.Process
             IsExecuted = true;
 
             // validate all steps
-            var validator = new Validator(_options);
             string errors;
             string warnings;
-// ReSharper disable RedundantEnumerableCastCall
-            validator.Validate(_migrations.Cast<IMigrationReporter>(), out errors, out warnings); // .Cast<IMigrationReporter>() is required for .NET 3.5
-// ReSharper restore RedundantEnumerableCastCall
+            _validator.Validate(_migrations, out errors, out warnings);
             if (!string.IsNullOrEmpty(errors))
             {
                 throw new InvalidOperationException("Cannot execute the migration(s) as there are validation errors:" + Environment.NewLine + errors);

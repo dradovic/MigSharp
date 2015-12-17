@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
-
+using FakeItEasy;
 using MigSharp.Core.Entities;
 using MigSharp.Process;
 using MigSharp.Providers;
 
 using NUnit.Framework;
 
-using Rhino.Mocks;
-
 using System.Linq;
 
 namespace MigSharp.NUnit.Process
 {
     [TestFixture, Category("smoke")]
-    public class MigrationReportTests
+    internal class MigrationReportTests
     {
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Test, TestCaseSource(typeof(TestCaseGenerator), "CreateDatabaseCases")]
         public void VerifyMigrationReportProps(IDatabase database, 
             IEnumerable<DataType> expectedDataTypes,
@@ -25,7 +24,7 @@ namespace MigSharp.NUnit.Process
             string expectedLongestName)
         {
             const string migrationName = "Test Migration";
-            MigrationReport report = MigrationReport.Create((Database)database, migrationName);
+            MigrationReport report = MigrationReport.Create((Database)database, migrationName, A.Fake<IMigrationContext>());
             Assert.AreEqual(migrationName, report.MigrationName);
             Assert.IsEmpty(report.Error, "These cases should not have any errors.");
             CollectionAssert.AreEquivalent(expectedDataTypes.ToList(), report.DataTypes.ToList(), "The collection of used data types is wrong.");
@@ -34,20 +33,21 @@ namespace MigSharp.NUnit.Process
             Assert.AreEqual(expectedLongestName, report.LongestName, "The longest name is wrong.");
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Test, TestCaseSource("GetInvalidDatabaseCases")]
         public void VerifyValidationError(IDatabase database, string expectedError, string expectedLongestName)
         {
-            MigrationReport report = MigrationReport.Create((Database)database, string.Empty);
+            MigrationReport report = MigrationReport.Create((Database)database, string.Empty, A.Fake<IMigrationContext>());
             Assert.AreEqual(expectedError, report.Error, "The error is wrong.");
             Assert.AreEqual(expectedLongestName, report.LongestName, "The longest name is wrong.");
         }
 
-// ReSharper disable UnusedMember.Local
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+// ReSharper disable UnusedMethodReturnValue.Local
         private static IEnumerable<TestCaseData> GetInvalidDatabaseCases() // called by VerifyValidationError
-// ReSharper restore UnusedMember.Local
+// ReSharper restore UnusedMethodReturnValue.Local
         {
-            IMigrationContext context = MockRepository.GenerateStub<IMigrationContext>();
+            IMigrationContext context = A.Fake<IMigrationContext>();
 
             IDatabase db = new Database(context);
             db.CreateTable("Customers");

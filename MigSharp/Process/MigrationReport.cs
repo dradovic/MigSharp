@@ -39,7 +39,7 @@ namespace MigSharp.Process
             _methods.AddRange(migration.Methods);
         }
 
-        public static MigrationReport Create(Database database, string migrationName)
+        public static MigrationReport Create(Database database, string migrationName, IMigrationContext context)
         {
             // execute changes in 'database' against a RecordingProvider
             var recordingProvider = new RecordingProvider();
@@ -47,7 +47,9 @@ namespace MigSharp.Process
             string error = string.Empty;
             try
             {
-                translator.TranslateToSql(database, null).ToList(); // .ToList() is important to effectively trigger the iteration
+// ReSharper disable ReturnValueOfPureMethodIsNotUsed
+                translator.TranslateToSql(database, context).ToList(); // .ToList() is important to effectively trigger the iteration
+// ReSharper restore ReturnValueOfPureMethodIsNotUsed
             }
             catch (InvalidCommandException x)
             {

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-
+using JetBrains.Annotations;
 using MigSharp.Core;
 using MigSharp.Process;
 
@@ -13,15 +10,20 @@ namespace MigSharp
     /// <summary>
     /// Use this class to configure the behaviour of the <see cref="Migrator"/>.
     /// </summary>
-    public class MigrationOptions
+    public class MigrationOptions : DbAltererOptions
     {
+        /// <summary>
+        /// The default table name for the table that track the history of the migrations.
+        /// </summary>
         public const string DefaultVersioningTableName = "MigSharp";
 
         private string _versioningTableName = DefaultVersioningTableName;
+        private string _versioningTableSchema;
 
         /// <summary>
         /// Gets or sets the table name of the versioning table.
         /// </summary>
+        [NotNull]
         public string VersioningTableName
         {
             get { return _versioningTableName; }
@@ -32,14 +34,15 @@ namespace MigSharp
             }
         }
 
-        private SupportedProviders _supportedProviders = new SupportedProviders();
         /// <summary>
-        /// Gets the providers that should be supported for all migrations. Compatibility validation of migrations is performed
-        /// against the providers in this collection.
+        /// Gets or sets the schema name of the versioning table. SQL Server only.
         /// </summary>
-        public SupportedProviders SupportedProviders { get { return _supportedProviders; } internal set { _supportedProviders = value; } }
+        public string VersioningTableSchema { get { return _versioningTableSchema; } set { _versioningTableSchema = value; } }
+
+        internal TableName VersioningTable { get { return new TableName(VersioningTableName, VersioningTableSchema); } }
 
         private Predicate<string> _moduleSelector = n => true; // select all modules by default
+
         /// <summary>
         /// Gets or sets a function that selects the module based on its name. Only migrations for this module will be executed.
         /// </summary>
@@ -52,8 +55,6 @@ namespace MigSharp
                 _moduleSelector = value;
             }
         }
-
-        private readonly List<Suppression> _warningSuppressions = new List<Suppression>();
 
         private ScriptingOptions _scriptingOptions = new ScriptingOptions(ScriptingMode.ExecuteOnly, null);
         internal ScriptingOptions ScriptingOptions { get { return _scriptingOptions; } }
@@ -77,14 +78,6 @@ namespace MigSharp
         }
 
         /// <summary>
-        /// Suppresses validation warnings for the provider called <paramref name="providerName"/> and the data type <paramref name="type"/> under the <paramref name="condition"/>.
-        /// </summary>
-        public void SuppressWarning(string providerName, DbType type, SuppressCondition condition)
-        {
-            _warningSuppressions.Add(new Suppression(providerName, type, condition));
-        }
-
-        /// <summary>
         /// Outputs the SQL used for the migrations to external files without affecting the database.
         /// </summary>
         public void OnlyScriptSqlTo(DirectoryInfo targetDirectory) // signature used in Wiki Manual
@@ -105,7 +98,7 @@ namespace MigSharp
         /// </summary>
         public void ExecuteAndScriptSqlTo(DirectoryInfo targetDirectory) // signature used in Wiki Manual
         {
-            _scriptingOptions = new ScriptingOptions(ScriptingMode.ScriptAndExecute, targetDirectory);            
+            _scriptingOptions = new ScriptingOptions(ScriptingMode.ScriptAndExecute, targetDirectory);
         }
 
         /// <summary>
@@ -116,101 +109,35 @@ namespace MigSharp
             ExecuteAndScriptSqlTo(new DirectoryInfo(targetDirectory));
         }
 
-        internal bool IsWarningSuppressed(string providerName, DbType type, int? size, int? scale)
-        {
-            foreach (Suppression suppression in _warningSuppressions
-                .Where(s => s.ProviderName == providerName && s.Type == type))
-            {
-                switch (suppression.Condition)
-                {
-                    case SuppressCondition.WhenSpecifiedWithoutSize:
-                        if (!size.HasValue) return true;
-                        break;
-                    case SuppressCondition.WhenSpecifiedWithSize:
-                        if (size.HasValue && !scale.HasValue) return true;
-                        break;
-                    case SuppressCondition.WhenSpecifiedWithSizeAndScale:
-                        if (size.HasValue && scale.HasValue) return true;
-                        break;
-                    case SuppressCondition.Always:
-                        return true;
-                    default:
-                        continue;
-                }
-            }
-            return false;
-        }
-
         #region Static Options
 
         ///<summary>
         /// Sets the level of general information being traced.
         ///</summary>
+        [Obsolete("Use static Options class instead.")]
         public static void SetGeneralTraceLevel(SourceLevels sourceLevels)
         {
-            Log.SetTraceLevel(LogCategory.General, sourceLevels);
+            Options.SetGeneralTraceLevel(sourceLevels);
         }
 
         ///<summary>
         /// Sets the level of SQL information being traced.
         ///</summary>
+        [Obsolete("Use static Options class instead.")]
         public static void SetSqlTraceLevel(SourceLevels sourceLevels) // signature used in a Wiki example
         {
-            Log.SetTraceLevel(LogCategory.Sql, sourceLevels);
+            Options.SetSqlTraceLevel(sourceLevels);
         }
 
         ///<summary>
         /// Sets the level of performance information being traced.
         ///</summary>
+        [Obsolete("Use static Options class instead.")]
         public static void SetPerformanceTraceLevel(SourceLevels sourceLevels)
         {
-            Log.SetTraceLevel(LogCategory.Performance, sourceLevels);
+            Options.SetPerformanceTraceLevel(sourceLevels);
         }
 
         #endregion
-
-        private class Suppression
-        {
-            private readonly string _providerName;
-            private readonly DbType _type;
-            private readonly SuppressCondition _condition;
-
-            public string ProviderName { get { return _providerName; } }
-            public DbType Type { get { return _type; } }
-            public SuppressCondition Condition { get { return _condition; } }
-
-            public Suppression(string providerName, DbType type, SuppressCondition condition)
-            {
-                _providerName = providerName;
-                _type = type;
-                _condition = condition;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Expresses under which circumstances a warning should be expressed for a given <see cref="DbType"/> and its OfSize parameters.
-    /// </summary>
-    public enum SuppressCondition
-    {
-        /// <summary>
-        /// Suppresses all warnings for the specified <see cref="DbType"/>. Use diligently.
-        /// </summary>
-        Always = 0,
-
-        /// <summary>
-        /// Suppresses warnings for the specified <see cref="DbType"/> when it is used without a specified size.
-        /// </summary>
-        WhenSpecifiedWithoutSize = 1,
-
-        /// <summary>
-        /// Suppresses warnings for the specified <see cref="DbType"/> when it is used with a specified size.
-        /// </summary>
-        WhenSpecifiedWithSize = 2,
-
-        /// <summary>
-        /// Suppresses warnings for the specified <see cref="DbType"/> when it is used with a specified size and a specified scale.
-        /// </summary>
-        WhenSpecifiedWithSizeAndScale = 3,
     }
 }

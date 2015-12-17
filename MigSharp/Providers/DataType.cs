@@ -7,7 +7,7 @@ namespace MigSharp.Providers
     /// <summary>
     /// Represents a SQL data type.
     /// </summary>
-    public struct DataType : IEquatable<DataType>
+    internal struct DataType : IEquatable<DataType>
     {
         private readonly DbType _dbType;
         private readonly int? _size;

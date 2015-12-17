@@ -14,22 +14,24 @@ namespace MigSharp.Process
         private readonly IMigration _migration;
         private readonly IProvider _provider;
         private readonly IProviderMetadata _providerMetadata;
+        private readonly IScheduledMigrationMetadata _migrationMetadata;
 
         protected IMigration Migration { get { return _migration; } }
         protected IProviderMetadata ProviderMetadata { get { return _providerMetadata; } }
 
-        public BootstrapMigrationStep(IMigration migration, IProvider provider, IProviderMetadata providerMetadata)
+        public BootstrapMigrationStep(IMigration migration, IProvider provider, IProviderMetadata providerMetadata, IScheduledMigrationMetadata migrationMetadata)
         {
             _migration = migration;
             _provider = provider;
             _providerMetadata = providerMetadata;
+            _migrationMetadata = migrationMetadata;
         }
 
         internal void Execute(IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor)
         {
             Debug.Assert(connection.State == ConnectionState.Open);
 
-            var context = new RuntimeContext(connection, transaction, commandExecutor, _providerMetadata);
+            var context = new RuntimeContext(connection, transaction, commandExecutor, _providerMetadata, _migrationMetadata);
             Database database = GetDatabaseContainingMigrationChanges(direction, context);
             var translator = new CommandsToSqlTranslator(_provider);
             foreach (string commandText in translator.TranslateToSql(database, context))

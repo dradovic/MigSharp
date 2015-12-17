@@ -10,14 +10,14 @@ namespace MigSharp.Process
 {
     internal class History
     {
-        private readonly string _tableName;
+        private readonly TableName _tableName;
         private readonly IProviderMetadata _providerMetadata;
 
         private readonly List<IMigrationMetadata> _actualEntries = new List<IMigrationMetadata>();
         private readonly List<IMigrationMetadata> _entriesToDelete = new List<IMigrationMetadata>();
         private readonly List<IMigrationMetadata> _entriesToInsert = new List<IMigrationMetadata>();
 
-        public History(string tableName, IProviderMetadata providerMetadata)
+        public History(TableName tableName, IProviderMetadata providerMetadata)
         {
             _tableName = tableName;
             _providerMetadata = providerMetadata;
@@ -42,11 +42,11 @@ namespace MigSharp.Process
         {
             IDbCommand command = connection.CreateCommand();
             command.Transaction = transaction;
-            command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT \"{0}\", \"{1}\", \"{2}\" FROM \"{3}\"",
+            command.CommandText = string.Format(CultureInfo.InvariantCulture, "SELECT \"{0}\", \"{1}\", \"{2}\" FROM {3}",
                 BootstrapMigration.TimestampColumnName,
                 BootstrapMigration.ModuleColumnName,
                 BootstrapMigration.TagColumnName,
-                _tableName);
+                Escape(_tableName));
             Log.Verbose(LogCategory.Sql, command.CommandText);
 
             // Teradata provider does not behave as expected: when using CommandBehavior.SingleResult, reader.Read() will return true even if there are no rows
@@ -80,8 +80,8 @@ namespace MigSharp.Process
                 string moduleName = entry.ModuleName;
                 IDataParameter moduleNameParameter = command.AddParameter("@ModuleName", DbType.String, moduleName);
                 long timestamp = entry.Timestamp;
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, "DELETE FROM \"{0}\" WHERE \"{1}\" = {2} AND \"{3}\" = {4}",
-                    _tableName,
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, "DELETE FROM {0} WHERE \"{1}\" = {2} AND \"{3}\" = {4}",
+                    Escape(_tableName),
                     BootstrapMigration.TimestampColumnName,
                     timestamp.ToString(CultureInfo.InvariantCulture),
                     BootstrapMigration.ModuleColumnName,
@@ -99,8 +99,8 @@ namespace MigSharp.Process
                 command.Transaction = transaction;
                 IDataParameter moduleNameParameter = command.AddParameter("@ModuleName", DbType.String, entry.ModuleName);
                 IDataParameter tagParameter = command.AddParameter("@Tag", DbType.String, !string.IsNullOrEmpty(entry.Tag) ? (object)entry.Tag : DBNull.Value);
-                command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"", ""{2}"", ""{3}"") VALUES ({4}, {5}, {6})",
-                    _tableName,
+                command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO {0} (""{1}"", ""{2}"", ""{3}"") VALUES ({4}, {5}, {6})",
+                    Escape(_tableName),
                     BootstrapMigration.TimestampColumnName,
                     BootstrapMigration.ModuleColumnName,
                     BootstrapMigration.TagColumnName,
@@ -113,6 +113,12 @@ namespace MigSharp.Process
             }
             _entriesToInsert.Clear();
             Log.Verbose(LogCategory.Performance, "Version update took {0}s", (DateTime.Now - start).TotalSeconds);
+        }
+
+        private static string Escape(TableName tableName)
+        {
+            string schemaPrefix = tableName.Schema != null ? "\"" + tableName.Schema + "\"." : string.Empty;
+            return schemaPrefix + "\"" + tableName.Name + "\"";
         }
     }
 }

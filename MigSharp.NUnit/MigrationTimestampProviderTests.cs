@@ -3,10 +3,9 @@ using System.CodeDom.Compiler;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
+using FakeItEasy;
 using MigSharp.Process;
 using NUnit.Framework;
-using Rhino.Mocks;
 
 namespace MigSharp.NUnit
 {
@@ -19,7 +18,7 @@ namespace MigSharp.NUnit
         public void TestDefaultProvider()
         {
             var provider = new DefaultMigrationTimestampProvider();
-            var timestamp = provider.GetTimestamp(typeof (TimestampTestMigration201211171806));
+            var timestamp = provider.GetTimestamp(typeof(TimestampTestMigration201211171806));
 
             Assert.AreEqual(timestamp, 201211171806);
         }
@@ -36,7 +35,7 @@ namespace MigSharp.NUnit
         public void TestExampleAttributeProvider()
         {
             var provider = new AttributeMigrationTimestampProvider();
-            var timestamp = provider.GetTimestamp(typeof (TimestampAttributeTestMigration));
+            var timestamp = provider.GetTimestamp(typeof(TimestampAttributeTestMigration));
 
             Assert.AreEqual(timestamp, 201211171825);
         }
@@ -47,7 +46,7 @@ namespace MigSharp.NUnit
             {
                 if (migration == null) throw new ArgumentNullException("migration");
 
-                var timestampAttr = (MigrationTimestampAttribute)migration.GetCustomAttributes(typeof (MigrationTimestampAttribute), false).FirstOrDefault();
+                var timestampAttr = (MigrationTimestampAttribute)migration.GetCustomAttributes(typeof(MigrationTimestampAttribute), false).FirstOrDefault();
 
                 Assert.IsNotNull(timestampAttr, string.Format(CultureInfo.CurrentCulture, "Could find timestamp attribute on migration ({0}). Types implementing migrations using the AttributeMigrationTimestampProvider must have a MigrationTimestamp attribute.", migration.Name));
                 return timestampAttr.Timestamp;
@@ -77,7 +76,7 @@ namespace MigSharp.NUnit
         public void TestExampleInterfaceProvider()
         {
             var provider = new InterfaceMigrationTimestampProvider();
-            var timestamp = provider.GetTimestamp(typeof (TimestampInterfaceTestMigration));
+            var timestamp = provider.GetTimestamp(typeof(TimestampInterfaceTestMigration));
 
             Assert.AreEqual(timestamp, 201211171833);
         }
@@ -107,10 +106,7 @@ namespace MigSharp.NUnit
 
         private class TimestampInterfaceTestMigration : IMigrationTimestamp
         {
-            public long Timestamp
-            {
-                get { return 201211171833; }
-            }
+            public long Timestamp { get { return 201211171833; } }
         }
 
         private interface IMigrationTimestamp
@@ -125,13 +121,13 @@ namespace MigSharp.NUnit
         [Test]
         public void MigratorUsesModuleSpecificTimestampProvider()
         {
-            var migrator = new Migrator("not-used", ProviderNames.SqlServer2005);
-            var versioning = MockRepository.GenerateStub<IVersioning>();
-            versioning.Expect(v => v.ExecutedMigrations).Return(Enumerable.Empty<IMigrationMetadata>()); // pretend, no migrations ran so far
+            var migrator = new Migrator("not-used", DbPlatform.SqlServer2005);
+            var versioning = A.Fake<IVersioning>();
+            A.CallTo(() => versioning.ExecutedMigrations).Returns(Enumerable.Empty<IMigrationMetadata>()); // pretend, no migrations ran so far
             migrator.UseCustomVersioning(versioning);
 
             IMigrationBatch batch = migrator.FetchMigrations(_timestampModuleTestAssembly);
-            
+
             Assert.AreEqual(4, batch.ScheduledMigrations.Count);
 
             IScheduledMigrationMetadata migration = batch.ScheduledMigrations.Single(m => m.ModuleName == MigrationExportAttribute.DefaultModuleName);
@@ -150,7 +146,7 @@ namespace MigSharp.NUnit
         [Test, ExpectedException(typeof(ArgumentException), ExpectedMessage = "Cannot have more than one timestamp provider responsible for module: 'TimestampProviderDuplicateTest'.")]
         public void MigratorThrowsErrorIfDuplicateTimestampProvidersFoundForModule()
         {
-            var migrator = new Migrator("not-used", ProviderNames.SQLite, new MigrationOptions("TimestampProviderDuplicateTest"));
+            var migrator = new Migrator("not-used", DbPlatform.SQLite3, new MigrationOptions("TimestampProviderDuplicateTest"));
             migrator.MigrateTo(_duplicateProviderTestAssembly, 1);
         }
 
@@ -168,39 +164,20 @@ namespace MigSharp.NUnit
         {
             // Configure the compiler to generate in-memory
             var parameters = new CompilerParameters
-                                 {
-                                     GenerateExecutable = false,
-                                     GenerateInMemory = true
-                                 };
+                {
+                    GenerateExecutable = false,
+                    GenerateInMemory = true
+                };
 
             // Add assemblies referenced by this assembly be referenced by the compiled assembly
             var assemblies = AppDomain.CurrentDomain
-                .GetAssemblies()
-                .Where(a => !AssemblyIsDynamic(a)) // note: assembly.IsDynamic is only available in .NET 4.0 and higher
-                .Select(a => a.Location);
+                                      .GetAssemblies()
+                                      .Where(a => !a.IsDynamic)
+                                      .Select(a => a.Location);
             parameters.ReferencedAssemblies.AddRange(assemblies.ToArray());
 
             _timestampModuleTestAssembly = Compile(parameters, TimestampModuleTestAssemblySource);
             _duplicateProviderTestAssembly = Compile(parameters, DuplicateTimestampProviderAssemblySource);
-        }
-
-        private static bool AssemblyIsDynamic(Assembly assembly)
-        {
-            // see: http://stackoverflow.com/questions/1423733/how-to-tell-if-a-net-assembly-is-dynamic
-            var moduleBuilder = assembly.ManifestModule as ModuleBuilder;
-            if (moduleBuilder != null && moduleBuilder.IsTransient())
-            {
-                return true;
-            }
-            // For some unknown reason, the criteria above are not sufficient yet. On our Chinese Windows accessing
-            // the Location property still yields a NotSupportedException and thus we need to exclude the following
-            // assemblies hard-codedly:
-            if (assembly.FullName.StartsWith("DynamicProxyGenAssembly2", StringComparison.Ordinal) ||
-                assembly.FullName.StartsWith("MetadataViewProxies", StringComparison.Ordinal))
-            {
-                return true;
-            }
-            return false;
         }
 
         private static Assembly Compile(CompilerParameters parameters, string sources)

@@ -3,9 +3,11 @@ using NUnit.Framework;
 
 namespace MigSharp.SQLite.NUnit
 {
+// ReSharper disable InconsistentNaming
     public abstract class SQLiteIntegrationTestsBase : IntegrationTestsBase
+// ReSharper restore InconsistentNaming
     {
-        protected override string ProviderName { get { return ProviderNames.SQLite; } }
+        protected override DbPlatform DbPlatform { get { return DbPlatform.SQLite3; } }
 
         [Test]
         public override void TestMigration1UsingConsoleApp()

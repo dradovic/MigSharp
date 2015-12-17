@@ -21,14 +21,14 @@ namespace MigSharp.Core.Commands
             _columnNames.Add(columnName);
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
             if (_columnNames.Count == 0)
             {
                 throw new InvalidCommandException("At least one column must be added to the AddPrimaryKey command.");
             }
             string effectiveConstraintName = GetEffectiveConstraintName();
-            return provider.AddPrimaryKey(Parent.TableName, _columnNames, effectiveConstraintName);
+            return provider.AddPrimaryKey(new TableName(Parent.TableName, Parent.Schema ?? context.GetDefaultSchema()), _columnNames, effectiveConstraintName);
         }
 
         private string GetEffectiveConstraintName()

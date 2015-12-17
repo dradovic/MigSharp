@@ -4,10 +4,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.Oracle, "Oracle.DataAccess.Client", MaximumDbObjectNameLength = MaximumDbObjectNameLength, ParameterExpression = ":p", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
+    [ProviderExport(Platform.Oracle, 10, "Oracle.DataAccess.Client", MaximumDbObjectNameLength = MaximumDbObjectNameLength, ParameterExpression = ":p", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions (e.g. columns using this data type cannot appear in a WHERE clause without converting using the Oracle 'to_char' function).")]
     [Supports(DbType.Binary)]
@@ -30,9 +31,9 @@ namespace MigSharp.Providers
 
         private const string Identation = "\t";
 
-        public string ExistsTable(string databaseName, string tableName)
+        public string ExistsTable(string databaseName, TableName tableName)
         {
-            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = '{0}' AND OWNER = USER", tableName);
+            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = '{0}' AND OWNER = USER", tableName.Name);
         }
 
         public string ConvertToSql(object value, DbType targetDbType)
@@ -45,7 +46,7 @@ namespace MigSharp.Providers
             return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
-        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
+        public IEnumerable<string> CreateTable(TableName tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
             if (columns.Any(c => c.IsRowVersion))
             {
@@ -55,7 +56,7 @@ namespace MigSharp.Providers
             string commandText = string.Empty;
             string identityColumn = string.Empty;
             var primaryKeyColumns = new List<string>();
-            commandText += string.Format(CultureInfo.InvariantCulture, @"{0}({1}", CreateTable(tableName), Environment.NewLine);
+            commandText += string.Format(CultureInfo.InvariantCulture, @"{0}({1}", CreateTable(tableName.Name), Environment.NewLine);
             bool columnDelimiterIsNeeded = false;
             foreach (CreatedColumn column in columns)
             {
@@ -121,10 +122,10 @@ namespace MigSharp.Providers
             List<string> comands = new List<string> { commandText };
             if (!String.IsNullOrEmpty(identityColumn))
             {
-                string sequenceName = GetSequenceName(tableName);
+                string sequenceName = GetSequenceName(tableName.Name);
                 string createSequence = string.Format(CultureInfo.InvariantCulture, @"CREATE SEQUENCE ""{0}"" MINVALUE 1 START WITH 1 INCREMENT BY 1 CACHE 20 ORDER NOCYCLE",
                     sequenceName);
-                string createTrigger = CreateTrigger(tableName, identityColumn, sequenceName);
+                string createTrigger = CreateTrigger(tableName.Name, identityColumn, sequenceName);
                 comands = new List<string> { createSequence, commandText, createTrigger };
             }
 
@@ -155,7 +156,7 @@ namespace MigSharp.Providers
             return ObjectNameHelper.GetObjectName(tableName, "SEQ", MaximumDbObjectNameLength, tableName.GetHashCode().ToString(CultureInfo.InvariantCulture));
         }
 
-        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
+        public IEnumerable<string> DropTable(TableName tableName, bool checkIfExists)
         {
             if (checkIfExists)
             {
@@ -167,17 +168,17 @@ EXCEPTION
       IF SQLCODE != -942 THEN
          RAISE;
       END IF;
-END;", Escape(tableName));
+END;", Escape(tableName.Name));
             }
             else
             {
-                yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}", Escape(tableName));
+                yield return string.Format(CultureInfo.InvariantCulture, @"DROP TABLE {0}", Escape(tableName.Name));
             }
 
             // drop associated SEQUENCE (if it exists); the TRIGGER is dropped automatically by Oracle
             // Oracle Database Error Code ORA-02289: sequence does not exist
             yield return string.Format(CultureInfo.InvariantCulture, @"BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE ""{0}""'; EXCEPTION WHEN OTHERS THEN IF SQLCODE = -2289 THEN NULL; ELSE RAISE; END IF; END;", // see: http://frankschmidt.blogspot.com/2009/12/drop-table-if-exists-or-sequence-or.html
-                GetSequenceName(tableName));
+                GetSequenceName(tableName.Name));
         }
 
         private string GetColumnString(Column column)
@@ -217,7 +218,7 @@ END;", Escape(tableName));
             }
         }
 
-        public IEnumerable<string> AddColumn(string tableName, Column column)
+        public IEnumerable<string> AddColumn(TableName tableName, Column column)
         {
             if (column.IsRowVersion)
             {
@@ -225,20 +226,20 @@ END;", Escape(tableName));
             }
 
             // assemble ALTER TABLE statements
-            string commandText = string.Format(CultureInfo.InvariantCulture, @"{0} ADD ", AlterTable(tableName));
+            string commandText = string.Format(CultureInfo.InvariantCulture, @"{0} ADD ", AlterTable(tableName.Name));
             commandText += GetColumnString(column);
             yield return commandText;
         }
 
-        public IEnumerable<string> RenameTable(string oldName, string newName)
+        public IEnumerable<string> RenameTable(TableName oldName, string newName)
         {
             // rename table
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME TO {1}", Escape(oldName), Escape(newName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME TO {1}", Escape(oldName.Name), Escape(newName));
 
             // rename sequence if it exists and drop, re-create trigger
-            string oldSequenceName = GetSequenceName(oldName);
+            string oldSequenceName = GetSequenceName(oldName.Name);
             string newSequenceName = GetSequenceName(newName);
-            string oldTriggerName = GetTriggerName(oldName);
+            string oldTriggerName = GetTriggerName(oldName.Name);
             yield return string.Format(CultureInfo.InvariantCulture,
                 @"DECLARE
                     l_idColumn LONG;
@@ -273,17 +274,17 @@ END;", Escape(tableName));
                 ).Replace(Environment.NewLine, " ");
         }
 
-        public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
+        public IEnumerable<string> RenameColumn(TableName tableName, string oldName, string newName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME COLUMN {1} TO {2}", Escape(tableName), Escape(oldName), Escape(newName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} RENAME COLUMN {1} TO {2}", Escape(tableName.Name), Escape(oldName), Escape(newName));
         }
 
-        public IEnumerable<string> DropColumn(string tableName, string columnName)
+        public IEnumerable<string> DropColumn(TableName tableName, string columnName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP COLUMN {1}", Escape(tableName), Escape(columnName));
+            yield return string.Format(CultureInfo.InvariantCulture, "ALTER TABLE {0} DROP COLUMN {1}", Escape(tableName.Name), Escape(columnName));
         }
 
-        public IEnumerable<string> AlterColumn(string tableName, Column column)
+        public IEnumerable<string> AlterColumn(TableName tableName, Column column)
         {
             string query = @"declare 
                              l_nullable varchar2(1);
@@ -320,7 +321,7 @@ END;", Escape(tableName));
             string colN = column.IsNullable ? "NULL" : "";
             string colY = column.IsNullable ? "" : "NOT NULL";
             string defaultConstraintClause = (column.DefaultValue == null) ? "DEFAULT NULL" : string.Format(CultureInfo.InvariantCulture, " DEFAULT {0}", GetDefaultValueAsString(column.DefaultValue, column.DataType).Replace("'", "''"));
-            yield return string.Format(CultureInfo.InvariantCulture, query, tableName, column.Name, GetTypeSpecifier(column.DataType), colN, colY, defaultConstraintClause);
+            yield return string.Format(CultureInfo.InvariantCulture, query, tableName.Name, column.Name, GetTypeSpecifier(column.DataType), colN, colY, defaultConstraintClause);
         }
 
         private static IEnumerable<string> DropConstraint(string tableName, string constraintName)
@@ -328,17 +329,17 @@ END;", Escape(tableName));
             yield return string.Format(CultureInfo.InvariantCulture, "{0} DROP CONSTRAINT {1}", AlterTable(tableName), Escape(constraintName));
         }
 
-        public IEnumerable<string> AddIndex(string tableName, IEnumerable<string> columnNames, string indexName)
+        public IEnumerable<string> AddIndex(TableName tableName, IEnumerable<string> columnNames, string indexName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "CREATE INDEX {0} ON {1} ({2})", Escape(indexName), Escape(tableName), GetCsList(columnNames));
+            yield return string.Format(CultureInfo.InvariantCulture, "CREATE INDEX {0} ON {1} ({2})", Escape(indexName), Escape(tableName.Name), GetCsList(columnNames));
         }
 
-        public IEnumerable<string> DropIndex(string tableName, string indexName)
+        public IEnumerable<string> DropIndex(TableName tableName, string indexName)
         {
             yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0}", Escape(indexName));
         }
 
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
+        public IEnumerable<string> AddForeignKey(TableName tableName, TableName referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             string sourceCols = String.Empty;
             string targetCols = String.Empty;
@@ -351,22 +352,22 @@ END;", Escape(tableName));
             sourceCols = sourceCols.TrimEnd(',');
             targetCols = targetCols.TrimEnd(',');
 
-            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3}({4}){5}", AlterTable(tableName), Escape(constraintName), sourceCols, Escape(referencedTableName), targetCols, cascadeOnDelete ? " ON DELETE CASCADE" : string.Empty);
+            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3}({4}){5}", AlterTable(tableName.Name), Escape(constraintName), sourceCols, Escape(referencedTableName.Name), targetCols, cascadeOnDelete ? " ON DELETE CASCADE" : string.Empty);
         }
 
-        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(TableName tableName, string constraintName)
         {
-            return DropConstraint(tableName, constraintName);
+            return DropConstraint(tableName.Name, constraintName);
         }
 
-        public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddPrimaryKey(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} PRIMARY KEY ({2})", AlterTable(tableName), Escape(constraintName), GetCsList(columnNames));
+            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} PRIMARY KEY ({2})", AlterTable(tableName.Name), Escape(constraintName), GetCsList(columnNames));
         }
 
-        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        public IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "{0} RENAME CONSTRAINT {1} TO {2}", AlterTable(tableName), Escape(oldName), Escape(newName));
+            yield return string.Format(CultureInfo.InvariantCulture, "{0} RENAME CONSTRAINT {1} TO {2}", AlterTable(tableName.Name), Escape(oldName), Escape(newName));
             yield return string.Format(CultureInfo.InvariantCulture, "{0} RENAME TO {1}", AlterIndex(oldName), Escape(newName));
         }
 
@@ -375,25 +376,35 @@ END;", Escape(tableName));
             return string.Format(CultureInfo.InvariantCulture, "ALTER INDEX {0}", Escape(indexName));
         }
 
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(TableName tableName, string constraintName)
         {
-            return DropConstraint(tableName, constraintName);
+            return DropConstraint(tableName.Name, constraintName);
         }
 
-        public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddUniqueConstraint(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} UNIQUE ({2})", AlterTable(tableName), Escape(constraintName), GetCsList(columnNames));
+            yield return string.Format(CultureInfo.InvariantCulture, "{0} ADD CONSTRAINT {1} UNIQUE ({2})", AlterTable(tableName.Name), Escape(constraintName), GetCsList(columnNames));
         }
 
-        public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropUniqueConstraint(TableName tableName, string constraintName)
         {
-            return DropConstraint(tableName, constraintName);
+            return DropConstraint(tableName.Name, constraintName);
         }
 
-        public IEnumerable<string> DropDefault(string tableName, Column column)
+        public IEnumerable<string> DropDefault(TableName tableName, Column column)
         {
             Debug.Assert(column.DefaultValue == null, "The DefaultValue must be null as we are going to call AlterColumn with it.");
             return AlterColumn(tableName, column);
+        }
+
+        public IEnumerable<string> CreateSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported. Oracle schemas correspond to users.");
+        }
+
+        public IEnumerable<string> DropSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported. Oracle schemas correspond to users.");
         }
 
         private static string CreateTable(string tableName)

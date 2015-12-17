@@ -3,6 +3,9 @@ using System.Runtime.Serialization;
 
 namespace MigSharp
 {
+
+#pragma warning disable 1591
+
     /// <summary>
     /// This exception is thrown when some of the exported migrations are invalid.
     /// </summary>
@@ -28,4 +31,7 @@ namespace MigSharp
         {
         }
     }
+
+#pragma warning restore 1591
+
 }

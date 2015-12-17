@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-
+using FakeItEasy;
 using MigSharp.Core.Entities;
 using MigSharp.Providers;
 
 using NUnit.Framework;
-
-using Rhino.Mocks;
 
 namespace MigSharp.NUnit
 {
@@ -15,7 +13,7 @@ namespace MigSharp.NUnit
     {
         public static IEnumerable<TestCaseData> CreateDatabaseCases()
         {
-            IMigrationContext context = MockRepository.GenerateStub<IMigrationContext>();
+            IMigrationContext context = A.Fake<IMigrationContext>();
 
             IDatabase db = new Database(context);
             db.CreateTable("Customers")

@@ -29,15 +29,6 @@ namespace MigSharp.Core.Entities
             }
         }
 
-        public IExistingPrimaryKey PrimaryKey(string constraintName)
-        {
-            if (string.IsNullOrEmpty(constraintName)) throw new ArgumentException("Empty constraintName.");
-
-            var command = new AlterPrimaryKeyCommand(_command, constraintName);
-            _command.Add(command);
-            return new ExistingPrimaryKey(command);
-        }
-
         public IIndexesCollection Indexes
         {
             get
@@ -87,6 +78,15 @@ namespace MigSharp.Core.Entities
             _indexes = new IndexesCollection(command);
             _uniqueConstraints = new UniqueConstraintCollection(command);
             _foreignKeyConstraints = new ForeignKeyCollection(command);
+        }
+
+        public IExistingPrimaryKey PrimaryKey(string constraintName)
+        {
+            if (string.IsNullOrEmpty(constraintName)) throw new ArgumentException("Empty constraintName.");
+
+            var command = new AlterPrimaryKeyCommand(_command, constraintName);
+            _command.Add(command);
+            return new ExistingPrimaryKey(command);
         }
 
         void IExistingTable.Rename(string newName)

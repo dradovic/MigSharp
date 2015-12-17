@@ -4,10 +4,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(ProviderNames.Teradata, InvariantName, MaximumDbObjectNameLength = 30, SupportsTransactions = false, ParameterExpression = "?", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
+    [ProviderExport(Platform.Teradata, 12, InvariantName, MaximumDbObjectNameLength = 30, SupportsTransactions = false, ParameterExpression = "?", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = 8000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions.")]
     [Supports(DbType.Binary)]
@@ -34,9 +35,9 @@ namespace MigSharp.Providers
                  INCREMENT BY 1
                  NO CYCLE)";
 
-        public virtual string ExistsTable(string databaseName, string tableName)
+        public virtual string ExistsTable(string databaseName, TableName tableName)
         {
-            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM DBC.TABLES WHERE DATABASENAME='{0}' AND TABLENAME='{1}'", databaseName, tableName);
+            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(*) FROM DBC.TABLES WHERE DATABASENAME='{0}' AND TABLENAME='{1}'", databaseName, tableName.Name);
         }
 
         public string ConvertToSql(object value, DbType targetDbType)
@@ -44,12 +45,12 @@ namespace MigSharp.Providers
             if (targetDbType == DbType.DateTime)
             {
                 return string.Format(CultureInfo.InvariantCulture, "TIMESTAMP '{0}'",
-                    ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+                                     ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
             }
             return SqlScriptingHelper.ToSql(value, targetDbType, PrefixUnicodeLiterals);
         }
 
-        public IEnumerable<string> CreateTable(string tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
+        public IEnumerable<string> CreateTable(TableName tableName, IEnumerable<CreatedColumn> columns, string primaryKeyConstraintName)
         {
             if (columns.Any(c => c.IsRowVersion))
             {
@@ -58,7 +59,7 @@ namespace MigSharp.Providers
 
             string commandText = string.Empty;
             var primaryKeyColumns = new List<string>();
-            commandText += string.Format(@"{0}({1}", CreateTable(tableName), Environment.NewLine);
+            commandText += string.Format(@"{0}({1}", CreateTable(tableName.Name), Environment.NewLine);
             bool columnDelimiterIsNeeded = false;
             foreach (CreatedColumn column in columns)
             {
@@ -78,9 +79,9 @@ namespace MigSharp.Providers
             {
                 // FEATURE: support clustering
                 commandText += string.Format("){0} UNIQUE PRIMARY INDEX \"{1}\" {2}",
-                    Environment.NewLine,
-                    primaryKeyConstraintName,
-                    Environment.NewLine);
+                                             Environment.NewLine,
+                                             primaryKeyConstraintName,
+                                             Environment.NewLine);
                 commandText += string.Format("({0}", Environment.NewLine);
 
                 columnDelimiterIsNeeded = false;
@@ -99,9 +100,9 @@ namespace MigSharp.Providers
                 .GroupBy(c => c.UniqueConstraint))
             {
                 commandText += string.Format(") {0} UNIQUE INDEX {1} {2}",
-                    Environment.NewLine,
-                    Escape(uniqueColumns.Key),
-                    Environment.NewLine);
+                                             Environment.NewLine,
+                                             Escape(uniqueColumns.Key),
+                                             Environment.NewLine);
                 commandText += string.Format("({0}", Environment.NewLine);
 
                 columnDelimiterIsNeeded = false;
@@ -123,7 +124,7 @@ namespace MigSharp.Providers
             throw new NotSupportedException("Teradata does not have a unique auto-increment row-version concept.");
         }
 
-        public IEnumerable<string> DropTable(string tableName, bool checkIfExists)
+        public IEnumerable<string> DropTable(TableName tableName, bool checkIfExists)
         {
             if (checkIfExists)
             {
@@ -135,10 +136,10 @@ namespace MigSharp.Providers
                 // we would need to have a databaseName parameter for this method as well. So, for the time being we:
                 throw new NotSupportedException("The DropIfExists method is not supported by the current Teradata provider implementation.");
             }
-            yield return string.Format("DROP TABLE {0}", Escape(tableName));
+            yield return string.Format("DROP TABLE {0}", Escape(tableName.Name));
         }
 
-        public IEnumerable<string> AddColumn(string tableName, Column column)
+        public IEnumerable<string> AddColumn(TableName tableName, Column column)
         {
             if (column.IsRowVersion)
             {
@@ -146,29 +147,29 @@ namespace MigSharp.Providers
             }
 
             // assemble ALTER TABLE statements
-            string commandText = string.Format(@"{0} ADD ", AlterTable(tableName));
+            string commandText = string.Format(@"{0} ADD ", AlterTable(tableName.Name));
             commandText += GetColumnString(column, false);
             yield return commandText;
         }
 
-        public IEnumerable<string> RenameTable(string oldName, string newName)
+        public IEnumerable<string> RenameTable(TableName oldName, string newName)
         {
-            yield return string.Format("RENAME TABLE {0} TO {1};", Escape(oldName), Escape(newName));
+            yield return string.Format("RENAME TABLE {0} TO {1};", Escape(oldName.Name), Escape(newName));
         }
 
-        public IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
+        public IEnumerable<string> RenameColumn(TableName tableName, string oldName, string newName)
         {
-            yield return string.Format("{0} RENAME {1} TO {2}", AlterTable(tableName), Escape(oldName), Escape(newName));
+            yield return string.Format("{0} RENAME {1} TO {2}", AlterTable(tableName.Name), Escape(oldName), Escape(newName));
         }
 
-        public IEnumerable<string> DropColumn(string tableName, string columnName)
+        public IEnumerable<string> DropColumn(TableName tableName, string columnName)
         {
-            yield return string.Format("{0} DROP {1}", AlterTable(tableName), Escape(columnName));
+            yield return string.Format("{0} DROP {1}", AlterTable(tableName.Name), Escape(columnName));
         }
 
-        public IEnumerable<string> AlterColumn(string tableName, Column column)
+        public IEnumerable<string> AlterColumn(TableName tableName, Column column)
         {
-            yield return string.Format("{0} ADD {1}", AlterTable(tableName), GetColumnString(column, false));
+            yield return string.Format("{0} ADD {1}", AlterTable(tableName.Name), GetColumnString(column, false));
         }
 
         private static IEnumerable<string> DropConstraint(string tableName, string constraintName)
@@ -176,17 +177,17 @@ namespace MigSharp.Providers
             yield return string.Format("{0} DROP CONSTRAINT {1}", AlterTable(tableName), Escape(constraintName));
         }
 
-        public IEnumerable<string> AddIndex(string tableName, IEnumerable<string> columnNames, string indexName)
+        public IEnumerable<string> AddIndex(TableName tableName, IEnumerable<string> columnNames, string indexName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "CREATE INDEX {0} ({1}) ON {2}", Escape(indexName), GetCsList(columnNames), Escape(tableName));
+            yield return string.Format(CultureInfo.InvariantCulture, "CREATE INDEX {0} ({1}) ON {2}", Escape(indexName), GetCsList(columnNames), Escape(tableName.Name));
         }
 
-        public IEnumerable<string> DropIndex(string tableName, string indexName)
+        public IEnumerable<string> DropIndex(TableName tableName, string indexName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON {1}", Escape(indexName), Escape(tableName));
+            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {0} ON {1}", Escape(indexName), Escape(tableName.Name));
         }
 
-        public IEnumerable<string> AddForeignKey(string tableName, string referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
+        public IEnumerable<string> AddForeignKey(TableName tableName, TableName referencedTableName, IEnumerable<ColumnReference> columnNames, string constraintName, bool cascadeOnDelete)
         {
             if (cascadeOnDelete)
             {
@@ -204,32 +205,32 @@ namespace MigSharp.Providers
             sourceCols = sourceCols.TrimEnd(',');
             targetCols = targetCols.TrimEnd(',');
 
-            yield return string.Format("{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES WITH CHECK OPTION {3}({4})", AlterTable(tableName), Escape(constraintName), sourceCols, referencedTableName, targetCols);
+            yield return string.Format("{0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES WITH CHECK OPTION {3}({4})", AlterTable(tableName.Name), Escape(constraintName), sourceCols, referencedTableName, targetCols);
         }
 
-        public IEnumerable<string> DropForeignKey(string tableName, string constraintName)
+        public IEnumerable<string> DropForeignKey(TableName tableName, string constraintName)
         {
-            return DropConstraint(tableName, constraintName);
+            return DropConstraint(tableName.Name, constraintName);
         }
 
-        public IEnumerable<string> AddPrimaryKey(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddPrimaryKey(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
             throw new NotSupportedException("Teradata always automatically generates a 'Primary Index' when creating a table which cannot be removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
             //yield return string.Format("{0} ADD CONSTRAINT {1} PRIMARY KEY ({2})", AlterTable(tableName), Escape(constraintName), GetCsList(columnNames));
         }
 
-        public IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        public IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName)
         {
             throw new NotSupportedException("Teradata always automatically generates a 'Primary Index' when creating a table which cannot be removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
         }
 
-        public IEnumerable<string> DropPrimaryKey(string tableName, string constraintName)
+        public IEnumerable<string> DropPrimaryKey(TableName tableName, string constraintName)
         {
             throw new NotSupportedException("Teradata always automatically generates a 'Primary Index' when creating a table which cannot be removed retrospectively. If you need a different primary key, you need to recreate the table with the right primary key and copy the contents from the old table.");
             //return DropConstraint(tableName, constraintName);
         }
 
-        public IEnumerable<string> AddUniqueConstraint(string tableName, IEnumerable<string> columnNames, string constraintName)
+        public IEnumerable<string> AddUniqueConstraint(TableName tableName, IEnumerable<string> columnNames, string constraintName)
         {
             string columns = columnNames.Aggregate(String.Empty, (current, column) => current + (Escape(column) + ","));
             columns = columns.TrimEnd(',');
@@ -237,15 +238,25 @@ namespace MigSharp.Providers
             yield return string.Format("CREATE UNIQUE INDEX {0} ({1}) ON {2}", Escape(constraintName), columns, tableName);
         }
 
-        public IEnumerable<string> DropUniqueConstraint(string tableName, string constraintName)
+        public IEnumerable<string> DropUniqueConstraint(TableName tableName, string constraintName)
         {
             yield return string.Format("DROP UNIQUE INDEX {0} ON {1}", Escape(constraintName), tableName);
         }
 
-        public IEnumerable<string> DropDefault(string tableName, Column column)
+        public IEnumerable<string> DropDefault(TableName tableName, Column column)
         {
             Debug.Assert(column.DefaultValue == null, "The DefaultValue must be null as we are going to call AlterColumn with it.");
             return AlterColumn(tableName, column);
+        }
+
+        public IEnumerable<string> CreateSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported.");
+        }
+
+        public IEnumerable<string> DropSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported.");
         }
 
         private static string CreateTable(string tableName)
@@ -346,11 +357,11 @@ namespace MigSharp.Providers
             }
 
             commandText += string.Format(CultureInfo.InvariantCulture, "{0} {1} {3} {4} {2}NULL",
-                Escape(column.Name),
-                GetTypeSpecifier(column.DataType),
-                column.IsNullable ? string.Empty : "NOT ",
-                defaultConstraintClause,
-                isIdentity ? Identity : string.Empty);
+                                         Escape(column.Name),
+                                         GetTypeSpecifier(column.DataType),
+                                         column.IsNullable ? string.Empty : "NOT ",
+                                         defaultConstraintClause,
+                                         isIdentity ? Identity : string.Empty);
 
             return commandText;
         }

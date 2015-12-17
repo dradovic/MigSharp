@@ -13,6 +13,12 @@ namespace MigSharp.Core.Entities
             _addForeignKeyToCommand = addForeignKeyToCommand;
         }
 
+        public IAddedForeignKey InSchema(string schemaName)
+        {
+            _addForeignKeyToCommand.ReferencedTableSchema = schemaName;
+            return this;
+        }
+
         public IAddedForeignKey Through(string columnName, string referencedColumnName)
         {
             _addForeignKeyToCommand.ColumnNames.Add(new KeyValuePair<string, string>(columnName, referencedColumnName));

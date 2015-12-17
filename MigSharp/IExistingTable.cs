@@ -59,11 +59,11 @@ namespace MigSharp
         IAddedIndex AddIndex(string indexName);
 
         /// <summary>
-        /// Adds a foreign key constraint to another table.
+        /// Adds a foreign key constraint to another table within the same schema.
         /// </summary>
         /// <param name="referencedTableName">The name of the referenced table.</param>
         /// <param name="constraintName">Optionally, the name of the foreign key constraint. If null or empty, a default name will be generated.</param>
-        IAddedForeignKey AddForeignKeyTo(string referencedTableName, string constraintName);
+        IAddedForeignKey AddForeignKeyTo(string referencedTableName, string constraintName); // FIXME: da, give possibility to reference table from another schema
 
         /// <summary>
         /// Adds an unique constraint to the table.
@@ -107,10 +107,8 @@ namespace MigSharp
         }
 
         /// <summary>
-        /// Adds a foreign key constraint to another table with the default name.
+        /// Adds a foreign key constraint to another table within the same schema with a default foreign key name.
         /// </summary>
-        /// <param name="table"></param>
-        /// <param name="referencedTableName">The name of the referenced table.</param>
         public static IAddedForeignKey AddForeignKeyTo(this IExistingTable table, string referencedTableName)
         {
             return table.AddForeignKeyTo(referencedTableName, null);

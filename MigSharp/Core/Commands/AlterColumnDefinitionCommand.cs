@@ -23,11 +23,11 @@ namespace MigSharp.Core.Commands
             _isNullable = isNullable;
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
             var dataType = new DataType(_type, Size, Scale);
             var column = new Column(Parent.ColumnName, dataType, _isNullable, DefaultValue, false);
-            return provider.AlterColumn(Parent.Parent.TableName, column);
+            return provider.AlterColumn(new TableName(Parent.Parent.TableName, Parent.Parent.Schema ?? context.GetDefaultSchema()), column);
         }
     }
 }

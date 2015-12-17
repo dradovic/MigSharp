@@ -13,7 +13,7 @@ namespace MigSharp.Core.Commands
             _query = query;
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
             yield return _query;
         }

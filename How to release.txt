@@ -43,6 +43,10 @@ Post-actions:
 - Announce
 - Close all issues related to the released milestone
 
+Release Candidates:
+-------------------
+- TC: edit NuGet Package step: Version = 3.0.0-RC1
+
 To branch a release for patches:
 --------------------------------
 - Use the tag to branch off a release branch for patches:

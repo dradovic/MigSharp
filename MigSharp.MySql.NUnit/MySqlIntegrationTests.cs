@@ -37,7 +37,7 @@ namespace MigSharp.MySql.NUnit
             }
         }
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
         {
             var adapter = new MySqlDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString);
             builder = new MySqlCommandBuilder(adapter);
@@ -73,10 +73,7 @@ namespace MigSharp.MySql.NUnit
             }
         }
 
-        protected override string ProviderName
-        {
-            get { return ProviderNames.MySql; }
-        }
+        protected override DbPlatform DbPlatform { get { return DbPlatform.MySql5; } }
 
         public override void Setup()
         {

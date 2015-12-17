@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-
+using FakeItEasy;
+using MigSharp.Core;
 using MigSharp.Process;
-
 using NUnit.Framework;
-
-using Rhino.Mocks;
 
 namespace MigSharp.NUnit.Process
 {
@@ -35,7 +33,7 @@ namespace MigSharp.NUnit.Process
 
         private static PersistedVersioning CreateVersioning()
         {
-            var history = new History("TableName", MockRepository.GenerateStub<IProviderMetadata>());
+            var history = new History(new TableName("TableName", null), A.Fake<IProviderMetadata>());
             history.LoadEntry(ExistingTimestampForDefaultModule, string.Empty, ExistingTagForDefaultModule);
             history.LoadEntry(ExistingTimestampForTestModule, TestModule, ExistingTagForTestModule);
             return new PersistedVersioning(history);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
@@ -29,7 +28,7 @@ namespace MigSharp.Migrate
             }
 
             string connectionString;
-            string providerName;
+            DbPlatform dbPlatform;
             string assemblyPath;
             string[] additionalAssemblyPaths;
             long timestamp;
@@ -37,28 +36,28 @@ namespace MigSharp.Migrate
             MigrationOptions options;
             try
             {
-                options = ParseCommandLineArguments(commandLineOptions, parser, ConfigurationManager.ConnectionStrings, out connectionString, out providerName, out assemblyPath, out additionalAssemblyPaths, out timestamp, out traceLevels);
+                options = ParseCommandLineArguments(commandLineOptions, parser, ConfigurationManager.ConnectionStrings, out connectionString, out dbPlatform, out assemblyPath, out additionalAssemblyPaths, out timestamp, out traceLevels);
             }
             catch (InvalidCommandLineArgumentException x)
             {
                 Console.Error.WriteLine(x.Message);
+                Console.Error.WriteLine("The provided command line was: {0}", Environment.CommandLine);
                 Environment.Exit(x.ExitCode);
                 throw; // will not be executed; just to satisfy R#
             }
 
             Trace.Listeners.Add(new ConsoleTraceListener()); // IMPORTANT: do this before setting the trace levels
-            MigrationOptions.SetGeneralTraceLevel(traceLevels);
-            MigrationOptions.SetSqlTraceLevel(traceLevels);
-            MigrationOptions.SetPerformanceTraceLevel(traceLevels);
+            Options.SetGeneralTraceLevel(traceLevels);
+            Options.SetSqlTraceLevel(traceLevels);
+            Options.SetPerformanceTraceLevel(traceLevels);
 
             try
             {
-                ExecuteMigration(connectionString, providerName, options, assemblyPath, timestamp, additionalAssemblyPaths);
+                ExecuteMigration(connectionString, dbPlatform, options, assemblyPath, timestamp, additionalAssemblyPaths);
             }
             catch (Exception x)
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                    "Failed to migrate: {0}", GetErrorMessage(x)));
+                Console.Error.WriteLine("Failed to migrate: {0}", GetErrorMessage(x));
                 Environment.Exit(FailedMigrationExitCode);
             }
         }
@@ -73,7 +72,7 @@ namespace MigSharp.Migrate
         }
 
         internal static MigrationOptions ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings,
-            out string connectionString, out string providerName, out string assemblyPath, out string[] additionalAssemblyPaths, out long timestamp, out SourceLevels traceLevels)
+            out string connectionString, out DbPlatform dbPlatform, out string assemblyPath, out string[] additionalAssemblyPaths, out long timestamp, out SourceLevels traceLevels)
         {
             if (parser.Parameters.Length < 2 || // expect at least the target and one assemlby
                 parser.UnhandledSwitches.Length > 0)
@@ -100,7 +99,7 @@ namespace MigSharp.Migrate
             }
 
             // provider name
-            providerName = options.Provider;
+            dbPlatform = new DbPlatform(options.Platform, options.MajorVersion, options.Driver);
 
             // assembly paths
             assemblyPath = parser.Parameters[1];
@@ -143,14 +142,6 @@ namespace MigSharp.Migrate
             //
             var migrationOptions = !string.IsNullOrEmpty(options.Module) ? new MigrationOptions(options.Module) : new MigrationOptions();
 
-            // supported providers
-            IEnumerable<string> supportedProviders = new[] { providerName };
-            if (!string.IsNullOrEmpty(options.Support))
-            {
-                supportedProviders = supportedProviders.Concat(options.Support.Split(new[] { SupportedProviderSeparator }, StringSplitOptions.RemoveEmptyEntries));
-            }
-            migrationOptions.SupportedProviders.Set(supportedProviders);
-
             // scripting
             if (!string.IsNullOrEmpty(options.ScriptTo))
             {
@@ -181,9 +172,9 @@ namespace MigSharp.Migrate
             return migrationOptions;
         }
 
-        private static void ExecuteMigration(string connectionString, string providerName, MigrationOptions options, string assemblyPath, long timestamp, string[] additionalAssemblyPaths)
+        private static void ExecuteMigration(string connectionString, DbPlatform dbPlatform, MigrationOptions options, string assemblyPath, long timestamp, string[] additionalAssemblyPaths)
         {
-            var migrator = new Migrator(connectionString, providerName, options);
+            var migrator = new Migrator(connectionString, dbPlatform, options);
             IMigrationBatch batch = migrator.FetchMigrationsTo(assemblyPath, timestamp, additionalAssemblyPaths);
             batch.Execute();
         }

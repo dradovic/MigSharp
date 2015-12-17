@@ -12,12 +12,14 @@ namespace MigSharp.Process
     /// <summary>
     /// Validates <see cref="IMigrationReport"/>s against the list of supported providers.
     /// </summary>
-    internal class Validator
+    internal class Validator : IValidator
     {
-        private readonly MigrationOptions _options;
+        private readonly IEnumerable<ProviderInfo> _providers;
+        private readonly DbAltererOptions _options;
 
-        public Validator(MigrationOptions options)
+        public Validator(IEnumerable<ProviderInfo> providers, DbAltererOptions options)
         {
+            _providers = providers;
             _options = options;
         }
 
@@ -28,18 +30,16 @@ namespace MigSharp.Process
             int numberOfProviders = 0;
             var errorMessages = new List<string>();
             var warningMessages = new List<ValidationWarning>();
-            foreach (string providerName in _options.SupportedProviders.Names)
+            foreach (ProviderInfo info in _providers)
             {
-                IProviderMetadata providerMetadata;
-                IProvider provider = _options.SupportedProviders.GetProvider(providerName, out providerMetadata);
-                List<SupportsAttribute> supportsAttributes = provider.GetSupportsAttributes().ToList();
-                IEnumerable<UnsupportedMethod> unsupportedMethods = provider.GetUnsupportedMethods();
+                List<SupportsAttribute> supportsAttributes = info.Provider.GetSupportsAttributes().ToList();
+                IEnumerable<UnsupportedMethod> unsupportedMethods = info.Provider.GetUnsupportedMethods();
 
-                var context = new MigrationContext(providerMetadata);
                 foreach (IMigrationReporter reporter in reporters)
                 {
+                    var context = new MigrationContext(info.Metadata, reporter.MigrationMetadata);
                     IMigrationReport report = reporter.Report(context);
-                    Validate(providerMetadata, supportsAttributes, unsupportedMethods, report, warningMessages, errorMessages);
+                    Validate(info.Metadata, supportsAttributes, unsupportedMethods, report, warningMessages, errorMessages);
                 }
                 numberOfProviders++;
             }
@@ -63,7 +63,7 @@ namespace MigSharp.Process
                 errorMessages.Add(string.Format(CultureInfo.CurrentCulture,
                     "Migration '{0}' contains object names that are longer than what is supported by '{1}' ('{2}': {3}, supported: {4}).",
                     report.MigrationName,
-                    providerMetadata.Name,
+                    providerMetadata.GetPlatform(),
                     report.LongestName,
                     report.LongestName.Length,
                     providerMetadata.MaximumDbObjectNameLength));
@@ -80,7 +80,7 @@ namespace MigSharp.Process
                         "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.",
                         report.MigrationName,
                         dataType,
-                        providerMetadata.Name));
+                        providerMetadata.GetPlatform()));
                     continue;
                 }
                 // post-condition: the data type is supported
@@ -93,7 +93,7 @@ namespace MigSharp.Process
                         "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.",
                         report.MigrationName,
                         dataType,
-                        providerMetadata.Name));
+                        providerMetadata.GetPlatform()));
                     continue;
                 }
                 // post-condition: the data type is supported and OfSize was specified with the correct number of parameters
@@ -105,7 +105,7 @@ namespace MigSharp.Process
                         "Migration '{0}' uses the data type '{1}' for a primary key which is not supported by '{2}'.",
                         report.MigrationName,
                         dataType,
-                        providerMetadata.Name));
+                        providerMetadata.GetPlatform()));
                 }
                 if (report.IdentityDataTypes.Contains(dataType) && !attribute.CanBeUsedAsIdentity)
                 {
@@ -113,7 +113,7 @@ namespace MigSharp.Process
                         "Migration '{0}' uses the data type '{1}' for an identity column which is not supported by '{2}'.",
                         report.MigrationName,
                         dataType,
-                        providerMetadata.Name));
+                        providerMetadata.GetPlatform()));
                 }
                 if (attribute.MaximumSize > 0 && dataType.Size > attribute.MaximumSize)
                 {
@@ -122,7 +122,7 @@ namespace MigSharp.Process
                         report.MigrationName,
                         dataType,
                         attribute.MaximumSize,
-                        providerMetadata.Name));
+                        providerMetadata.GetPlatform()));
                 }
                 if (attribute.MaximumScale > 0 && dataType.Scale > attribute.MaximumScale)
                 {
@@ -131,17 +131,17 @@ namespace MigSharp.Process
                         report.MigrationName,
                         dataType,
                         attribute.MaximumScale,
-                        providerMetadata.Name));
+                        providerMetadata.GetPlatform()));
                 }
                 if (!string.IsNullOrEmpty(attribute.Warning))
                 {
-                    warningMessages.Add(new ValidationWarning(report.MigrationName, dataType, providerMetadata.Name, attribute.Warning));
+                    warningMessages.Add(new ValidationWarning(report.MigrationName, dataType, providerMetadata.GetPlatform(), attribute.Warning));
                 }
                 if (providerMetadata.InvariantName == "System.Data.Odbc") // ODBC specific warnings
                 {
                     if (dataType.DbType == DbType.Int64)
                     {
-                        warningMessages.Add(new ValidationWarning(report.MigrationName, dataType, providerMetadata.Name, "Int64 is not supported for DbParameters with ODBC; requires calling ToString to directly inline the value in the CommandText."));
+                        warningMessages.Add(new ValidationWarning(report.MigrationName, dataType, providerMetadata.GetPlatform(), "Int64 is not supported for DbParameters with ODBC; requires calling ToString to directly inline the value in the CommandText."));
                     }
                 }
             }
@@ -154,7 +154,7 @@ namespace MigSharp.Process
                     "Migration '{0}' calls the '{1}' method which is not supported by '{2}': {3}",
                     report.MigrationName,
                     method.Name,
-                    providerMetadata.Name,
+                    providerMetadata.GetPlatform(),
                     method.Message));
             }
 
@@ -164,7 +164,7 @@ namespace MigSharp.Process
 
         private bool WarningIsSuppressed(ValidationWarning warning)
         {
-            return _options.IsWarningSuppressed(warning.ProviderName, warning.DataType.DbType, warning.DataType.Size, warning.DataType.Scale);
+            return _options.IsWarningSuppressed(warning.DbPlatform, warning.DataType.DbType, warning.DataType.Size, warning.DataType.Scale);
         }
     }
 }

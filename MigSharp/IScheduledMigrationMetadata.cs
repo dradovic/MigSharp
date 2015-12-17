@@ -9,5 +9,10 @@ namespace MigSharp
         /// Gets the direction of the migration execution.
         /// </summary>
         MigrationDirection Direction { get; }
+
+        /// <summary>
+        /// Indicates if the module name should be used as the default schema if no other schema name was specified for a command. SQL Server only.
+        /// </summary>
+        bool UseModuleNameAsDefaultSchema { get; }
     }
 }

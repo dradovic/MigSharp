@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Generate")]
 [assembly: AssemblyProduct("Generate")]
 
-[assembly: AssemblyVersion("2.3.5.0")]
-[assembly: AssemblyFileVersion("2.3.5.0")]
+[assembly: AssemblyVersion("3.0.0.0")]
+[assembly: AssemblyFileVersion("3.0.0.0")]
 
 [assembly: CLSCompliant(true)]
 

@@ -8,17 +8,27 @@ namespace MigSharp.Core.Entities
     {
         private readonly IMigrationContext _context;
         private readonly MigrateCommand _root = new MigrateCommand();
+        private readonly SchemaCollection _schemata;
         private readonly TableCollection _tables;
 
-        internal ICommand Root { get { return _root; } }
+        internal MigrateCommand Root { get { return _root; } }
 
         public IMigrationContext Context { get { return _context; } }
+        public IExistingSchemaCollection Schemata { get { return _schemata; } }
+
+        public void CreateSchema(string schemaName)
+        {
+            var createSchemaCommand = new CreateSchemaCommand(_root, schemaName);
+            _root.Add(createSchemaCommand);
+        }
+
         public IExistingTableCollection Tables { get { return _tables; } }
 
         public Database(IMigrationContext context)
         {
             _context = context;
             _tables = new TableCollection(_root);
+            _schemata = new SchemaCollection(_root);
         }
 
         public ICreatedTable CreateTable(string tableName, string primaryKeyConstraintName)

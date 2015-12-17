@@ -7,12 +7,11 @@ namespace MigSharp.NUnit.Integration
         public static void ActivateStrictMode(IDatabase db)
         {
             // MySQL does not throw certain errors unless strict mode is enabled
-            if (db.Context.ProviderMetadata.Name == ProviderNames.MySql)
+            if (db.Context.ProviderMetadata.Platform == Platform.MySql)
             {
                 db.Execute(context =>
                 {
-                    IDbCommand command = context.Connection.CreateCommand();
-                    command.Transaction = context.Transaction;
+                    IDbCommand command = context.CreateCommand();
                     command.CommandText = "SET SQL_MODE = 'ANSI_QUOTES,STRICT_ALL_TABLES'";
                     command.ExecuteNonQuery();
                 });

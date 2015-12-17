@@ -19,7 +19,7 @@ namespace MigSharp.Process
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly IProvider _provider;
         private readonly IProviderMetadata _providerMetadata;
-        private readonly string _versioningTableName;
+        private readonly TableName _versioningTableName;
         private readonly ISqlDispatcher _sqlDispatcher;
 
         private PersistedVersioning _persistedVersioning;
@@ -27,7 +27,7 @@ namespace MigSharp.Process
 
         internal bool VersioningTableExists { get { return _versioningTableExists.Value; } }
 
-        internal Versioning(ConnectionInfo connectionInfo, IDbConnectionFactory connectionFactory, IProvider provider, IProviderMetadata providerMetadata, string versioningTableName, ISqlDispatcher sqlDispatcher)
+        internal Versioning(ConnectionInfo connectionInfo, IDbConnectionFactory connectionFactory, IProvider provider, IProviderMetadata providerMetadata, TableName versioningTableName, ISqlDispatcher sqlDispatcher)
         {
             _connectionInfo = connectionInfo;
             _connectionFactory = connectionFactory;
@@ -71,7 +71,7 @@ namespace MigSharp.Process
                     Debug.Assert(connection != null, "At this point, an upgrade of the versioning table is requested. This always takes part of a running migration step and therefore already has an associated connection (and possibly a transaction).");
 
                     // execute the boostrap migration to create the versioning table
-                    var step = new BootstrapMigrationStep(new BootstrapMigration(_versioningTableName), _provider, _providerMetadata);
+                    var step = new BootstrapMigrationStep(new BootstrapMigration(_versioningTableName), _provider, _providerMetadata, null);
                     step.Execute(connection, transaction, MigrationDirection.Up, executor);
                     _versioningTableExists = new Lazy<bool>(() => true); // now, the versioning table exists
                 }

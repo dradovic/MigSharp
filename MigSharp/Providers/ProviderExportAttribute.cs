@@ -10,18 +10,21 @@ namespace MigSharp.Providers
     /// </summary>
     [MetadataAttribute]
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class ProviderExportAttribute : ExportAttribute
+    internal sealed class ProviderExportAttribute : ExportAttribute
     {
-        private readonly string _name;
+        private readonly Platform _platform;
+        private readonly int _majorVersion;
+        private readonly Driver _driver;
         private readonly string _invariantName;
 
-        /// <summary>
-        /// Gets the unique name of this provider.
-        /// </summary>
-        public string Name { get { return _name; } }
+        public Platform Platform { get { return _platform; } }
+
+        public int MajorVersion { get { return _majorVersion; } }
+
+        public Driver Driver { get { return _driver; } }
 
         /// <summary>
-        /// Gets the invariant name of the provider needed for <see cref="DbProviderFactories.GetFactory(string)"/>.
+        /// Gets the invariant name of the ADO.NET provider needed for <see cref="DbProviderFactories.GetFactory(string)"/>.
         /// </summary>
         public string InvariantName { get { return _invariantName; } }
 
@@ -54,12 +57,20 @@ namespace MigSharp.Providers
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        public ProviderExportAttribute(string name, string invariantName) : base(typeof(IProvider))
+        public ProviderExportAttribute(Platform platform, int majorVersion, Driver driver, string invariantName)
+            : base(typeof(IProvider))
         {
-            _name = name;
+            _platform = platform;
+            _majorVersion = majorVersion;
+            _driver = driver;
             _invariantName = invariantName;
             SupportsTransactions = true;
             ParameterExpression = "@p";
+        }
+
+        public ProviderExportAttribute(Platform platform, int majorVersion, string invariantName)
+            : this(platform, majorVersion, Driver.AdoNet, invariantName)
+        {
         }
     }
 }

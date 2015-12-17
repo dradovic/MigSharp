@@ -17,8 +17,6 @@ namespace MigSharp.Process
 
         public void Update(IScheduledMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor commandExecutor)
         {
-            Debug.Assert(!(metadata is BootstrapMetadata));
-
             if (metadata.Direction == MigrationDirection.Up)
             {
                 _history.Insert(metadata.Timestamp, metadata.ModuleName, metadata.Tag);

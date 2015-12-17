@@ -6,6 +6,11 @@
     public interface IAddedForeignKey
     {
         /// <summary>
+        /// Specifies the schema of the referenced table. If omitted, the schema of the referencing table is assumed. SQL Server only.
+        /// </summary>
+        IAddedForeignKey InSchema(string schemaName);
+
+        /// <summary>
         /// Specifies the columns on which the foreign key is defined.
         /// </summary>
         /// <remarks>

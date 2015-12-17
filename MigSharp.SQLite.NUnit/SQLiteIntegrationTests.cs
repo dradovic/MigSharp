@@ -1,18 +1,20 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data.Common;
 using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
-
 using NUnit.Framework;
 
 namespace MigSharp.SQLite.NUnit
 {
+// ReSharper disable InconsistentNaming
     [TestFixture, Category("SQLite")]
     public class SQLiteIntegrationTests : SQLiteIntegrationTestsBase
+// ReSharper restore InconsistentNaming
     {
         private string _dataFile;
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
         {
             var adapter = new SQLiteDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString);
             builder = new SQLiteCommandBuilder(adapter);
@@ -43,6 +45,8 @@ namespace MigSharp.SQLite.NUnit
 
         public override void Teardown()
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers(); // see: http://stackoverflow.com/a/24501130/331281
             File.Delete(_dataFile);
 
             base.Teardown();

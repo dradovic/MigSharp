@@ -9,18 +9,19 @@ namespace MigSharp.Core.Commands
     {
         private readonly Action<IRuntimeContext> _action;
 
-        public CallCommand(ICommand parent, Action<IRuntimeContext> action)
+        public CallCommand(Command parent, Action<IRuntimeContext> action)
             : base(parent)
         {
             _action = action;
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
-            if (context != null) // the context == null, when recording the changes to the RecordingProvider for validation
+            var runtimeContext = context as IRuntimeContext;
+            if (runtimeContext != null) // the runtimeContext == null, when recording the changes to the RecordingProvider for validation
             {
                 Log.Verbose(LogCategory.Sql, "Performing call-back");
-                _action(context);
+                _action(runtimeContext);
             }
             yield break;
         }

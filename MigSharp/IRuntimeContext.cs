@@ -22,5 +22,11 @@ namespace MigSharp
         /// This ensures that they are logged and scripted consistently.
         /// </summary>
         IDbCommandExecutor CommandExecutor { get; }
+
+        /// <summary>
+        /// Creates a command object whose <see cref="IDbCommand.Connection"/> and <see cref="IDbCommand.Transaction"/> properties are set.
+        /// </summary>
+        /// <returns></returns>
+        IDbCommand CreateCommand();
     }
 }

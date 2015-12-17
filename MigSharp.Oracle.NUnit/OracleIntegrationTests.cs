@@ -9,6 +9,6 @@ namespace MigSharp.Oracle.NUnit
     {
         protected override string ConnectionString { get { return string.Format(CultureInfo.InvariantCulture, "USER ID={0};PASSWORD={1};DATA SOURCE={2}", User, Password, Server); } }
 
-        protected override string ProviderName { get { return ProviderNames.Oracle; } }
+        protected override DbPlatform DbPlatform { get { return DbPlatform.Oracle10g; } }
     }
 }

@@ -1,26 +1,27 @@
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 
 using MigSharp.Providers;
 
 namespace MigSharp.Core.Commands
 {
-    internal class CreateTableCommand : Command, ITranslatableCommand
+    internal class CreateTableCommand : TableCommand, ITranslatableCommand
     {
-        private readonly string _tableName;
         private readonly string _primaryKeyConstraintName;
 
-        public string TableName { get { return _tableName; } }
-
-        public CreateTableCommand(ICommand parent, string tableName, string primaryKeyConstraintName)
-            : base(parent)
+        public CreateTableCommand(MigrateCommand parent, string tableName, string primaryKeyConstraintName)
+            : base(parent, tableName)
         {
-            _tableName = tableName;
             _primaryKeyConstraintName = primaryKeyConstraintName;
         }
 
-        public IEnumerable<string> ToSql(IProvider provider, IRuntimeContext context)
+        public CreateTableCommand(AlterSchemaCommand parent, string tableName, string primaryKeyConstraintName)
+            : base(parent, tableName)
+        {
+            _primaryKeyConstraintName = primaryKeyConstraintName;
+        }
+
+        public IEnumerable<string> ToSql(IProvider provider, IMigrationContext context)
         {
             string effectivePkConstraintName = GetEffectivePkConstraintName();
             List<CreateColumnCommand> createColumnCommands = GetCreateColumnCommands().ToList();
@@ -29,7 +30,7 @@ namespace MigSharp.Core.Commands
                 throw new InvalidCommandException("At least one column must be added to the CreateTable command.");
             }
             return provider.CreateTable(
-                _tableName,
+                new TableName(TableName, Schema ?? context.GetDefaultSchema()),
                 createColumnCommands.Select(c => new CreatedColumn(
                                                      c.ColumnName,
                                                      new DataType(c.Type, c.Size, c.Scale),
@@ -49,7 +50,7 @@ namespace MigSharp.Core.Commands
 
         private string GetEffectivePkConstraintName()
         {
-            if (GetCreateColumnCommands().Where(c => c.IsPrimaryKey).Any())
+            if (GetCreateColumnCommands().Any(c => c.IsPrimaryKey))
             {
                 return DefaultObjectNameProvider.GetPrimaryKeyConstraintName(TableName, _primaryKeyConstraintName);
             }

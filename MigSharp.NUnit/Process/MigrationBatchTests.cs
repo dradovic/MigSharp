@@ -1,12 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-
+using FakeItEasy;
 using MigSharp.Process;
-using MigSharp.Providers;
 
 using NUnit.Framework;
-
-using Rhino.Mocks;
 
 namespace MigSharp.NUnit.Process
 {
@@ -16,17 +14,18 @@ namespace MigSharp.NUnit.Process
         [Test, ExpectedException(typeof(InvalidOperationException))]
         public void VerifyValidationErrorsResultInException()
         {
-            IMigrationStep step = MockRepository.GenerateStub<IMigrationStep>();
-            step.Expect(s => s.Metadata).Return(new Metadata1());
-            IMigrationReport erroneousReport = CreateMigrationReport();
-            erroneousReport.Expect(r => r.Error).Return("Some test failure...");
-            step.Expect(s => s.Report(null)).IgnoreArguments().Return(erroneousReport);
+            IMigrationStep step = A.Fake<IMigrationStep>();
+            A.CallTo(() => step.Metadata).Returns(new Metadata1());
+            var validator = A.Fake<IValidator>();
+            string errors;
+            string warnings;
+            A.CallTo(() => validator.Validate(A<IEnumerable<IMigrationReporter>>._, out errors, out warnings)).AssignsOutAndRefParameters("Some test failure...", null);
             IMigrationStep[] steps = new[]
             {
                 step,
             };
-            IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            MigrationBatch batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
+            IVersioning versioning = A.Fake<IVersioning>();
+            MigrationBatch batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), validator, versioning);
 
             batch.Execute();
             Assert.IsTrue(batch.IsExecuted);
@@ -35,16 +34,16 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void VerifyStepExecutedAndStepExecutingAreRaised()
         {
-            IMigrationStep step = MockRepository.GenerateStub<IMigrationStep>();
+            IMigrationStep step = A.Fake<IMigrationStep>();
             var metadata = new Metadata1();
-            step.Expect(s => s.Metadata).Return(metadata);
-            step.Expect(s => s.Report(null)).IgnoreArguments().Return(CreateMigrationReport());
+            A.CallTo(() => step.Metadata).Returns(metadata);
+            A.CallTo(() => step.Report(A<IMigrationContext>._)).Returns(A.Fake<IMigrationReport>());
             IMigrationStep[] steps = new[]
             {
                 step,
             };
-            IVersioning versioning = MockRepository.GenerateStub<IVersioning>();
-            var batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), versioning, new MigrationOptions());
+            IVersioning versioning = A.Fake<IVersioning>();
+            var batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), A.Fake<IValidator>(), versioning);
             Assert.AreSame(metadata, batch.ScheduledMigrations[0], "The batch should expose the metadata of the step."); // this is tested to allow for the undocumented feature test below
             int countExecutingEvent = 0;
             int countExecutedEvent = 0;
@@ -71,18 +70,9 @@ namespace MigSharp.NUnit.Process
         [Test, ExpectedException(typeof(InvalidOperationException))]
         public void VerifyCallingExecuteTwiceThrows()
         {
-            var batch = new MigrationBatch(Enumerable.Empty<IMigrationStep>(), Enumerable.Empty<IMigrationMetadata>(), MockRepository.GenerateStub<IVersioning>(), new MigrationOptions());
+            var batch = new MigrationBatch(Enumerable.Empty<IMigrationStep>(), Enumerable.Empty<IMigrationMetadata>(), A.Fake<IValidator>(), A.Fake<IVersioning>());
             batch.Execute();
             batch.Execute();
-        }
-
-        private static IMigrationReport CreateMigrationReport()
-        {
-            IMigrationReport report = MockRepository.GenerateStub<IMigrationReport>();
-            report.Expect(r => r.DataTypes).Return(Enumerable.Empty<DataType>());
-            report.Expect(r => r.PrimaryKeyDataTypes).Return(Enumerable.Empty<DataType>());
-            report.Expect(r => r.Methods).Return(Enumerable.Empty<string>());
-            return report;
         }
 
         private class Metadata1 : IScheduledMigrationMetadata
@@ -91,6 +81,7 @@ namespace MigSharp.NUnit.Process
             public string ModuleName { get { return string.Empty; } }
             public long Timestamp { get { return 1; } }
             public MigrationDirection Direction { get { return MigrationDirection.Up; } }
+            public bool UseModuleNameAsDefaultSchema { get { return false; } }
         }
     }
 }

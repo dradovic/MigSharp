@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
@@ -30,43 +31,62 @@ namespace MigSharp.Providers
     internal class SqlServerCeProviderBase : SqlServerProviderBase
     {
         public override bool SpecifyWith { get { return false; } }
-        public override string Dbo { get { return string.Empty; } }
 
-        protected override IEnumerable<string> DropDefaultConstraint(string tableName, string columnName, bool checkIfExists)
+        public override string GetSchemaPrefix(TableName tableName)
+        {
+            return string.Empty;
+        }
+
+        public override string ExistsTable(string databaseName, TableName tableName)
+        {
+            return string.Format(CultureInfo.InvariantCulture, @"SELECT COUNT(TABLE_NAME) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}'", tableName.Name);
+        }
+
+        protected override IEnumerable<string> DropDefaultConstraint(TableName tableName, string columnName, bool checkIfExists)
         {
             // checkIfExists can be ignored
             yield return string.Format(CultureInfo.InvariantCulture, @"ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT",
-                Escape(tableName),
+                Escape(tableName.Name),
                 Escape(columnName));
         }
 
-        public override IEnumerable<string> DropTable(string tableName, bool checkIfExists)
+        public override IEnumerable<string> DropTable(TableName tableName, bool checkIfExists)
         {
             if (checkIfExists)
             {
                 throw new NotSupportedException("Conditional logic is not supported by the Compact Edition.");
             }
-            return base.DropTable(tableName, checkIfExists);
+            return base.DropTable(tableName, false);
         }
 
-        public override IEnumerable<string> RenameTable(string oldName, string newName)
+        public override IEnumerable<string> RenameTable(TableName oldName, string newName)
         {
-            yield return string.Format("EXEC sp_rename @objname = N'{0}', @newname = N'{1}'", oldName, newName);
+            yield return string.Format("EXEC sp_rename @objname = N'{0}', @newname = N'{1}'", oldName.Name, newName);
         }
 
-        public override IEnumerable<string> RenameColumn(string tableName, string oldName, string newName)
+        public override IEnumerable<string> RenameColumn(TableName tableName, string oldName, string newName)
         {
             throw new NotSupportedException("Consider adding a column with the new name, then UPDATEing it with the values from the old one, then dropping the old column. Or if the order of the columns matters, consider creating a new table with the desired schema, then INSERTing the content from the old table to the new one, then renaming the new table to the old name.");
         }
 
-        public override IEnumerable<string> RenamePrimaryKey(string tableName, string oldName, string newName)
+        public override IEnumerable<string> RenamePrimaryKey(TableName tableName, string oldName, string newName)
         {
             throw new NotSupportedException("Drop and add the primary key with the new name instead.");
         }
 
-        public override IEnumerable<string> DropIndex(string tableName, string indexName)
+        public override IEnumerable<string> DropIndex(TableName tableName, string indexName)
         {
-            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {1}.{0}", Escape(indexName), Escape(tableName));
+            yield return string.Format(CultureInfo.InvariantCulture, "DROP INDEX {1}.{0}", Escape(indexName), Escape(tableName.Name));
+        }
+
+        public override IEnumerable<string> CreateSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported.");
+        }
+
+        public override IEnumerable<string> DropSchema(string schemaName)
+        {
+            throw new NotSupportedException("Schemata are not supported.");
         }
 
         protected override string GetTypeSpecifier(DataType type, bool isRowVersion)

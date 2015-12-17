@@ -1,7 +1,6 @@
 using System;
 using System.Data;
 using System.Data.Common;
-
 using MigSharp.Providers;
 
 namespace MigSharp
@@ -12,9 +11,19 @@ namespace MigSharp
     public interface IProviderMetadata
     {
         /// <summary>
-        /// Gets the unique name of this provider.
+        /// Gets the platform of the provider.
         /// </summary>
-        string Name { get; }
+        Platform Platform { get; }
+
+        /// <summary>
+        /// Gets the major version of the provider.
+        /// </summary>
+        int MajorVersion { get; }
+
+        /// <summary>
+        /// Gets the driver of the provider.
+        /// </summary>
+        Driver Driver { get; }
 
         /// <summary>
         /// Gets the invariant name of the provider needed for <see cref="DbProviderFactories.GetFactory(string)"/>.
@@ -61,6 +70,11 @@ namespace MigSharp
         public static bool UsesPositionalParameters(this IProviderMetadata metadata)
         {
             return !metadata.ParameterExpression.Contains("p");
+        }
+
+        public static DbPlatform GetPlatform(this IProviderMetadata metadata)
+        {
+            return new DbPlatform(metadata.Platform, metadata.MajorVersion, metadata.Driver);
         }
     }
 }

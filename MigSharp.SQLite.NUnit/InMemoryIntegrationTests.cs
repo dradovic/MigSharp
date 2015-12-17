@@ -2,7 +2,6 @@
 using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using MigSharp.NUnit.Integration;
 using NUnit.Framework;
 
 namespace MigSharp.SQLite.NUnit
@@ -13,7 +12,7 @@ namespace MigSharp.SQLite.NUnit
     {
         private SQLiteConnection _connection;
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
         {
             var adapter = new SQLiteDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), _connection);
             builder = new SQLiteCommandBuilder(adapter);
