@@ -115,7 +115,9 @@ namespace MigSharp.Providers
                 switch ((SpecialDefaultValue)value)
                 {
                     case SpecialDefaultValue.CurrentDateTime:
-                        return "(DATETIME('now'))"; // http://stackoverflow.com/questions/200309/sqlite-database-default-time-value-now
+                        return "(DATETIME('now', 'localtime'))"; // http://stackoverflow.com/questions/200309/sqlite-database-default-time-value-now
+                    case SpecialDefaultValue.CurrentUtcDateTime:
+                        return "(DATETIME('now'))";
                     default:
                         throw new ArgumentOutOfRangeException("value");
                 }

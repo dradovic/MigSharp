@@ -102,7 +102,7 @@ namespace MigSharp.NUnit.Integration
                                 value = (float)Math.Round((float)value, 5);
                             }
                         }
-                        command.AddParameter("@" + column.Key, (dbType == DbType.AnsiString && (db.Context.ProviderMetadata.Platform == Platform.SqlServerCe) ? DbType.String : dbType), value);
+                        command.AddParameter("@" + column.Key, dbType, value);
                         values.Add(value);
                     }
                     ExpectedTables[0].Add(values.ToArray());

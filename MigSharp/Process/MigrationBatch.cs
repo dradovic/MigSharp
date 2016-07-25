@@ -9,7 +9,7 @@ namespace MigSharp.Process
 {
     internal class MigrationBatch : IMigrationBatch
     {
-        private readonly IEnumerable<IMigrationStep> _migrations;
+        private readonly List<IMigrationStep> _migrations;
         private readonly ReadOnlyCollection<IMigrationMetadata> _unidentifiedMigrations;
         private readonly IValidator _validator;
         private readonly IVersioning _versioning;
@@ -17,7 +17,7 @@ namespace MigSharp.Process
         public event EventHandler<MigrationEventArgs> StepExecuting;
         public event EventHandler<MigrationEventArgs> StepExecuted;
 
-        private readonly ReadOnlyCollection<IScheduledMigrationMetadata> _scheduledMigrations;
+        private ReadOnlyCollection<IScheduledMigrationMetadata> _scheduledMigrations;
         public ReadOnlyCollection<IScheduledMigrationMetadata> ScheduledMigrations { get { return _scheduledMigrations; } }
 
         public ReadOnlyCollection<IMigrationMetadata> UnidentifiedMigrations { get { return _unidentifiedMigrations; } }
@@ -30,11 +30,22 @@ namespace MigSharp.Process
             IValidator validator,
             IVersioning versioning)
         {
-            _migrations = migrations;
-            _scheduledMigrations = new ReadOnlyCollection<IScheduledMigrationMetadata>(_migrations.Select(s => s.Metadata).ToList());
+            _migrations = migrations.ToList();
+            UpdateScheduledMigrations();
             _unidentifiedMigrations = new ReadOnlyCollection<IMigrationMetadata>(unidentifiedMigrations.ToList());
             _validator = validator;
             _versioning = versioning;
+        }
+
+        public void RemoveAll(Predicate<IMigrationMetadata> match)
+        {
+            _migrations.RemoveAll(m => match(m.Metadata));
+            UpdateScheduledMigrations();
+        }
+
+        private void UpdateScheduledMigrations()
+        {
+            _scheduledMigrations = new ReadOnlyCollection<IScheduledMigrationMetadata>(_migrations.Select(s => s.Metadata).ToList());
         }
 
         public void Execute()

@@ -82,6 +82,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -125,6 +126,7 @@
     <Compile Include="Integration\Migration3_Execute.cs" />
     <Compile Include="Integration\Migration4_Identity.cs" />
     <Compile Include="Integration\Migration5_Alter_Column.cs" />
+    <Compile Include="Integration\Migration28_CurrentDateTimeOffsetDefault.cs" />
     <Compile Include="Integration\Migration6_CurrentDateTimeDefault.cs" />
     <Compile Include="Integration\Migration7_Adding_and_Dropping_Indexes.cs" />
     <Compile Include="Integration\Migration8_All_DataTypes.cs" />

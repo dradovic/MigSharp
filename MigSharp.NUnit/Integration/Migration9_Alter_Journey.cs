@@ -46,8 +46,7 @@ namespace MigSharp.NUnit.Integration
             }
 
             // add colum (through rename if provider supports it) and the drop again
-            if (db.Context.ProviderMetadata.Platform == Platform.SqlServerCe ||
-                db.Context.ProviderMetadata.Platform == Platform.SQLite ||
+            if (db.Context.ProviderMetadata.Platform == Platform.SQLite ||
                 db.Context.ProviderMetadata.Platform == Platform.MySql)
             {
                 db.Tables[Tables[0].Name].AddNullableColumn(TempColumnRenamed, DbType.DateTime);

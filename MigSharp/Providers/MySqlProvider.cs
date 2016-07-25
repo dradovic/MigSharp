@@ -134,6 +134,8 @@ namespace MigSharp.Providers
                 {
                     case SpecialDefaultValue.CurrentDateTime:
                         return "NOW()"; // works as of MySQL 5.6 (see: http://stackoverflow.com/questions/5818423/set-now-as-default-value-for-datetime-datatype)
+                    case SpecialDefaultValue.CurrentUtcDateTime:
+                        return "NOW()"; // requires to set the timezone of the MySQL server to GMT (see: http://stackoverflow.com/a/19075291/331281)
                     default:
                         throw new ArgumentOutOfRangeException("value", "Invalid special default value");
                 }

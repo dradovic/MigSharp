@@ -158,6 +158,10 @@ namespace MigSharp.Providers
                 {
                     case SpecialDefaultValue.CurrentDateTime:
                         return "GETDATE()";
+                    case SpecialDefaultValue.CurrentUtcDateTime:
+                        return "GETUTCDATE()";
+                    case SpecialDefaultValue.CurrentDateTimeOffset:
+                        return "SYSDATETIMEOFFSET()";
                     default:
                         throw new ArgumentOutOfRangeException("value");
                 }

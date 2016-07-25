@@ -35,6 +35,12 @@ namespace MigSharp
         ReadOnlyCollection<IMigrationMetadata> UnidentifiedMigrations { get; }
 
         /// <summary>
+        /// Removes migrations selected by <paramref name="match"/> from this batch.
+        /// <param name="match">Function to select migrations to remove.</param>
+        /// </summary>
+        void RemoveAll(Predicate<IMigrationMetadata> match);
+
+        /// <summary>
         /// Performs the migrations contained in this batch. This method can only be
         /// called once (when IsExecuted is false).
         /// </summary>

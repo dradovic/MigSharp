@@ -8,7 +8,7 @@ Pre-conditions:
   - Generate\AssemblyInfo.cs
   - nuget\MigSharp.nuspec
 - Release Notes in nuspec are up-to-date
-- All changes pushed to GitHub
+- All changes synched and pushed to GitHub
 - Wiki on GitHub reflects new features and changes
 
 Releasing:

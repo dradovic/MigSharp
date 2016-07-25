@@ -7,7 +7,6 @@
     {
 #pragma warning disable 1591
         SqlServer, // default platform
-        SqlServerCe,
         MySql,
         Oracle,
         SQLite,

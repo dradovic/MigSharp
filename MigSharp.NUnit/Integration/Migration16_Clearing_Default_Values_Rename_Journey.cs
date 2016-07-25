@@ -53,7 +53,6 @@ namespace MigSharp.NUnit.Integration
                 return new[]
                     {
                         Platform.MySql,
-                        Platform.SqlServerCe,
                         Platform.SQLite,
                     };
             }

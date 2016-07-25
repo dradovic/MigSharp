@@ -169,8 +169,6 @@
     <Compile Include="Process\SqlDispatcher.cs" />
     <Compile Include="Providers\SQLiteProvider.cs" />
     <Compile Include="Providers\SqlServer2012Provider.cs" />
-    <Compile Include="Providers\SqlServerCe35Provider.cs" />
-    <Compile Include="Providers\SqlServerCeProviderBase.cs" />
     <Compile Include="Core\TableName.cs" />
     <Compile Include="Providers\UnsupportedMethod.cs" />
     <Compile Include="Process\ValidationWarning.cs" />
@@ -229,7 +227,6 @@
     <Compile Include="Providers\SqlServer2005Provider.cs" />
     <Compile Include="Providers\SqlServer2008Provider.cs" />
     <Compile Include="Providers\SqlServer2005OdbcProvider.cs" />
-    <Compile Include="Providers\SqlServerCe4Provider.cs" />
     <Compile Include="Providers\SqlServerProviderBase.cs" />
     <Compile Include="Providers\SupportsAttribute.cs" />
     <Compile Include="Process\FileScripter.cs" />

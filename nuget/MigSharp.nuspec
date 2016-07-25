@@ -13,6 +13,13 @@
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
     <tags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</tags>
     <releaseNotes>
+3.1.0
+- Added support for current UTC datetime as default (#37)
+- Added support for current datetimeoffset as default (SQL Server only)
+- New API to selectively execute pending migrations (see: IMigrationBatch.RemoveAll)
+- Removed support for SQL Server CE (deprecated by Microsoft in 2013)
+BUG FIX:
+- SQLite: using HavingCurrentDateTimeAsDefault correctly set the date time to local format instead of GMT/UTC
 3.0.0
 - New API dedicated to schema altering (see: DbAlterer; replaces Migritor.BypassMigration)
 - Support for SQL Server Schemata (#33)

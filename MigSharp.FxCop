@@ -23,7 +23,6 @@
  <Targets>
   <AssemblyReferenceDirectories>
     <Directory>$(ProjectDir)/MigSharp.SQLite.NUnit/lib/</Directory>
-    <Directory>$(ProjectDir)/MigSharp.SqlServerCe.NUnit/Ce4.0/</Directory>
   </AssemblyReferenceDirectories>
   <Target Name="$(ProjectDir)/bin/Release/Migrate.exe" Analyze="True" AnalyzeAllChildren="False">
    <Modules AnalyzeAllChildren="False">
@@ -66,7 +65,6 @@
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.Oracle.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.SQLite.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.SqlServer.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.SqlServerCe.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/bin/Release/MigSharp.Teradata.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
  </Targets>
  <Rules>

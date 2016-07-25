@@ -1,5 +1,3 @@
-using MigSharp.Providers;
-
 namespace MigSharp
 {
     /// <summary>
@@ -70,6 +68,22 @@ namespace MigSharp
         public static ICreatedTableWithAddedColumn HavingCurrentDateTimeAsDefault(this ICreatedTableWithAddedColumn column)
         {
             return column.HavingDefault(SpecialDefaultValue.CurrentDateTime);
+        }
+
+        /// <summary>
+        /// Sets the default of the column to be the current UTC system time of the database server.
+        /// </summary>
+        public static ICreatedTableWithAddedColumn HavingCurrentUtcDateTimeAsDefault(this ICreatedTableWithAddedColumn column)
+        {
+            return column.HavingDefault(SpecialDefaultValue.CurrentUtcDateTime);
+        }
+
+        /// <summary>
+        /// Sets the default of the column to be the current system time including the timezone offset of the database server.
+        /// </summary>
+        public static ICreatedTableWithAddedColumn HavingCurrentDateTimeOffsetAsDefault(this ICreatedTableWithAddedColumn column)
+        {
+            return column.HavingDefault(SpecialDefaultValue.CurrentDateTimeOffset);
         }
     }
 }

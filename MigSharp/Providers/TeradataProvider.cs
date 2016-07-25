@@ -373,6 +373,7 @@ namespace MigSharp.Providers
                 switch ((SpecialDefaultValue)value)
                 {
                     case SpecialDefaultValue.CurrentDateTime:
+                    case SpecialDefaultValue.CurrentUtcDateTime: // note: for the UTC more work needs to be done (see: https://forums.teradata.com/forum/database/how-to-convert-current-timestamp-into-utc-timestamp)
                         return "current_timestamp(0)";
                     default:
                         throw new ArgumentOutOfRangeException("value");

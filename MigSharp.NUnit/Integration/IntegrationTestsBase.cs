@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Transactions;
 using FakeItEasy;
 using MigSharp.Core;
 using MigSharp.NUnit.Migrate;
@@ -258,6 +259,11 @@ namespace MigSharp.NUnit.Integration
                 {
                     continue; // do not check result of an unsupported migration
                 }
+                IVersionConstrainedExclusiveIntegrationTestMigration constrainedMigration = migration as IVersionConstrainedExclusiveIntegrationTestMigration;
+                if (constrainedMigration != null && DbPlatform.MajorVersion < constrainedMigration.MinimumVersionSupportingFeatureUnderTest(DbPlatform.Platform).MajorVersion)
+                {
+                    continue; // do not check result of an unsupported migration
+                }
 
                 foreach (ExpectedTable expectedTable in migration.Tables)
                 {
@@ -443,6 +449,69 @@ namespace MigSharp.NUnit.Integration
             // assert Versioning table does not have new entries
             DataTable versioningTable = GetTable(_options.VersioningTable);
             Assert.AreEqual(1, versioningTable.Rows.Count, "The versioning table has a wrong number of entries.");
+        }
+
+        [Test]
+        public virtual void TestMigrationWithinTransactionScopeComplete()
+        {
+            _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
+            if (ProviderSupportsSchemas)
+            {
+                _options.VersioningTableSchema = CustomVersioningTableSchema; // test installing versioning table in a different schema
+            }
+            Migrator migrator = CreateMigrator();
+
+            // verify if the migrations batch is populated correctly
+            IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
+            Assert.AreEqual(1, batch.ScheduledMigrations.Count);
+            Assert.AreEqual(Timestamps[0], batch.ScheduledMigrations[0].Timestamp);
+            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.ScheduledMigrations[0].ModuleName);
+            Assert.IsNull(batch.ScheduledMigrations[0].Tag);
+            Assert.AreEqual(MigrationDirection.Up, batch.ScheduledMigrations[0].Direction);
+
+            using (var transaction = new TransactionScope())
+            {
+                // use MigrateTo to execute the actual migrations to test that method, too
+                migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
+                transaction.Complete();
+            }
+
+            CheckResultsOfMigration1();
+        }
+
+        [Test]
+        public virtual void TestMigrationWithinTransactionScopeRollback()
+        {
+            _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
+            if (ProviderSupportsSchemas)
+            {
+                _options.VersioningTableSchema = CustomVersioningTableSchema; // test installing versioning table in a different schema
+            }
+            Migrator migrator = CreateMigrator();
+
+            // verify if the migrations batch is populated correctly
+            IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
+            Assert.AreEqual(1, batch.ScheduledMigrations.Count);
+            Assert.AreEqual(Timestamps[0], batch.ScheduledMigrations[0].Timestamp);
+            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.ScheduledMigrations[0].ModuleName);
+            Assert.IsNull(batch.ScheduledMigrations[0].Tag);
+            Assert.AreEqual(MigrationDirection.Up, batch.ScheduledMigrations[0].Direction);
+
+            using (var transaction = new TransactionScope())
+            {
+                // use MigrateTo to execute the actual migrations to test that method, too
+                migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
+                transaction.Dispose();
+            }
+
+            // assert Versioning table was not created
+            DataTable versioningTable = GetTable(_options.VersioningTable);
+            Assert.IsNull(versioningTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was created.", _options.VersioningTableName));
+
+            // assert Customer table was not created
+            var migration1 = new Migration1();
+            DataTable customerTable = GetTable(migration1.Tables[0].FullName);
+            Assert.IsNull(customerTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was created.", migration1.Tables[0].FullName));
         }
 
         /// <summary>

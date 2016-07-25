@@ -43,12 +43,6 @@ namespace MigSharp
         public static readonly DbPlatform SqlServer2014 = new DbPlatform(Platform.SqlServer, 12);
 
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
-        public static readonly DbPlatform SqlServerCe35 = new DbPlatform(Platform.SqlServerCe, 3);
-
-        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
-        public static readonly DbPlatform SqlServerCe4 = new DbPlatform(Platform.SqlServerCe, 4);
-
-        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
         public static readonly DbPlatform Teradata12 = new DbPlatform(Platform.Teradata, 12);
 
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]

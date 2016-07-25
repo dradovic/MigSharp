@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA4A057D-7277-4869-BA9E-6764C7736EC1}"
 	ProjectSection(SolutionItems) = preProject
 		CustomDictionary.xml = CustomDictionary.xml
@@ -24,8 +26,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.SqlServer.NUnit", "MigSharp.SqlServer.NUnit\MigSharp.SqlServer.NUnit.csproj", "{85FC36E4-926A-49B2-A29D-99FEA93C8054}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.Teradata.NUnit", "MigSharp.Teradata.NUnit\MigSharp.Teradata.NUnit.csproj", "{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.SqlServerCe.NUnit", "MigSharp.SqlServerCe.NUnit\MigSharp.SqlServerCe.NUnit.csproj", "{3BB17235-A896-4BF4-B25F-501EFF71F777}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigSharp.SQLite.NUnit", "MigSharp.SQLite.NUnit\MigSharp.SQLite.NUnit.csproj", "{B7C9C7E2-3199-436C-ADF6-8B63B751696C}"
 EndProject
@@ -61,10 +61,6 @@ Global
 		{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F286D4CC-B742-40BB-9FD2-F7380EBC6C64}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3BB17235-A896-4BF4-B25F-501EFF71F777}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B7C9C7E2-3199-436C-ADF6-8B63B751696C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B7C9C7E2-3199-436C-ADF6-8B63B751696C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7C9C7E2-3199-436C-ADF6-8B63B751696C}.Release|Any CPU.ActiveCfg = Release|Any CPU

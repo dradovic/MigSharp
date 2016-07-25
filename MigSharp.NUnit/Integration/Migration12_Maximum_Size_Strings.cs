@@ -18,18 +18,9 @@ namespace MigSharp.NUnit.Integration
 
             db.Execute(context =>
                 {
-                    bool isCeProvider = db.Context.ProviderMetadata.Platform == Platform.SqlServerCe;
                     IDbCommand command = context.CreateCommand();
                     IDataParameter text = command.AddParameter("@text", DbType.String, Tables[0].Value(0, 1));
-                    if (isCeProvider)
-                    {
-                        SetSqlDbTypeToNText(text);
-                    }
-                    IDataParameter ansiText = command.AddParameter("@ansiText", isCeProvider ? DbType.String : DbType.AnsiString, Tables[0].Value(0, 2));
-                    if (isCeProvider)
-                    {
-                        SetSqlDbTypeToNText(ansiText);
-                    }
+                    IDataParameter ansiText = command.AddParameter("@ansiText", DbType.AnsiString, Tables[0].Value(0, 2));
                     command.CommandText = string.Format(CultureInfo.InvariantCulture, @"INSERT INTO ""{0}"" (""{1}"", ""{2}"") VALUES ({3}, {4})",
                         Tables[0].Name,
                         Tables[0].Columns[1],
@@ -38,12 +29,6 @@ namespace MigSharp.NUnit.Integration
                         context.ProviderMetadata.GetParameterSpecifier(ansiText));
                     context.CommandExecutor.ExecuteNonQuery(command);
                 });
-        }
-
-        private static void SetSqlDbTypeToNText(IDataParameter parameter)
-        {
-            Debug.Assert(parameter.GetType().Name == "SqlCeParameter");
-            parameter.GetType().GetProperty("SqlDbType").SetValue(parameter, 11, null); // 11: corresponds to SqlDbType.NText
         }
 
         public ExpectedTables Tables

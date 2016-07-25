@@ -77,7 +77,6 @@ namespace MigSharp.NUnit.Integration
             {
                 return new[]
                     {
-                        Platform.SqlServerCe,
                         Platform.Teradata,
                     };
             }

@@ -208,6 +208,8 @@ END;", Escape(tableName.Name));
                 {
                     case SpecialDefaultValue.CurrentDateTime:
                         return "SYSDATE";
+                    case SpecialDefaultValue.CurrentUtcDateTime:
+                        return "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
                     default:
                         throw new ArgumentOutOfRangeException("value");
                 }
