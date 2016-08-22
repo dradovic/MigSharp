@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MigSharp</id>
-    <version>3.0.1</version>
+    <version>3.1.1</version>
     <title>Mig#</title>
     <authors>dradovic</authors>
     <owners />
@@ -13,6 +13,10 @@
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
     <tags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</tags>
     <releaseNotes>
+3.1.1
+BUG FIXES:
+- SQL Server: dropping or renaming a default constraint was not prefixing the schema of the corresponding table
+- 3.1.0 was wronly built in our CI environment and was requiring .NET 4.6.1 bindings (string.Format)
 3.1.0
 - Added support for current UTC datetime as default (#37)
 - Added support for current datetimeoffset as default (SQL Server only)

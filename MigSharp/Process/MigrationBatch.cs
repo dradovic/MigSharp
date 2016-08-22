@@ -53,6 +53,8 @@ namespace MigSharp.Process
             if (IsExecuted) throw new InvalidOperationException("Cannot execute the same batch twice.");
             IsExecuted = true;
 
+            DateTime start = DateTime.Now;
+
             // validate all steps
             string errors;
             string warnings;
@@ -73,6 +75,9 @@ namespace MigSharp.Process
             }
 
             Debug.Assert(IsExecuted, "At the end of this method _isExecuted must be true.");
+
+            Log.Info(LogCategory.Performance, "Migration and validation of batch took {0}s",
+                (DateTime.Now - start).TotalSeconds);
         }
 
         private void ExecuteStep(IMigrationStep step)
