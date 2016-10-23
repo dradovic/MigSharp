@@ -162,6 +162,10 @@ namespace MigSharp.Providers
                         return "GETUTCDATE()";
                     case SpecialDefaultValue.CurrentDateTimeOffset:
                         return "SYSDATETIMEOFFSET()";
+                    case SpecialDefaultValue.NewGuid:
+                        return "NEWID()";
+                    case SpecialDefaultValue.NewSequentialGuid:
+                        return "NEWSEQUENTIALID()";
                     default:
                         throw new ArgumentOutOfRangeException("value");
                 }

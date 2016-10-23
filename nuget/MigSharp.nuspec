@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MigSharp</id>
-    <version>3.1.1</version>
+    <version>3.1.2</version>
     <title>Mig#</title>
     <authors>dradovic</authors>
     <owners />
@@ -13,10 +13,13 @@
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
     <tags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</tags>
     <releaseNotes>
+3.1.2
+- added support for new (sequential and random) GUID as default value
+- hard-coded public enum member values to not force recompilation of consumers of 3.1.x (SqlServerCe was removed from Platforms in 3.1.0; see: "Robust Programming" section on https://msdn.microsoft.com/en-us/library/sbbt4032.aspx)
 3.1.1
 BUG FIXES:
 - SQL Server: dropping or renaming a default constraint was not prefixing the schema of the corresponding table
-- 3.1.0 was wronly built in our CI environment and was requiring .NET 4.6.1 bindings (string.Format)
+- 3.1.0 was wrongly built in our CI environment and was requiring .NET 4.6.1 bindings (string.Format)
 3.1.0
 - Added support for current UTC datetime as default (#37)
 - Added support for current datetimeoffset as default (SQL Server only)
@@ -25,7 +28,7 @@ BUG FIXES:
 BUG FIX:
 - SQLite: using HavingCurrentDateTimeAsDefault correctly set the date time to local format instead of GMT/UTC
 3.0.0
-- New API dedicated to schema altering (see: DbAlterer; replaces Migritor.BypassMigration)
+- New API dedicated to schema altering (see: DbAlterer; replaces Migrator.BypassMigration)
 - Support for SQL Server Schemata (#33)
   - Migrations can specify to use their Module name as the default schema
   - Versioning table can reside in a custom schema too

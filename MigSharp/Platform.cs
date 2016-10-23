@@ -1,4 +1,5 @@
-﻿namespace MigSharp
+﻿// ReSharper disable InconsistentNaming
+namespace MigSharp
 {
     /// <summary>
     /// The database platform.
@@ -6,11 +7,11 @@
     public enum Platform
     {
 #pragma warning disable 1591
-        SqlServer, // default platform
-        MySql,
-        Oracle,
-        SQLite,
-        Teradata
+        SqlServer = 0, // default platform
+        MySql = 1,
+        Oracle = 2,
+        SQLite = 3,
+        Teradata = 4
 #pragma warning restore 1591
     }
 }

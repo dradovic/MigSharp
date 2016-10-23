@@ -13,7 +13,7 @@ Pre-conditions:
 
 Releasing:
 ----------
-- Tag the sources with AssemblyVersion
+- On GitHub: tag the sources with AssemblyVersion
   git tag -a v1.0.0 -m "v1.0.0"
   git push origin v1.0.0
 - Grab the MigSharp.1.0.0.nupkg from TC artifacts and go to https://www.nuget.org/packages/upload

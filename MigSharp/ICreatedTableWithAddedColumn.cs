@@ -85,5 +85,21 @@ namespace MigSharp
         {
             return column.HavingDefault(SpecialDefaultValue.CurrentDateTimeOffset);
         }
+
+        /// <summary>
+        /// Sets the default of the column to be a new GUID.
+        /// </summary>
+        public static ICreatedTableWithAddedColumn HavingNewGuidAsDefault(this ICreatedTableWithAddedColumn column)
+        {
+            return column.HavingDefault(SpecialDefaultValue.NewGuid);
+        }
+
+        /// <summary>
+        /// Sets the default of the column to be a new, tentatively sequential (SQL Server) or otherwise random GUID.
+        /// </summary>
+        public static ICreatedTableWithAddedColumn HavingNewSequentialGuidAsDefault(this ICreatedTableWithAddedColumn column)
+        {
+            return column.HavingDefault(SpecialDefaultValue.NewSequentialGuid);
+        }
     }
 }

@@ -6,8 +6,8 @@
     public enum Driver
     {
 #pragma warning disable 1591
-        AdoNet,
-        Odbc
+        AdoNet = 0,
+        Odbc = 1,
 #pragma warning restore 1591
     }
 }

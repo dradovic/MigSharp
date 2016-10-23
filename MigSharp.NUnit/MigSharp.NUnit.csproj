@@ -128,6 +128,7 @@
     <Compile Include="Integration\Migration05_Alter_Column.cs" />
     <Compile Include="Integration\Migration28_CurrentDateTimeOffsetDefault.cs" />
     <Compile Include="Integration\Migration29_Altering_DefaultConstraint_in_Custom_Schema.cs" />
+    <Compile Include="Integration\Migration30_NewSequentialGuid_SpecialDefaultValue.cs" />
     <Compile Include="Integration\Migration06_CurrentDateTimeDefault.cs" />
     <Compile Include="Integration\Migration07_Adding_and_Dropping_Indexes.cs" />
     <Compile Include="Integration\Migration08_All_DataTypes.cs" />
