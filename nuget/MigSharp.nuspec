@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MigSharp</id>
-    <version>3.1.2</version>
+    <version>3.1.3</version>
     <title>Mig#</title>
     <authors>dradovic</authors>
     <owners />
@@ -13,6 +13,8 @@
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
     <tags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</tags>
     <releaseNotes>
+3.1.3
+- added support for new (sequential and random) GUID as default value on existing columns too
 3.1.2
 - added support for new (sequential and random) GUID as default value
 - hard-coded public enum member values to not force recompilation of consumers of 3.1.x (SqlServerCe was removed from Platforms in 3.1.0; see: "Robust Programming" section on https://msdn.microsoft.com/en-us/library/sbbt4032.aspx)

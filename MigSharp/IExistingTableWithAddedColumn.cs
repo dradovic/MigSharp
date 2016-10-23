@@ -1,5 +1,3 @@
-using MigSharp.Providers;
-
 namespace MigSharp
 {
     /// <summary>
@@ -74,6 +72,22 @@ namespace MigSharp
         public static IExistingTableBase HavingCurrentDateTimeOffsetAsDefault(this IExistingTableWithAddedColumn column)
         {
             return column.HavingDefault(SpecialDefaultValue.CurrentDateTimeOffset);
+        }
+
+        /// <summary>
+        /// Sets the default of the column to be a new GUID.
+        /// </summary>
+        public static IExistingTableBase HavingNewGuidAsDefault(this IExistingTableWithAddedColumn column)
+        {
+            return column.HavingDefault(SpecialDefaultValue.NewGuid);
+        }
+
+        /// <summary>
+        /// Sets the default of the column to be a new, tentatively sequential (SQL Server) or otherwise random GUID.
+        /// </summary>
+        public static IExistingTableBase HavingNewSequentialGuidAsDefault(this IExistingTableWithAddedColumn column)
+        {
+            return column.HavingDefault(SpecialDefaultValue.NewSequentialGuid);
         }
     }
 }
