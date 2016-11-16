@@ -12,28 +12,24 @@ namespace MigSharp.Process
     internal class BootstrapMigrationStep
     {
         private readonly IMigration _migration;
-        private readonly IProvider _provider;
-        private readonly IProviderMetadata _providerMetadata;
-        private readonly IScheduledMigrationMetadata _migrationMetadata;
+        private readonly IMigrationStepMetadata _stepMetadata;
 
         protected IMigration Migration { get { return _migration; } }
-        protected IProviderMetadata ProviderMetadata { get { return _providerMetadata; } }
+        protected IMigrationStepMetadata Metadata { get { return _stepMetadata; } }
 
-        public BootstrapMigrationStep(IMigration migration, IProvider provider, IProviderMetadata providerMetadata, IScheduledMigrationMetadata migrationMetadata)
+        public BootstrapMigrationStep(IMigration migration, IMigrationStepMetadata stepMetadata)
         {
             _migration = migration;
-            _provider = provider;
-            _providerMetadata = providerMetadata;
-            _migrationMetadata = migrationMetadata;
+            _stepMetadata = stepMetadata;
         }
 
-        internal void Execute(IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor)
+        internal void Execute(ProviderInfo providerInfo, IDbConnection connection, IDbTransaction transaction, MigrationDirection direction, IDbCommandExecutor commandExecutor)
         {
             Debug.Assert(connection.State == ConnectionState.Open);
 
-            var context = new RuntimeContext(connection, transaction, commandExecutor, _providerMetadata, _migrationMetadata);
+            var context = new RuntimeContext(connection, transaction, commandExecutor, providerInfo.Metadata, _stepMetadata);
             Database database = GetDatabaseContainingMigrationChanges(direction, context);
-            var translator = new CommandsToSqlTranslator(_provider);
+            var translator = new CommandsToSqlTranslator(providerInfo.Provider);
             foreach (string commandText in translator.TranslateToSql(database, context))
             {
                 IDbCommand command = connection.CreateCommand();

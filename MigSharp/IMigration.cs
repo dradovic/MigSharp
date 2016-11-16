@@ -1,3 +1,5 @@
+using System;
+
 namespace MigSharp
 {
     /// <summary>
@@ -11,5 +13,15 @@ namespace MigSharp
         /// Applies the required changes to the provided <paramref name="db"/> for this migration.
         /// </summary>
         void Up(IDatabase db);
+    }
+
+    internal static class MigrationExtensions
+    {
+        public static string GetName(this IMigration migration)
+        {
+            if (migration == null) throw new ArgumentNullException("migration");
+
+            return migration.GetType().FullName;
+        }
     }
 }

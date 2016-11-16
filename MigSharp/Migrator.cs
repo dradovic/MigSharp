@@ -131,31 +131,11 @@ namespace MigSharp
 
         private IMigrationBatch FetchMigrationsTo(ComposablePartCatalog catalog, long timestamp)
         {
-            // import all migrations
-            DateTime start = DateTime.Now;
-            var timestampProviders = InitializeTimestampProviders(catalog);
-            IEnumerable<ImportedMigration> availableMigrations = ImportAllMigrations(catalog, timestampProviders);
-            Log.Verbose(LogCategory.Performance, "Importing migrations took {0}s", (DateTime.Now - start).TotalSeconds);
-
-            // initialize command execution/scripting dispatching
-            ISqlDispatcher dispatcher = new SqlDispatcher(_options.ScriptingOptions, Provider.Provider, Provider.Metadata);
-
-            // initialize versioning component and get executed migrations
-            IVersioning versioning = InitializeVersioning(catalog, dispatcher);
-            var executedMigrations = new List<IMigrationMetadata>(versioning.ExecutedMigrations);
-
-            // create migration batch
-            var migrationSelector = new MigrationSelector(availableMigrations, executedMigrations);
-            IEnumerable<ApplicableMigration> applicableMigrations;
-            IEnumerable<IMigrationMetadata> unidentifiedMigrations;
-            migrationSelector.GetMigrationsTo(timestamp, _options.ModuleSelector, out applicableMigrations, out unidentifiedMigrations);
-            return new MigrationBatch(
-// ReSharper disable RedundantEnumerableCastCall
-                applicableMigrations.Select(m => new MigrationStep(m.Implementation, m.Metadata, ConnectionInfo, Provider.Provider, Provider.Metadata, ConnectionFactory, dispatcher)).Cast<IMigrationStep>(),
-// ReSharper restore RedundantEnumerableCastCall
-                unidentifiedMigrations,
-                Validator,
-                versioning);
+            IVersioning versioning = InitializeVersioning(catalog);
+            IDictionary<string, IMigrationTimestampProvider> timestampProviders = InitializeTimestampProviders(catalog);
+            var importer = new MigrationImporter(catalog, timestampProviders);
+            var batchPreparer = new MigrationBatchPreparer(importer, versioning, Configuration);
+            return batchPreparer.Prepare(timestamp, _options);
         }
 
         private static IDictionary<string, IMigrationTimestampProvider> InitializeTimestampProviders(ComposablePartCatalog catalog)
@@ -183,7 +163,7 @@ namespace MigSharp
             return result;
         }
 
-        private IVersioning InitializeVersioning(ComposablePartCatalog catalog, ISqlDispatcher dispatcher)
+        private IVersioning InitializeVersioning(ComposablePartCatalog catalog)
         {
             IVersioning versioning;
             if (_customVersioning != null)
@@ -192,7 +172,7 @@ namespace MigSharp
             }
             else
             {
-                var v = new Versioning(ConnectionInfo, ConnectionFactory, Provider.Provider, Provider.Metadata, _options.VersioningTable, dispatcher);
+                var v = new Versioning(Configuration, _options.VersioningTable);
                 if (_customBootstrapper != null && !v.VersioningTableExists)
                 {
                     ApplyCustomBootstrapping(v, catalog);
@@ -205,14 +185,15 @@ namespace MigSharp
         private void ApplyCustomBootstrapping(Versioning versioning, ComposablePartCatalog catalog)
         {
             var timestampProviders = InitializeTimestampProviders(catalog);
-            using (IDbConnection connection = ConnectionFactory.OpenConnection(ConnectionInfo))
+            using (IDbConnection connection = Configuration.OpenConnection())
             {
-                using (IDbTransaction transaction = ConnectionInfo.SupportsTransactions ? connection.BeginTransaction() : null)
+                using (IDbTransaction transaction = Configuration.ConnectionInfo.SupportsTransactions ? connection.BeginTransaction() : null)
                 {
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var allMigrations = ImportAllMigrations(catalog, timestampProviders)
+                    var importer = new MigrationImporter(catalog, timestampProviders);
+                    var allMigrations = importer.ImportMigrations()
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = allMigrations.Where(m => _customBootstrapper.IsContained(m));
                     versioning.UpdateToInclude(migrationsContainedAtBootstrapping, connection, transaction);
@@ -256,25 +237,6 @@ namespace MigSharp
                 catalog.Catalogs.Add(createCatalogFor(assembly));
             }
             return catalog;
-        }
-
-        private static IEnumerable<ImportedMigration> ImportAllMigrations(ComposablePartCatalog catalog, IDictionary<string, IMigrationTimestampProvider> timestampProviders)
-        {
-            Log.Info("Importing migrations...");
-            var container = new CompositionContainer(catalog);
-            IEnumerable<Lazy<IMigration, IMigrationExportMetadata>> migrations = container.GetExports<IMigration, IMigrationExportMetadata>();
-
-            List<ImportedMigration> result = migrations
-                .Select(l =>
-                    {
-                        var timestampProvider = timestampProviders.ContainsKey(l.Metadata.ModuleName)
-                                                    ? timestampProviders[l.Metadata.ModuleName]
-                                                    : timestampProviders[MigrationExportAttribute.DefaultModuleName];
-
-                        return new ImportedMigration(l.Value, new MigrationMetadata(timestampProvider.GetTimestamp(l.Value.GetType()), l.Metadata.ModuleName, l.Metadata.Tag), l.Metadata.UseModuleNameAsDefaultSchema);
-                    }).ToList();
-            Log.Info("Found {0} migration(s)", result.Count);
-            return result;
         }
     }
 }

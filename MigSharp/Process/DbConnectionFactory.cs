@@ -50,7 +50,6 @@ namespace MigSharp.Process
         public void UseCustomConnection(IDbConnection connection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-
             _connection = new DbConnectionWrapper(connection);
         }
     }

@@ -37,7 +37,7 @@ namespace MigSharp.Process
 
                 foreach (IMigrationReporter reporter in reporters)
                 {
-                    var context = new MigrationContext(info.Metadata, reporter.MigrationMetadata);
+                    var context = new MigrationContext(info.Metadata, reporter.StepMetadata);
                     IMigrationReport report = reporter.Report(context);
                     Validate(info.Metadata, supportsAttributes, unsupportedMethods, report, warningMessages, errorMessages);
                 }

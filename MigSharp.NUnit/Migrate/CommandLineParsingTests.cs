@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using FakeItEasy;
 using JetBrains.Annotations;
 using MigSharp.Migrate;
 using MigSharp.Migrate.Util;
@@ -47,8 +48,8 @@ namespace MigSharp.NUnit.Migrate
         {
             yield return new TestCaseData("Migrate.exe qa some.dll",
                                           QaConnectionString, new DbPlatform(CommandLineOptions.DefaultPlatform, 1000, Driver.AdoNet), "some.dll", new string[] { }, long.MaxValue, SourceLevels.Warning, (Action<MigrationOptions>)(o =>
-                                              {
-                                                  Assert.AreEqual(2, Array.FindAll(new[] { "Module1", "Module2" }, o.ModuleSelector).Length, "All modules should be selected.");
+                    {
+                                                  AssertModulesAreSelected(o, "Module1", "Module2");
                                                   Assert.AreEqual(ScriptingMode.ExecuteOnly, o.ScriptingOptions.Mode);
                                                   CollectionAssert.IsEmpty(o.SupportedPlatforms, "There are no means to govern the supported providers from the console.");
                                                   Assert.AreEqual(MigrationOptions.DefaultVersioningTableName, o.VersioningTableName);
@@ -74,9 +75,8 @@ namespace MigSharp.NUnit.Migrate
             yield return new TestCaseData("Migrate.exe qa some.dll -module Module2",
                                           QaConnectionString, new DbPlatform(CommandLineOptions.DefaultPlatform, 1000, Driver.AdoNet), "some.dll", new string[] { }, long.MaxValue, SourceLevels.Warning, (Action<MigrationOptions>)(o =>
                                               {
-                                                  // ReSharper disable ConvertToLambdaExpression
-                                                  Assert.AreEqual(1, Array.FindAll(new[] { "Module1", "Module2" }, o.ModuleSelector).Length, "Only one module should be selected.");
-                                                  // ReSharper restore ConvertToLambdaExpression
+                                                  AssertModulesAreNotSelected(o, "Module1");
+                                                  AssertModulesAreSelected(o, "Module2");
                                               }))
                 .SetDescription("-module");
 
@@ -112,6 +112,26 @@ namespace MigSharp.NUnit.Migrate
             //yield return new TestCaseData("Migrate.exe qa some.dll -traceLevel Error",
             //    QaConnectionString, CommandLineOptions.DefaultProvider, "some.dll", new string[] { }, long.MaxValue, SourceLevels.Error, null)
             //    .SetDescription("-traceLevel");
+        }
+
+        private static void AssertModulesAreSelected(MigrationOptions options, params string[] moduleNames)
+        {
+            foreach (string moduleName in moduleNames)
+            {
+                var metadata = A.Fake<IMigrationMetadata>();
+                A.CallTo(() => metadata.ModuleName).Returns(moduleName);
+                Assert.IsTrue(options.MigrationSelector(metadata), "Module '{0}' should be selected.", moduleName);
+            }
+        }
+
+        private static void AssertModulesAreNotSelected(MigrationOptions options, params string[] moduleNames)
+        {
+            foreach (string moduleName in moduleNames)
+            {
+                var metadata = A.Fake<IMigrationMetadata>();
+                A.CallTo(() => metadata.ModuleName).Returns(moduleName);
+                Assert.IsFalse(options.MigrationSelector(metadata), "Module '{0}' should not be selected.", moduleName);
+            }
         }
 
         [Test, TestCaseSource("GetInvalidCommandLineCases")]

@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace MigSharp.NUnit.Providers
 {
-    [TestFixture]
+    [TestFixture, Category("smoke")]
     public class DataTypeTests
     {
         [Test]

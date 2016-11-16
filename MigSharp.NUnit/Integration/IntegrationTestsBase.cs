@@ -53,7 +53,7 @@ namespace MigSharp.NUnit.Integration
             _options.VersioningTableName = "My Versioning Table"; // test overriding the default versioning table name
             Migrator migrator = CreateMigrator();
             IMigrationBatch batch = migrator.FetchMigrations(typeof(Migration1).Assembly);
-            Assert.AreEqual(Timestamps.Count, batch.ScheduledMigrations.Count);
+            Assert.AreEqual(Timestamps.Count, batch.Steps.Count);
 
             DataTable versioningTable = GetTable(_options.VersioningTable);
             Assert.IsNull(versioningTable, "Migrator.IsUpToDate should not have any side-effects. In particualar, it should *not* create a versioning table. This allows for being able to check the up-to-dateness of a db without having the privilege to create tables.");
@@ -81,11 +81,11 @@ namespace MigSharp.NUnit.Integration
 
             // verify if the migrations batch is populated correctly
             IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
-            Assert.AreEqual(1, batch.ScheduledMigrations.Count);
-            Assert.AreEqual(Timestamps[0], batch.ScheduledMigrations[0].Timestamp);
-            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.ScheduledMigrations[0].ModuleName);
-            Assert.IsNull(batch.ScheduledMigrations[0].Tag);
-            Assert.AreEqual(MigrationDirection.Up, batch.ScheduledMigrations[0].Direction);
+            Assert.AreEqual(1, batch.Steps.Count);
+            CollectionAssert.AreEqual(new[] { Timestamps[0] }, batch.Steps[0].Migrations.Select(m => m.Timestamp).ToArray());
+            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.Steps[0].ModuleName);
+            Assert.IsNull(batch.Steps[0].Migrations.Single().Tag);
+            Assert.AreEqual(MigrationDirection.Up, batch.Steps[0].Direction);
 
             // use MigrateTo to execute the actual migrations to test that method, too
             migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
@@ -111,7 +111,7 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(migration1.Tables[0].Columns[0], customerTable.Columns[0].ColumnName);
 
             // assert Versioning table has necessary entries
-            Assert.AreEqual(1, versioningTable.Rows.Count, "The versioning table is missing entries.");
+            Assert.AreEqual(1, versioningTable.Rows.Count, "The versioning table should have one entry.");
             Assert.AreEqual(Timestamps[0], versioningTable.Rows[0][0], "The timestamp of Migration1 is wrong.");
             Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, versioningTable.Rows[0][1], "The module of Migration1 is wrong.");
             Assert.AreEqual(DBNull.Value, versioningTable.Rows[0][2], "The tag of Migration1 is wrong.");
@@ -186,7 +186,7 @@ namespace MigSharp.NUnit.Integration
             // execute generated script files against database and recheck results
             IProviderMetadata metadata = IntegrationTestContext.ProviderMetadata;
             var info = new ConnectionInfo(ConnectionString, metadata.InvariantName, metadata.SupportsTransactions, metadata.EnableAnsiQuotesCommand);
-            using (IDbConnection connection = migrator.ConnectionFactory.OpenConnection(info))
+            using (IDbConnection connection = migrator.Configuration.ConnectionFactory.OpenConnection(info))
             {
                 foreach (FileInfo scriptFile in scriptFiles)
                 {
@@ -244,12 +244,12 @@ namespace MigSharp.NUnit.Integration
 
             // make sure there are no more migrations to run
             IMigrationBatch batch = migrator.FetchMigrations(assemblyContainingMigrations);
-            Assert.AreEqual(0, batch.ScheduledMigrations.Count);
+            Assert.AreEqual(0, batch.Steps.Count);
 
             VerifyResultsOfAllMigrations();
         }
 
-        private void VerifyResultsOfAllMigrations()
+        protected void VerifyResultsOfAllMigrations()
         {
             // assert all tables have been created with the expected content
             foreach (IIntegrationTestMigration migration in Migrations.OfType<IIntegrationTestMigration>())
@@ -270,8 +270,8 @@ namespace MigSharp.NUnit.Integration
                     DataTable table = GetTable(expectedTable.FullName);
 
                     Assert.IsNotNull(table, string.Format(CultureInfo.CurrentCulture, "The table '{0}' was not created.", expectedTable.FullName));
-                    Assert.AreEqual(expectedTable.Columns.Count, table.Columns.Count, "The actual number of columns is wrong.");
-                    Assert.AreEqual(expectedTable.Count, table.Rows.Count, "The actual number of rows is wrong.");
+                    Assert.AreEqual(expectedTable.Columns.Count, table.Columns.Count, "The actual number of columns of the table '{0}' is wrong.", table.TableName);
+                    Assert.AreEqual(expectedTable.Count, table.Rows.Count, "The actual number of rows of the table '{0}' is wrong.", table.TableName);
                     for (int column = 0; column < expectedTable.Columns.Count; column++)
                     {
                         // check column name
@@ -330,11 +330,11 @@ namespace MigSharp.NUnit.Integration
 
             // verify if the migrations batch is populated correctly
             IMigrationBatch batch = migrator.FetchMigrationsTo(assemblyContainingMigrations, Timestamps[0]);
-            Assert.AreEqual(1, batch.ScheduledMigrations.Count, "Only the reversal of Migration2 should be scheduled.");
-            Assert.AreEqual(Timestamps[1], batch.ScheduledMigrations[0].Timestamp);
-            Assert.AreEqual(Migration2.Module, batch.ScheduledMigrations[0].ModuleName);
-            Assert.AreEqual(Migration2.Tag, batch.ScheduledMigrations[0].Tag);
-            Assert.AreEqual(MigrationDirection.Down, batch.ScheduledMigrations[0].Direction);
+            Assert.AreEqual(1, batch.Steps.Count, "Only the reversal of Migration2 should be scheduled.");
+            CollectionAssert.AreEqual(new[] { Timestamps[1] }, batch.Steps[0].Migrations.Select(m => m.Timestamp).ToArray());
+            Assert.AreEqual(Migration2.Module, batch.Steps[0].ModuleName);
+            Assert.AreEqual(Migration2.Tag, batch.Steps[0].Migrations.Single().Tag);
+            Assert.AreEqual(MigrationDirection.Down, batch.Steps[0].Direction);
 
             // use MigrateTo to execute the actual migrations to test that method, too
             migrator.MigrateTo(assemblyContainingMigrations, Timestamps[0]);
@@ -355,7 +355,7 @@ namespace MigSharp.NUnit.Integration
         public void TestCustomBootstrapping()
         {
             // use a Module selection to verify that the bootstrapping is still considering *all* migrations
-            _options.ModuleSelector = moduleName => moduleName == Migration2.Module;
+            _options.MigrationSelector = m => m.ModuleName == Migration2.Module;
             Migrator migrator = CreateMigrator();
 
             IBootstrapper bootstrapper = A.Fake<IBootstrapper>();
@@ -367,7 +367,7 @@ namespace MigSharp.NUnit.Integration
             migrator.UseCustomBootstrapping(bootstrapper);
 
             IMigrationBatch batch = migrator.FetchMigrations(typeof(Migration1).Assembly);
-            CollectionAssert.IsEmpty(batch.ScheduledMigrations, "All migrations should be viewed as already run.");
+            CollectionAssert.IsEmpty(batch.Steps, "All migrations should be viewed as already run.");
             CollectionAssert.IsEmpty(batch.UnidentifiedMigrations, "There should be no unidentified migrations.");
             batch.Execute(); // should have no effect as no migrations are scheduled
 
@@ -420,11 +420,11 @@ namespace MigSharp.NUnit.Integration
 
             // verify if the migrations batch is populated correctly
             IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
-            Assert.AreEqual(1, batch.ScheduledMigrations.Count);
-            Assert.AreEqual(Timestamps[0], batch.ScheduledMigrations[0].Timestamp);
-            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.ScheduledMigrations[0].ModuleName);
-            Assert.IsNull(batch.ScheduledMigrations[0].Tag);
-            Assert.AreEqual(MigrationDirection.Up, batch.ScheduledMigrations[0].Direction);
+            Assert.AreEqual(1, batch.Steps.Count);
+            CollectionAssert.AreEqual(new[] { Timestamps[0] }, batch.Steps[0].Migrations.Select(m => m.Timestamp).ToArray());
+            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.Steps[0].ModuleName);
+            Assert.IsNull(batch.Steps[0].Migrations.Single().Tag);
+            Assert.AreEqual(MigrationDirection.Up, batch.Steps[0].Direction);
 
             // use MigrateTo to execute the actual migrations to test that method, too
             migrator.MigrateTo(typeof(Migration1).Assembly, Timestamps[0]);
@@ -463,11 +463,11 @@ namespace MigSharp.NUnit.Integration
 
             // verify if the migrations batch is populated correctly
             IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
-            Assert.AreEqual(1, batch.ScheduledMigrations.Count);
-            Assert.AreEqual(Timestamps[0], batch.ScheduledMigrations[0].Timestamp);
-            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.ScheduledMigrations[0].ModuleName);
-            Assert.IsNull(batch.ScheduledMigrations[0].Tag);
-            Assert.AreEqual(MigrationDirection.Up, batch.ScheduledMigrations[0].Direction);
+            Assert.AreEqual(1, batch.Steps.Count);
+            CollectionAssert.AreEqual(new[] { Timestamps[0] }, batch.Steps[0].Migrations.Select(m => m.Timestamp).ToArray());
+            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.Steps[0].ModuleName);
+            Assert.IsNull(batch.Steps[0].Migrations.Single().Tag);
+            Assert.AreEqual(MigrationDirection.Up, batch.Steps[0].Direction);
 
             using (var transaction = new TransactionScope())
             {
@@ -491,11 +491,11 @@ namespace MigSharp.NUnit.Integration
 
             // verify if the migrations batch is populated correctly
             IMigrationBatch batch = migrator.FetchMigrationsTo(typeof(Migration1).Assembly, Timestamps[0]);
-            Assert.AreEqual(1, batch.ScheduledMigrations.Count);
-            Assert.AreEqual(Timestamps[0], batch.ScheduledMigrations[0].Timestamp);
-            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.ScheduledMigrations[0].ModuleName);
-            Assert.IsNull(batch.ScheduledMigrations[0].Tag);
-            Assert.AreEqual(MigrationDirection.Up, batch.ScheduledMigrations[0].Direction);
+            Assert.AreEqual(1, batch.Steps.Count);
+            CollectionAssert.AreEqual(new[] { Timestamps[0] }, batch.Steps[0].Migrations.Select(m => m.Timestamp).ToArray());
+            Assert.AreEqual(MigrationExportAttribute.DefaultModuleName, batch.Steps[0].ModuleName);
+            Assert.IsNull(batch.Steps[0].Migrations.Single().Tag);
+            Assert.AreEqual(MigrationDirection.Up, batch.Steps[0].Direction);
 
             using (var transaction = new TransactionScope())
             {

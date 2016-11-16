@@ -10,29 +10,27 @@ namespace MigSharp
     /// </summary>
     public abstract class DbAlterer
     {
-        private readonly ProviderInfo _provider;
-        private readonly ConnectionInfo _connectionInfo;
-        private readonly DbConnectionFactory _connectionFactory = new DbConnectionFactory();
-        private readonly Validator _validator;
+        internal IRuntimeConfiguration Configuration { get; }
 
-        internal ProviderInfo Provider { get { return _provider; } }
-        internal ConnectionInfo ConnectionInfo { get { return _connectionInfo; } }
-        internal DbConnectionFactory ConnectionFactory { get { return _connectionFactory; } }
-        internal Validator Validator { get { return _validator; } }
-
-        /// <summary>
-        /// Initializer.
-        /// </summary>
         protected DbAlterer(string connectionString, DbPlatform dbPlatform, DbAltererOptions options)
         {
             if (connectionString == null) throw new ArgumentNullException("connectionString");
+            if (dbPlatform == null) throw new ArgumentNullException("dbPlatform");
+            if (connectionString == null) throw new ArgumentNullException("connectionString");
 
+            Configuration = CreateRuntimeConfiguration(connectionString, dbPlatform, options);
+        }
+
+        private RuntimeConfiguration CreateRuntimeConfiguration(string connectionString, DbPlatform dbPlatform, DbAltererOptions options)
+        {
             var providerLocator = new ProviderLocator(new ProviderFactory()); // CLEAN: use DI container
 
-            _provider = providerLocator.GetLatest(dbPlatform);
-            var validatorFactory = new ValidatorFactory(_provider, options, providerLocator);
-            _validator = validatorFactory.Create();
-            _connectionInfo = new ConnectionInfo(connectionString, _provider.Metadata.InvariantName, _provider.Metadata.SupportsTransactions, _provider.Metadata.EnableAnsiQuotesCommand);
+            var providerInfo = providerLocator.GetLatest(dbPlatform);
+            var validatorFactory = new ValidatorFactory(providerInfo, options, providerLocator);
+            var validator = validatorFactory.Create();
+            var connectionInfo = new ConnectionInfo(connectionString, providerInfo.Metadata.InvariantName, providerInfo.Metadata.SupportsTransactions, providerInfo.Metadata.EnableAnsiQuotesCommand);
+            var sqlDispatcher = new SqlDispatcher(options.GetScriptingOptions(), providerInfo.Provider, providerInfo.Metadata);
+            return new RuntimeConfiguration(providerInfo, connectionInfo, validator, sqlDispatcher);
         }
 
         /// <summary>
@@ -49,7 +47,7 @@ namespace MigSharp
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            ConnectionFactory.UseCustomConnection(connection);
+            Configuration.ConnectionFactory.UseCustomConnection(connection);
         }
     }
 }

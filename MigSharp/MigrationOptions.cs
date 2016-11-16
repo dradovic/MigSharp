@@ -41,18 +41,18 @@ namespace MigSharp
 
         internal TableName VersioningTable { get { return new TableName(VersioningTableName, VersioningTableSchema); } }
 
-        private Predicate<string> _moduleSelector = n => true; // select all modules by default
+        private Predicate<IMigrationMetadata> _migrationSelector = n => true; // select all migrations by default
 
         /// <summary>
-        /// Gets or sets a function that selects the module based on its name. Only migrations for this module will be executed.
+        /// Gets or sets a function that selects the migration based on its metadata. Only the selected migrations will be executed.
         /// </summary>
-        public Predicate<string> ModuleSelector
+        public Predicate<IMigrationMetadata> MigrationSelector
         {
-            get { return _moduleSelector; }
+            get { return _migrationSelector; }
             set
             {
                 if (value == null) throw new ArgumentNullException("value");
-                _moduleSelector = value;
+                _migrationSelector = value;
             }
         }
 
@@ -74,7 +74,7 @@ namespace MigSharp
         {
             if (string.IsNullOrEmpty(moduleName)) throw new ArgumentException("Empty moduleName.", "moduleName");
 
-            ModuleSelector = n => n == moduleName;
+            MigrationSelector = m => m.ModuleName == moduleName;
         }
 
         /// <summary>
@@ -107,6 +107,11 @@ namespace MigSharp
         public void ExecuteAndScriptSqlTo(string targetDirectory) // signature used in Wiki Manual
         {
             ExecuteAndScriptSqlTo(new DirectoryInfo(targetDirectory));
+        }
+
+        internal override ScriptingOptions GetScriptingOptions()
+        {
+            return ScriptingOptions;
         }
 
         #region Static Options

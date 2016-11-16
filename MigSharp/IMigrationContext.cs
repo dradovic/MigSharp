@@ -14,8 +14,8 @@ namespace MigSharp
         IProviderMetadata ProviderMetadata { get; }
 
         /// <summary>
-        /// Gets the migration metadata. Only available in the context of versioned migrations.
+        /// Gets the migration step metadata. Only available in the context of versioned migrations.
         /// </summary>
-        IScheduledMigrationMetadata MigrationMetadata { get; }
+        IMigrationStepMetadata StepMetadata { get; }
     }
 }

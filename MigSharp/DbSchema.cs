@@ -50,12 +50,12 @@ namespace MigSharp
                 Log.Info(LogCategory.General, "Migrations used to modify the database schema directly cannot be reversed.");
             }
 
-            ISqlDispatcher dispatcher = new SqlDispatcher(new ScriptingOptions(ScriptingMode.ExecuteOnly, null), Provider.Provider, Provider.Metadata);
-            var scheduledMigrationMetadata = new ScheduledMigrationMetadata(0, "Bypass", "This migration is being executed without affecting the versioning.", MigrationDirection.Up, false);
+            var migrationMetadata = new MigrationMetadata(0, "Bypass", "This migration is being executed without affecting the versioning.");
+            var stepMetadata = new MigrationStepMetadata(MigrationDirection.Up, false, new[] { migrationMetadata });
             var batch = new MigrationBatch(new[]
-                {
-                    new MigrationStep(migration, scheduledMigrationMetadata, ConnectionInfo, Provider.Provider, Provider.Metadata, ConnectionFactory, dispatcher)
-                }, Enumerable.Empty<IMigrationMetadata>(), Validator, new NoVersioning());
+            {
+                new MigrationStep(migration, stepMetadata)
+            }, Enumerable.Empty<IMigrationMetadata>(), new NoVersioning(), Configuration);
             batch.Execute();
         }
 

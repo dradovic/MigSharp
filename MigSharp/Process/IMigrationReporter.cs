@@ -2,7 +2,7 @@
 {
     internal interface IMigrationReporter
     {
-        IScheduledMigrationMetadata MigrationMetadata { get; }
+        IMigrationStepMetadata StepMetadata { get; }
         IMigrationReport Report(IMigrationContext context);
     }
 }

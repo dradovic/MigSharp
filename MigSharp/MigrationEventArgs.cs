@@ -7,17 +7,17 @@ namespace MigSharp
     /// </summary>
     public class MigrationEventArgs : EventArgs
     {
-        private readonly IScheduledMigrationMetadata _metadata;
+        private readonly IMigrationStepMetadata _metadata;
 
         /// <summary>
         /// Gets the associated metadata.
         /// </summary>
-        public IScheduledMigrationMetadata Metadata { get { return _metadata; } }
+        public IMigrationStepMetadata Metadata { get { return _metadata; } }
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        public MigrationEventArgs(IScheduledMigrationMetadata metadata)
+        public MigrationEventArgs(IMigrationStepMetadata metadata)
         {
             _metadata = metadata;
         }

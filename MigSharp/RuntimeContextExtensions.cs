@@ -4,9 +4,9 @@
     {
         public static string GetDefaultSchema(this IMigrationContext context)
         {
-            if (context.MigrationMetadata != null && context.MigrationMetadata.UseModuleNameAsDefaultSchema)
+            if (context.StepMetadata != null && context.StepMetadata.UseModuleNameAsDefaultSchema)
             {
-                return context.MigrationMetadata.ModuleName;
+                return context.StepMetadata.ModuleName;
             }
             return null;
         }

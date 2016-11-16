@@ -77,6 +77,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\AggregateMigrationMetadata.cs" />
     <Compile Include="Core\Commands\AlterSchemaCommand.cs" />
     <Compile Include="Core\Commands\CreateSchemaCommand.cs" />
     <Compile Include="Core\Commands\TableCommand.cs" />
@@ -87,9 +88,11 @@
     <Compile Include="DbAltererOptions.cs" />
     <Compile Include="DefaultMigrationTimestampProvider.cs" />
     <Compile Include="Driver.cs" />
+    <Compile Include="Core\IAggregateMigrationMetadata.cs" />
     <Compile Include="ICreatedSchema.cs" />
     <Compile Include="IExistingSchema.cs" />
     <Compile Include="IExistingSchemaCollection.cs" />
+    <Compile Include="IMigrationImporter.cs" />
     <Compile Include="IMigrationTimestampProvider.cs" />
     <Compile Include="IMigrationTimestampProviderExportMetadata.cs" />
     <Compile Include="InvalidMigrationExportException.cs" />
@@ -105,14 +108,22 @@
     <Compile Include="IMigrationMetadata.cs" />
     <Compile Include="Core\MigrationMetadata.cs" />
     <Compile Include="DbAlterer.cs" />
+    <Compile Include="AggregateMigrationExportAttribute.cs" />
+    <Compile Include="IRuntimeConfiguration.cs" />
+    <Compile Include="Process\MigrationBatchPreparer.cs" />
+    <Compile Include="Process\MigrationImporter.cs" />
     <Compile Include="Options.cs" />
+    <Compile Include="Process\IAggregateMigrationExportMetadata.cs" />
+    <Compile Include="Process\ImportedAggregateMigration.cs" />
     <Compile Include="Process\IValidator.cs" />
+    <Compile Include="Process\MigrationAggregator.cs" />
+    <Compile Include="Process\MigrationMetadataComparer.cs" />
     <Compile Include="Process\NoVersioning.cs" />
     <Compile Include="Process\ApplicableMigration.cs" />
     <Compile Include="Process\DbConnectionWrapper.cs" />
     <Compile Include="Process\ImportedMigration.cs" />
-    <Compile Include="IScheduledMigrationMetadata.cs" />
-    <Compile Include="Core\ScheduledMigrationMetadata.cs" />
+    <Compile Include="IMigrationStepMetadata.cs" />
+    <Compile Include="Core\MigrationStepMetadata.cs" />
     <Compile Include="Process\MigrationSelector.cs" />
     <Compile Include="Process\UsedDataType.cs" />
     <Compile Include="Process\ValidatorFactory.cs" />
@@ -231,6 +242,7 @@
     <Compile Include="Providers\SupportsAttribute.cs" />
     <Compile Include="Process\FileScripter.cs" />
     <Compile Include="Process\ScriptingOptions.cs" />
+    <Compile Include="RuntimeConfiguration.cs" />
     <Compile Include="RuntimeContextExtensions.cs" />
     <Compile Include="SupportedPlatforms.cs" />
     <Compile Include="Providers\Column.cs" />

@@ -11,21 +11,26 @@ namespace MigSharp.SqlServer.NUnit
         protected const string Server = "localhost";
         protected const string TestDbName = "MigSharp_TestDb";
 
+        private Server _server;
         private Database _database;
+
+        protected Server ServerSmo { get { return _server; } }
+
+        protected Database DatabaseSmo { get { return _database; } }
 
         public override void Setup()
         {
             base.Setup();
 
-            var server = new Server(Server);
+            _server = new Server(Server);
 
-            var database = server.Databases[TestDbName];
+            var database = _server.Databases[TestDbName];
             if (database != null)
             {
                 database.Drop();
             }
 
-            _database = new Database(server, TestDbName);
+            _database = new Database(_server, TestDbName);
             _database.Create();
             var schema = new Schema(_database, CustomVersioningTableSchema);
             schema.Owner = "dbo";

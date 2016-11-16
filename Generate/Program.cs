@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Configuration;
 using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
 using MigSharp.Generate.Util;
-using System.Linq;
 
 namespace MigSharp.Generate
 {
@@ -14,7 +14,7 @@ namespace MigSharp.Generate
         public const int InvalidTargetExitCode = 0x2;
         public const int UnsuccessfulExitCode = 0x3;
 
-        [STAThreadAttribute] // for setting the clipboard
+        [STAThread] // for setting the clipboard
         private static void Main()
         {
             CommandLineOptions options;
@@ -26,10 +26,24 @@ namespace MigSharp.Generate
             }
 
             string connectionString;
+            string migrationNamespace;
+            string moduleName;
+            string versioningTableName;
+            string versioningTableSchema;
+            string[] includedSchemas;
             string[] excludedTables;
+            bool includeData;
             try
             {
-                ParseCommandLineArguments(options, parser, ConfigurationManager.ConnectionStrings, out connectionString, out excludedTables);
+                ParseCommandLineArguments(options, parser, ConfigurationManager.ConnectionStrings,
+                    out connectionString,
+                    out migrationNamespace,
+                    out moduleName,
+                    out versioningTableName,
+                    out versioningTableSchema,
+                    out includedSchemas,
+                    out excludedTables,
+                    out includeData);
             }
             catch (InvalidCommandLineArgumentException x)
             {
@@ -37,7 +51,24 @@ namespace MigSharp.Generate
                 Environment.Exit(x.ExitCode);
                 throw; // will not be executed; just to satisfy R#
             }
-            var generator = new SqlMigrationGenerator(connectionString, excludedTables);
+            var factory = new SqlMigrationGeneratorFactory(connectionString);
+            var generateOptions = new GeneratorOptions
+            {
+                Namespace = migrationNamespace,
+                ModuleName = moduleName,
+                VersioningTableName = versioningTableName,
+                VersioningTableSchema = versioningTableSchema,
+                IncludeData = includeData,
+            };
+            foreach (string includedSchema in includedSchemas)
+            {
+                generateOptions.IncludedSchemas.Add(includedSchema);
+            }
+            foreach (string excludedTable in excludedTables)
+            {
+                generateOptions.ExcludedTables.Add(excludedTable);
+            }
+            IGenerator generator = factory.Create(generateOptions);
             string migration = generator.Generate();
             if (generator.Errors.Any())
             {
@@ -45,12 +76,19 @@ namespace MigSharp.Generate
                 Console.Error.WriteLine(string.Join(Environment.NewLine, generator.Errors));
                 Environment.Exit(UnsuccessfulExitCode);
             }
-            
             Clipboard.SetText(migration, TextDataFormat.UnicodeText);
             Console.WriteLine("The generation of the migration was successful and is now available in your clipboard.");
         }
 
-        internal static void ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings, out string connectionString, out string[] excludedTables)
+        internal static void ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings,
+            out string connectionString,
+            out string migrationNamespace,
+            out string moduleName,
+            out string versioningTableName,
+            out string versioningTableSchema,
+            out string[] includedSchemas,
+            out string[] excludedTables,
+            out bool includeData)
         {
             if (parser.Parameters.Length < 1 || // expect at least the target
                 parser.UnhandledSwitches.Length > 0)
@@ -65,19 +103,25 @@ namespace MigSharp.Generate
             if (settings == null)
             {
                 throw new InvalidCommandLineArgumentException(string.Format(CultureInfo.CurrentCulture,
-                    "Missing target: '{0}'. Could not find entry in the configuration file.", target),
+                        "Missing target: '{0}'. Could not find entry in the configuration file.", target),
                     InvalidTargetExitCode);
             }
             connectionString = settings.ConnectionString;
             if (connectionString == null)
             {
                 throw new InvalidCommandLineArgumentException(string.Format(CultureInfo.CurrentCulture,
-                    "Empty target: '{0}'. The entry in the configuration file is empty.", target),
+                        "Empty target: '{0}'. The entry in the configuration file is empty.", target),
                     InvalidTargetExitCode);
             }
 
             // additional parameters
-            excludedTables = (options.Exclude ?? string.Empty).Split(',');
+            migrationNamespace = options.Namespace;
+            moduleName = options.ModuleName;
+            versioningTableName = options.VersioningTableName;
+            versioningTableSchema = options.VersioningTableSchema;
+            includedSchemas = (options.Schemas ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            excludedTables = (options.Exclude ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            includeData = options.IncludeData;
         }
 
         private static bool DisplayHelp(string commandLine, out CommandLineOptions options, out CommandLineParser parser)

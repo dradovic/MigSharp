@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace MigSharp.NUnit
 {
-    [TestFixture]
+    [TestFixture, Category("smoke")]
     public class DbSchemaTests
     {
         [Test, ExpectedException(typeof(NotSupportedException), ExpectedMessage = "Could not find a provider for 'SqlServer, Version: 8, Driver: AdoNet'.")]

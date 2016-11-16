@@ -11,14 +11,14 @@ namespace MigSharp.Process
     {
         private readonly List<IMigrationStep> _migrations;
         private readonly ReadOnlyCollection<IMigrationMetadata> _unidentifiedMigrations;
-        private readonly IValidator _validator;
         private readonly IVersioning _versioning;
+        private readonly IRuntimeConfiguration _configuration;
 
         public event EventHandler<MigrationEventArgs> StepExecuting;
         public event EventHandler<MigrationEventArgs> StepExecuted;
 
-        private ReadOnlyCollection<IScheduledMigrationMetadata> _scheduledMigrations;
-        public ReadOnlyCollection<IScheduledMigrationMetadata> ScheduledMigrations { get { return _scheduledMigrations; } }
+        private readonly ReadOnlyCollection<IMigrationStepMetadata> _steps;
+        public ReadOnlyCollection<IMigrationStepMetadata> Steps { get { return _steps; } }
 
         public ReadOnlyCollection<IMigrationMetadata> UnidentifiedMigrations { get { return _unidentifiedMigrations; } }
 
@@ -27,25 +27,14 @@ namespace MigSharp.Process
         public MigrationBatch(
             IEnumerable<IMigrationStep> migrations,
             IEnumerable<IMigrationMetadata> unidentifiedMigrations,
-            IValidator validator,
-            IVersioning versioning)
+            IVersioning versioning,
+            IRuntimeConfiguration configuration)
         {
             _migrations = migrations.ToList();
-            UpdateScheduledMigrations();
+            _steps = new ReadOnlyCollection<IMigrationStepMetadata>(_migrations.Select(s => s.Metadata).ToList());
             _unidentifiedMigrations = new ReadOnlyCollection<IMigrationMetadata>(unidentifiedMigrations.ToList());
-            _validator = validator;
             _versioning = versioning;
-        }
-
-        public void RemoveAll(Predicate<IMigrationMetadata> match)
-        {
-            _migrations.RemoveAll(m => match(m.Metadata));
-            UpdateScheduledMigrations();
-        }
-
-        private void UpdateScheduledMigrations()
-        {
-            _scheduledMigrations = new ReadOnlyCollection<IScheduledMigrationMetadata>(_migrations.Select(s => s.Metadata).ToList());
+            _configuration = configuration;
         }
 
         public void Execute()
@@ -58,7 +47,7 @@ namespace MigSharp.Process
             // validate all steps
             string errors;
             string warnings;
-            _validator.Validate(_migrations, out errors, out warnings);
+            _configuration.Validator.Validate(_migrations, out errors, out warnings);
             if (!string.IsNullOrEmpty(errors))
             {
                 throw new InvalidOperationException("Cannot execute the migration(s) as there are validation errors:" + Environment.NewLine + errors);
@@ -84,7 +73,7 @@ namespace MigSharp.Process
         {
             OnStepExecuting(new MigrationEventArgs(step.Metadata));
 
-            step.Execute(_versioning);
+            step.Execute(_configuration, _versioning);
 
             OnStepExecuted(new MigrationEventArgs(step.Metadata));
         }

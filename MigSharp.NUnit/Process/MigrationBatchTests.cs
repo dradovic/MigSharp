@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FakeItEasy;
+using MigSharp.Core;
 using MigSharp.Process;
 using NUnit.Framework;
 
@@ -18,8 +19,10 @@ namespace MigSharp.NUnit.Process
             var validator = A.Fake<IValidator>();
             A.CallTo(() => validator.Validate(A<IEnumerable<IMigrationReporter>>._, out errors, out warnings)).AssignsOutAndRefParameters("Some test failure...", null);
 
-            IMigrationStep[] steps = { FakeMigrationStep(new MetadataStub(1)) };
-            MigrationBatch batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), validator, A.Fake<IVersioning>());
+            IMigrationStep[] steps = { FakeMigrationStep(new StepMetadataStub(new MigrationMetadata(1, null, null))) };
+            var configuration = A.Fake<IRuntimeConfiguration>();
+            A.CallTo(() => configuration.Validator).Returns(validator);
+            MigrationBatch batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), A.Fake<IVersioning>(), configuration);
 
             batch.Execute();
             Assert.IsTrue(batch.IsExecuted);
@@ -28,12 +31,12 @@ namespace MigSharp.NUnit.Process
         [Test]
         public void VerifyStepExecutedAndStepExecutingAreRaised()
         {
-            var metadata = new MetadataStub(1);
+            var metadata = new StepMetadataStub(new MigrationMetadata(1, null, null));
             IMigrationStep step = FakeMigrationStep(metadata);
             IMigrationStep[] steps = { step };
-            var batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), A.Fake<IValidator>(), A.Fake<IVersioning>());
+            var batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), A.Fake<IVersioning>(), A.Fake<IRuntimeConfiguration>());
 
-            Assert.AreSame(metadata, batch.ScheduledMigrations[0], "The batch should expose the metadata of the step."); // this is tested to allow for the undocumented feature test below
+            Assert.AreSame(metadata, batch.Steps[0], "The batch should expose the metadata of the step."); // this is tested to allow for the undocumented feature test below
 
             int countExecutingEvent = 0;
             int countExecutedEvent = 0;
@@ -60,39 +63,12 @@ namespace MigSharp.NUnit.Process
         [Test, ExpectedException(typeof(InvalidOperationException))]
         public void VerifyCallingExecuteTwiceThrows()
         {
-            var batch = new MigrationBatch(Enumerable.Empty<IMigrationStep>(), Enumerable.Empty<IMigrationMetadata>(), A.Fake<IValidator>(), A.Fake<IVersioning>());
+            var batch = new MigrationBatch(Enumerable.Empty<IMigrationStep>(), Enumerable.Empty<IMigrationMetadata>(), A.Fake<IVersioning>(), A.Fake<IRuntimeConfiguration>());
             batch.Execute();
             batch.Execute();
         }
 
-        [Test]
-        public void TestRemovingMigrations()
-        {
-            IMigrationStep[] steps =
-            {
-                FakeMigrationStep(new MetadataStub(1)),
-                FakeMigrationStep(new MetadataStub(2)),
-                FakeMigrationStep(new MetadataStub(3))
-            };
-            var batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), A.Fake<IValidator>(), A.Fake<IVersioning>());
-            Assert.AreEqual(3, batch.ScheduledMigrations.Count);
-
-            batch.RemoveAll(m => m.Timestamp == 2);
-            Assert.AreEqual(2, batch.ScheduledMigrations.Count);
-
-            int countExecutedEvent = 0;
-            batch.StepExecuted += (sender, args) =>
-            {
-                Assert.AreNotEqual(2, args.Metadata.Timestamp, "Migration with timestamp 2 should not have been executed.");
-                countExecutedEvent++;
-            };
-            batch.Execute();
-
-            Assert.IsTrue(batch.IsExecuted);
-            Assert.AreEqual(2, countExecutedEvent);
-        }
-
-        private static IMigrationStep FakeMigrationStep(IScheduledMigrationMetadata metadata)
+        private static IMigrationStep FakeMigrationStep(IMigrationStepMetadata metadata)
         {
             IMigrationStep step = A.Fake<IMigrationStep>();
             A.CallTo(() => step.Metadata).Returns(metadata);
@@ -100,17 +76,18 @@ namespace MigSharp.NUnit.Process
             return step;
         }
 
-        private class MetadataStub : IScheduledMigrationMetadata
+        private class StepMetadataStub : IMigrationStepMetadata
         {
-            public string Tag { get { return null; } }
+            private readonly List<IMigrationMetadata> _metadatas;
+
             public string ModuleName { get { return string.Empty; } }
-            public long Timestamp { get; private set; }
             public MigrationDirection Direction { get { return MigrationDirection.Up; } }
             public bool UseModuleNameAsDefaultSchema { get { return false; } }
+            public IEnumerable<IMigrationMetadata> Migrations { get { return _metadatas; } }
 
-            public MetadataStub(long timestamp)
+            public StepMetadataStub(params IMigrationMetadata[] metadatas)
             {
-                Timestamp = timestamp;
+                _metadatas = new List<IMigrationMetadata>(metadatas);
             }
         }
     }

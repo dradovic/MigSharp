@@ -128,6 +128,7 @@
     <Compile Include="Integration\Migration05_Alter_Column.cs" />
     <Compile Include="Integration\Migration28_CurrentDateTimeOffsetDefault.cs" />
     <Compile Include="Integration\Migration29_Altering_DefaultConstraint_in_Custom_Schema.cs" />
+    <Compile Include="Integration\Migration31_Add_UserDefinedTableTypes_For_Generate.cs" />
     <Compile Include="Integration\Migration30_NewSequentialGuid_SpecialDefaultValue.cs" />
     <Compile Include="Integration\Migration06_CurrentDateTimeDefault.cs" />
     <Compile Include="Integration\Migration07_Adding_and_Dropping_Indexes.cs" />
@@ -138,6 +139,7 @@
     <Compile Include="Migrate\CommandLineParsingTests.cs" />
     <Compile Include="Migrate\MigrateProcess.cs" />
     <Compile Include="Migrate\ConsoleTests.cs" />
+    <Compile Include="MigrationBatchPreparerTests.cs" />
     <Compile Include="MigrationOptionTests.cs" />
     <Compile Include="MigrationTimestampProviderTests.cs" />
     <Compile Include="Process\MigrationBatchTests.cs" />

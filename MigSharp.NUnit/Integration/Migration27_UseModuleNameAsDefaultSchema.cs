@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using MigSharp.Core;
 using NUnit.Framework;
 
@@ -26,11 +27,11 @@ namespace MigSharp.NUnit.Integration
 
             db.Execute(context =>
                 {
-                    Assert.AreEqual("Schema27", context.MigrationMetadata.ModuleName);
-                    Assert.AreEqual(27L, context.MigrationMetadata.Timestamp);
-                    Assert.AreEqual("Test UseModuleNameAsDefaultSchema", context.MigrationMetadata.Tag);
-                    Assert.AreEqual(MigrationDirection.Up, context.MigrationMetadata.Direction);
-                    Assert.IsTrue(context.MigrationMetadata.UseModuleNameAsDefaultSchema, "Passing UseModuleNameAsDefaultSchema to migration metadata failed.");
+                    Assert.AreEqual("Schema27", context.StepMetadata.ModuleName);
+                    Assert.AreEqual(27L, context.StepMetadata.Migrations.Single().Timestamp);
+                    Assert.AreEqual("Test UseModuleNameAsDefaultSchema", context.StepMetadata.Migrations.Single().Tag);
+                    Assert.AreEqual(MigrationDirection.Up, context.StepMetadata.Direction);
+                    Assert.IsTrue(context.StepMetadata.UseModuleNameAsDefaultSchema, "Passing UseModuleNameAsDefaultSchema to migration metadata failed.");
                 });
         }
 

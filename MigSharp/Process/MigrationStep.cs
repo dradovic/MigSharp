@@ -2,75 +2,62 @@ using System;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
-
+using System.Linq;
 using MigSharp.Core;
 using MigSharp.Core.Entities;
-using MigSharp.Providers;
 
 namespace MigSharp.Process
 {
     internal class MigrationStep : BootstrapMigrationStep, IMigrationStep
     {
-        private readonly IScheduledMigrationMetadata _metadata;
-        private readonly ConnectionInfo _connectionInfo;
-        private readonly IDbConnectionFactory _connectionFactory;
-        private readonly ISqlDispatcher _sqlDispatcher;
+        private string MigrationName { get { return Migration.GetName(); } }
+        IMigrationStepMetadata IMigrationStep.Metadata { get { return Metadata; } }
+        IMigrationStepMetadata IMigrationReporter.StepMetadata { get { return Metadata; } }
 
-        private string MigrationName { get { return Migration.GetType().FullName; } }
-
-        public IScheduledMigrationMetadata Metadata { get { return _metadata; } }
-
-        public MigrationStep(IMigration migration, IScheduledMigrationMetadata metadata, ConnectionInfo connectionInfo, IProvider provider, IProviderMetadata providerMetadata, IDbConnectionFactory connectionFactory, ISqlDispatcher sqlDispatcher)
-            : base(migration, provider, providerMetadata, metadata)
+        public MigrationStep(IMigration migration, IMigrationStepMetadata metadata)
+            : base(migration, metadata)
         {
-            _metadata = metadata;
-            _connectionInfo = connectionInfo;
-            _connectionFactory = connectionFactory;
-            _sqlDispatcher = sqlDispatcher;
         }
-
-        IScheduledMigrationMetadata IMigrationReporter.MigrationMetadata { get { return _metadata; } }
 
         public IMigrationReport Report(IMigrationContext context)
         {
-            Database database = GetDatabaseContainingMigrationChanges(_metadata.Direction, context);
+            Database database = GetDatabaseContainingMigrationChanges(Metadata.Direction, context);
             return MigrationReport.Create(database, MigrationName, context);
         }
 
-        /// <summary>
-        /// Executes the migration step and updates the versioning information in one transaction.
-        /// </summary>
-        public void Execute(IVersioning versioning)
+        public void Execute(IRuntimeConfiguration configuration, IVersioning versioning)
         {
             if (versioning == null) throw new ArgumentNullException("versioning");
 
             DateTime start = DateTime.Now;
 
-            using (IDbConnection connection = _connectionFactory.OpenConnection(_connectionInfo))
+            long timestamp = GetTimestamp();
+            string tag = GetTag();
+            using (IDbConnection connection = configuration.OpenConnection())
             {
                 Debug.Assert(connection.State == ConnectionState.Open);
 
-                using (IDbTransaction transaction = _connectionInfo.SupportsTransactions ? connection.BeginTransaction() : null)
+                using (IDbTransaction transaction = configuration.ConnectionInfo.SupportsTransactions ? connection.BeginTransaction() : null)
                 {
                     IDbCommandExecutor executor;
-                    using ((executor = _sqlDispatcher.CreateExecutor(string.Format(CultureInfo.InvariantCulture, "Migration.{0}.{1}", _metadata.ModuleName, _metadata.Timestamp))) as IDisposable)
+                    using ((executor = configuration.SqlDispatcher.CreateExecutor(string.Format(CultureInfo.InvariantCulture, "Migration.{0}.{1}", Metadata.ModuleName, timestamp))) as IDisposable)
                     {
                         try
                         {
-                            Execute(connection, transaction, _metadata.Direction, executor);
+                            Execute(configuration.ProviderInfo, connection, transaction, Metadata.Direction, executor);
                         }
                         catch
                         {
-                            Log.Error("An non-recoverable error occurred in Migration '{0}'{1}{2} while executing {3}.", 
-                                _metadata.Timestamp,
-                                _metadata.ModuleName != MigrationExportAttribute.DefaultModuleName ? " in module '" + _metadata.ModuleName + "'" : string.Empty,
-                                !string.IsNullOrEmpty(_metadata.Tag) ? ": '" + _metadata.Tag + "'" : string.Empty,
-                                _metadata.Direction);
+                            Log.Error("An non-recoverable error occurred in migration '{0}'{1}{2} while executing {3}.",
+                                timestamp,
+                                Metadata.ModuleName != MigrationExportAttribute.DefaultModuleName ? " in module '" + Metadata.ModuleName + "'" : string.Empty,
+                                tag,
+                                Metadata.Direction);
                             throw;
                         }
 
                         // update versioning
-                        versioning.Update(_metadata, connection, transaction, executor);
+                        versioning.Update(Metadata, connection, transaction, executor);
                     }
 
                     if (transaction != null)
@@ -81,10 +68,33 @@ namespace MigSharp.Process
             }
 
             Log.Verbose(LogCategory.Performance, "Migration of module '{0}' to {1}{2} took {3}s",
-                _metadata.ModuleName,
-                _metadata.Timestamp,
-                !string.IsNullOrEmpty(_metadata.Tag) ? string.Format(CultureInfo.CurrentCulture, " '{0}'", _metadata.Tag) : string.Empty,
+                Metadata.ModuleName,
+                timestamp,
+                tag,
                 (DateTime.Now - start).TotalSeconds);
+        }
+
+        private long GetTimestamp()
+        {
+            return Metadata.Migrations.Max(m => m.Timestamp);
+        }
+
+        private string GetTag()
+        {
+            string tag;
+            if (Metadata.Migrations.Count() > 1)
+            {
+                tag = " (aggregate migration)";
+            }
+            else
+            {
+                tag = Metadata.Migrations.Single().Tag;
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    tag = ": '" + tag + "'";
+                }
+            }
+            return tag;
         }
     }
 }

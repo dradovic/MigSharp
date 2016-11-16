@@ -2,16 +2,16 @@
 {
     internal class ApplicableMigration
     {
-        private readonly IMigration _implementation;
-        private readonly IScheduledMigrationMetadata _metadata;
+        private readonly ImportedMigration _migration;
+        private readonly MigrationDirection _direction;
 
-        public IMigration Implementation { get { return _implementation; } }
-        public IScheduledMigrationMetadata Metadata { get { return _metadata; } }
+        public ImportedMigration Migration { get { return _migration; } }
+        public MigrationDirection Direction { get { return _direction; } }
 
-        public ApplicableMigration(IMigration implementation, IScheduledMigrationMetadata metadata)
+        public ApplicableMigration(ImportedMigration migration, MigrationDirection direction)
         {
-            _implementation = implementation;
-            _metadata = metadata;
+            _migration = migration;
+            _direction = direction;
         }
     }
 }

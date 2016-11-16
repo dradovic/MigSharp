@@ -32,11 +32,11 @@ namespace MigSharp.NUnit.Process
 
             IEnumerable<ApplicableMigration> applicableMigrations;
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
-            selector.GetMigrationsTo(long.MaxValue, s => true, out applicableMigrations, out unidentifiedMigrations);
+            selector.GetMigrationsTo(long.MaxValue, m => true, out applicableMigrations, out unidentifiedMigrations);
 
             Assert.AreEqual(1, applicableMigrations.Count());
-            Assert.AreEqual(3, applicableMigrations.First().Metadata.Timestamp);
-            Assert.AreEqual(MigrationDirection.Up, applicableMigrations.First().Metadata.Direction);
+            Assert.AreEqual(3, applicableMigrations.First().Migration.Metadata.Timestamp);
+            Assert.AreEqual(MigrationDirection.Up, applicableMigrations.First().Direction);
             CollectionAssert.IsEmpty(unidentifiedMigrations);
         }
 
@@ -60,11 +60,11 @@ namespace MigSharp.NUnit.Process
 
             IEnumerable<ApplicableMigration> applicableMigrations;
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
-            selector.GetMigrationsTo(long.MaxValue, s => true, out applicableMigrations, out unidentifiedMigrations);
+            selector.GetMigrationsTo(long.MaxValue, m => true, out applicableMigrations, out unidentifiedMigrations);
 
             Assert.AreEqual(1, applicableMigrations.Count());
-            Assert.AreEqual(2, applicableMigrations.First().Metadata.Timestamp);
-            Assert.AreEqual(MigrationDirection.Up, applicableMigrations.First().Metadata.Direction);
+            Assert.AreEqual(2, applicableMigrations.First().Migration.Metadata.Timestamp);
+            Assert.AreEqual(MigrationDirection.Up, applicableMigrations.First().Direction);
             CollectionAssert.IsEmpty(unidentifiedMigrations);
         }
 
@@ -89,11 +89,11 @@ namespace MigSharp.NUnit.Process
 
             IEnumerable<ApplicableMigration> applicableMigrations;
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
-            selector.GetMigrationsTo(2, s => true, out applicableMigrations, out unidentifiedMigrations);
+            selector.GetMigrationsTo(2, m => true, out applicableMigrations, out unidentifiedMigrations);
 
             Assert.AreEqual(1, applicableMigrations.Count());
-            Assert.AreEqual(3, applicableMigrations.First().Metadata.Timestamp);
-            Assert.AreEqual(MigrationDirection.Down, applicableMigrations.First().Metadata.Direction);
+            Assert.AreEqual(3, applicableMigrations.First().Migration.Metadata.Timestamp);
+            Assert.AreEqual(MigrationDirection.Down, applicableMigrations.First().Direction);
             CollectionAssert.IsEmpty(unidentifiedMigrations);
         }
 
@@ -118,7 +118,7 @@ namespace MigSharp.NUnit.Process
 
             IEnumerable<ApplicableMigration> applicableMigrations;
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
-            selector.GetMigrationsTo(2, s => true, out applicableMigrations, out unidentifiedMigrations);
+            selector.GetMigrationsTo(2, m => true, out applicableMigrations, out unidentifiedMigrations);
         }
 
         [Test]
@@ -142,11 +142,11 @@ namespace MigSharp.NUnit.Process
 
             IEnumerable<ApplicableMigration> applicableMigrations;
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
-            selector.GetMigrationsTo(long.MaxValue, s => true, out applicableMigrations, out unidentifiedMigrations);
+            selector.GetMigrationsTo(long.MaxValue, m => true, out applicableMigrations, out unidentifiedMigrations);
 
             Assert.AreEqual(1, applicableMigrations.Count());
-            Assert.AreEqual(3, applicableMigrations.First().Metadata.Timestamp);
-            Assert.AreEqual(MigrationDirection.Up, applicableMigrations.First().Metadata.Direction);
+            Assert.AreEqual(3, applicableMigrations.First().Migration.Metadata.Timestamp);
+            Assert.AreEqual(MigrationDirection.Up, applicableMigrations.First().Direction);
             Assert.AreEqual(1, unidentifiedMigrations.Count());
             Assert.AreEqual(13, unidentifiedMigrations.First().Timestamp);
         }

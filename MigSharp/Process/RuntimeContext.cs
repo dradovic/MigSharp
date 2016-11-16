@@ -12,8 +12,8 @@ namespace MigSharp.Process
         public IDbTransaction Transaction { get { return _transaction; } }
         public IDbCommandExecutor CommandExecutor { get { return _executor; } }
 
-        public RuntimeContext(IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor executor, IProviderMetadata providerMetadata, IScheduledMigrationMetadata migrationMetadata)
-            : base(providerMetadata, migrationMetadata)
+        public RuntimeContext(IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor executor, IProviderMetadata providerMetadata, IMigrationStepMetadata stepMetadata)
+            : base(providerMetadata, stepMetadata)
         {
             _connection = connection;
             _transaction = transaction;

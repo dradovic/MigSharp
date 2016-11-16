@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MigSharp</id>
-    <version>3.1.3</version>
+    <version>3.2</version>
     <title>Mig#</title>
     <authors>dradovic</authors>
     <owners />
@@ -13,6 +13,16 @@
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
     <tags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</tags>
     <releaseNotes>
+3.2
+- added support for fast-forwarding using aggregate migrations
+- Generate command line tool:
+  - Auto-generate aggregate migrations
+  - Include data as INSERT statements
+  - Support scripting of schemas, deletion cascading, support more data types
+  - Various fixes
+BREAKING CHANGES:
+- MigrationOptions.MigrationSelector replaces MigrationOptions.ModuleSelector and IMigrationBatch.RemoveAll
+- IMigrationStepMetadata replaces IScheduleMigrationMetadata
 3.1.3
 - added support for new (sequential and random) GUID as default value on existing columns too
 3.1.2

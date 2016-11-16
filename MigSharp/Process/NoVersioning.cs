@@ -11,7 +11,7 @@ namespace MigSharp.Process
             get { return Enumerable.Empty<IMigrationMetadata>(); }
         }
 
-        public void Update(IScheduledMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction,
+        public void Update(IMigrationStepMetadata metadata, IDbConnection connection, IDbTransaction transaction,
                            IDbCommandExecutor commandExecutor)
         {
             // nothing to do

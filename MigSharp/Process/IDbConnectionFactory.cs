@@ -7,5 +7,6 @@ namespace MigSharp.Process
     {
         IDbConnection OpenConnection(ConnectionInfo connectionInfo);
         DbProviderFactory GetDbProviderFactory(ConnectionInfo connectionInfo);
+        void UseCustomConnection(IDbConnection connection);
     }
 }

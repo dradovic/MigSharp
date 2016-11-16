@@ -15,16 +15,20 @@ namespace MigSharp.Process
 
         public IEnumerable<IMigrationMetadata> ExecutedMigrations { get { return _history.GetMigrations(); } }
 
-        public void Update(IScheduledMigrationMetadata metadata, IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor commandExecutor)
+        public void Update(IMigrationStepMetadata metadata, IDbConnection connection, IDbTransaction transaction, IDbCommandExecutor commandExecutor)
         {
-            if (metadata.Direction == MigrationDirection.Up)
+            foreach (IMigrationMetadata migrationMetadata in metadata.Migrations)
             {
-                _history.Insert(metadata.Timestamp, metadata.ModuleName, metadata.Tag);
-            }
-            else
-            {
-                Debug.Assert(metadata.Direction == MigrationDirection.Down);
-                _history.Delete(metadata.Timestamp, metadata.ModuleName);
+                Debug.Assert(migrationMetadata.ModuleName == metadata.ModuleName, "The migration module name must correspond to the module name of the scheduled migration step.");
+                if (metadata.Direction == MigrationDirection.Up)
+                {
+                    _history.Insert(migrationMetadata.Timestamp, metadata.ModuleName, migrationMetadata.Tag);
+                }
+                else
+                {
+                    Debug.Assert(metadata.Direction == MigrationDirection.Down);
+                    _history.Delete(migrationMetadata.Timestamp, metadata.ModuleName);
+                }
             }
 
             StoreChanges(connection, transaction, commandExecutor);

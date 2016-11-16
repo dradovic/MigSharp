@@ -19,10 +19,10 @@ namespace MigSharp
         event EventHandler<MigrationEventArgs> StepExecuted;
 
         /// <summary>
-        /// Gets a list of migrations which are pending and will be executed
+        /// Gets a list of migration steps which are pending and will be executed
         /// when calling <see cref="Execute"/>.
         /// </summary>
-        ReadOnlyCollection<IScheduledMigrationMetadata> ScheduledMigrations { get; }
+        ReadOnlyCollection<IMigrationStepMetadata> Steps { get; }
 
         /// <summary>
         /// Gets a list of migrations which were executed server-side but
@@ -33,12 +33,6 @@ namespace MigSharp
         /// </para>
         /// </summary>
         ReadOnlyCollection<IMigrationMetadata> UnidentifiedMigrations { get; }
-
-        /// <summary>
-        /// Removes migrations selected by <paramref name="match"/> from this batch.
-        /// <param name="match">Function to select migrations to remove.</param>
-        /// </summary>
-        void RemoveAll(Predicate<IMigrationMetadata> match);
 
         /// <summary>
         /// Performs the migrations contained in this batch. This method can only be

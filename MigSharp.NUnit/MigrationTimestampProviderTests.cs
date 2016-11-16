@@ -128,19 +128,19 @@ namespace MigSharp.NUnit
 
             IMigrationBatch batch = migrator.FetchMigrations(_timestampModuleTestAssembly);
 
-            Assert.AreEqual(4, batch.ScheduledMigrations.Count);
+            Assert.AreEqual(4, batch.Steps.Count);
 
-            IScheduledMigrationMetadata migration = batch.ScheduledMigrations.Single(m => m.ModuleName == MigrationExportAttribute.DefaultModuleName);
-            Assert.AreEqual(1, migration.Timestamp);
+            IMigrationStepMetadata step = batch.Steps.Single(m => m.ModuleName == MigrationExportAttribute.DefaultModuleName);
+            Assert.AreEqual(1, step.Migrations.Single().Timestamp);
 
-            migration = batch.ScheduledMigrations.Single(m => m.ModuleName == "NonDefaultModuleTreatedWithDefaultTimestampProvider");
-            Assert.AreEqual(23, migration.Timestamp);
+            step = batch.Steps.Single(m => m.ModuleName == "NonDefaultModuleTreatedWithDefaultTimestampProvider");
+            Assert.AreEqual(23, step.Migrations.Single().Timestamp);
 
-            migration = batch.ScheduledMigrations.Single(m => m.ModuleName == "ModuleA");
-            Assert.AreEqual(201110251455L, migration.Timestamp);
+            step = batch.Steps.Single(m => m.ModuleName == "ModuleA");
+            Assert.AreEqual(201110251455L, step.Migrations.Single().Timestamp);
 
-            migration = batch.ScheduledMigrations.Single(m => m.ModuleName == "ModuleB");
-            Assert.AreEqual(201211171825L, migration.Timestamp);
+            step = batch.Steps.Single(m => m.ModuleName == "ModuleB");
+            Assert.AreEqual(201211171825L, step.Migrations.Single().Timestamp);
         }
 
         [Test, ExpectedException(typeof(ArgumentException), ExpectedMessage = "Cannot have more than one timestamp provider responsible for module: 'TimestampProviderDuplicateTest'.")]

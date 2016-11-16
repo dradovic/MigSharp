@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using MigSharp.Process;
 
 namespace MigSharp
 {
@@ -80,6 +81,11 @@ namespace MigSharp
                 _type = type;
                 _condition = condition;
             }
+        }
+
+        internal virtual ScriptingOptions GetScriptingOptions()
+        {
+            return new ScriptingOptions(ScriptingMode.ExecuteOnly, null);
         }
     }
 }

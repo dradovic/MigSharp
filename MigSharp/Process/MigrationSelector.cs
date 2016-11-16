@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
 using MigSharp.Core;
 
 namespace MigSharp.Process
@@ -29,32 +28,30 @@ namespace MigSharp.Process
             _executedMigrations = executedMigrations;
         }
 
-        public void GetMigrationsTo(long timestamp, Predicate<string> moduleSelector,
+        public void GetMigrationsTo(long timestamp, Predicate<IMigrationMetadata> migrationSelector,
             out IEnumerable<ApplicableMigration> applicableMigrations, out IEnumerable<IMigrationMetadata> unidentifiedMigrations)
         {
-            var moduleMigrations = from m in _importedMigrations where moduleSelector(m.Metadata.ModuleName) select m;
+            IEnumerable<ImportedMigration> moduleMigrations = _importedMigrations.Where(m => migrationSelector(m.Metadata));
 
             var comparer = new MigrationMetadataComparer();
             var applicableUpMigrations = new List<ApplicableMigration>(
-                from m in moduleMigrations
-                where m.Metadata.Timestamp <= timestamp &&
-                      !_executedMigrations.Any(x => comparer.Equals(x, m.Metadata))
-                orderby m.Metadata.Timestamp ascending
-                select new ApplicableMigration(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Up, m.UseModuleNameAsDefaultSchema)));
+                moduleMigrations.Where(m => m.Metadata.Timestamp <= timestamp &&
+                                            !_executedMigrations.Any(x => comparer.Equals(x, m.Metadata)))
+                    .OrderBy(m => m.Metadata.Timestamp)
+                    .Select(m => new ApplicableMigration(m, MigrationDirection.Up)));
 
             var applicableDownMigrations = new List<ApplicableMigration>(
-                from m in moduleMigrations
-                where m.Metadata.Timestamp > timestamp &&
-                      _executedMigrations.Any(x => comparer.Equals(x, m.Metadata))
-                orderby m.Metadata.Timestamp descending
-                select new ApplicableMigration(m.Implementation, new ScheduledMigrationMetadata(m.Metadata.Timestamp, m.Metadata.ModuleName, m.Metadata.Tag, MigrationDirection.Down, m.UseModuleNameAsDefaultSchema)));
+                moduleMigrations.Where(m => m.Metadata.Timestamp > timestamp &&
+                                            _executedMigrations.Any(x => comparer.Equals(x, m.Metadata)))
+                    .OrderByDescending(m => m.Metadata.Timestamp)
+                    .Select(m => new ApplicableMigration(m, MigrationDirection.Down)));
 
-            if (applicableDownMigrations.Any(m => !(m.Implementation is IReversibleMigration)))
+            if (applicableDownMigrations.Any(m => !(m.Migration.Implementation is IReversibleMigration)))
             {
                 throw new IrreversibleMigrationException();
             }
-            int countUp = applicableUpMigrations.Count();
-            int countDown = applicableDownMigrations.Count();
+            int countUp = applicableUpMigrations.Count;
+            int countDown = applicableDownMigrations.Count;
             Log.Info("Found {0} (up: {1}, down: {2}) applicable migration(s)", countUp + countDown, countUp, countDown);
             applicableMigrations = applicableDownMigrations.Concat(applicableUpMigrations); // order matters!
 
@@ -67,19 +64,6 @@ namespace MigSharp.Process
             if (unidentifiedMigrations.Any())
             {
                 Log.Warning("Found {0} migration(s) that were executed in the database but are not contained in the application.", unidentifiedMigrations.Count());
-            }
-        }
-
-        private class MigrationMetadataComparer : IEqualityComparer<IMigrationMetadata>
-        {
-            public bool Equals(IMigrationMetadata x, IMigrationMetadata y)
-            {
-                return x.Timestamp == y.Timestamp && x.ModuleName == y.ModuleName;
-            }
-
-            public int GetHashCode(IMigrationMetadata obj)
-            {
-                return obj.Timestamp.GetHashCode() ^ obj.ModuleName.GetHashCode();
             }
         }
     }
