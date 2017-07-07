@@ -8,11 +8,11 @@ namespace MigSharp.Providers
 {
     internal class ProviderLocator
     {
-        private readonly IProviderFactory _providerFactory;
+        private readonly IProviderRegistry _providerRegistry;
 
-        public ProviderLocator(IProviderFactory providerFactory)
+        public ProviderLocator(IProviderRegistry providerRegistry)
         {
-            _providerFactory = providerFactory;
+            _providerRegistry = providerRegistry;
         }
 
         [Pure, NotNull]
@@ -58,20 +58,20 @@ namespace MigSharp.Providers
         [Pure, NotNull]
         public ProviderInfo GetExactly(DbPlatform dbPlatform)
         {
-            IProviderMetadata metadata = _providerFactory.GetProviderMetadatas().Single(m => m.Platform == dbPlatform.Platform && m.MajorVersion == dbPlatform.MajorVersion && m.Driver == dbPlatform.Driver);
-            return new ProviderInfo(_providerFactory.GetProvider(metadata), metadata);
+            IProviderMetadata metadata = _providerRegistry.GetProviderMetadatas().Single(m => m.Platform == dbPlatform.Platform && m.MajorVersion == dbPlatform.MajorVersion && m.Driver == dbPlatform.Driver);
+            return new ProviderInfo(_providerRegistry.GetProvider(metadata), metadata);
         }
 
         private IEnumerable<IProviderMetadata> FindAllVersionsOf(DbPlatform dbPlatform)
         {
-            return _providerFactory.GetProviderMetadatas()
+            return _providerRegistry.GetProviderMetadatas()
                                    .Where(m => m.Platform == dbPlatform.Platform && m.Driver == dbPlatform.Driver)
                                    .OrderBy(m => m.MajorVersion);
         } 
 
         private ProviderInfo ToProviderInfo(IProviderMetadata providerMetadata)
         {
-            return new ProviderInfo(_providerFactory.GetProvider(providerMetadata), providerMetadata);
+            return new ProviderInfo(_providerRegistry.GetProvider(providerMetadata), providerMetadata);
         }
     }
 }

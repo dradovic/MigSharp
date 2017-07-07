@@ -21,9 +21,9 @@ namespace MigSharp
             Configuration = CreateRuntimeConfiguration(connectionString, dbPlatform, options);
         }
 
-        private RuntimeConfiguration CreateRuntimeConfiguration(string connectionString, DbPlatform dbPlatform, DbAltererOptions options)
+        private static RuntimeConfiguration CreateRuntimeConfiguration(string connectionString, DbPlatform dbPlatform, DbAltererOptions options)
         {
-            var providerLocator = new ProviderLocator(new ProviderFactory()); // CLEAN: use DI container
+            var providerLocator = new ProviderLocator(new ProviderRegistry()); // CLEAN: use DI container
 
             var providerInfo = providerLocator.GetLatest(dbPlatform);
             var validatorFactory = new ValidatorFactory(providerInfo, options, providerLocator);

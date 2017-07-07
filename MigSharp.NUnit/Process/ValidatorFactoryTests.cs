@@ -16,7 +16,7 @@ namespace MigSharp.NUnit.Process
         public void CheckProviderValidation(DbPlatform platformUnderExecution, DbAltererOptions options, int expectedTotalNumberOfSupportedProviders, int expectedValidationRuns)
         {
             // arrange
-            var providerLocator = new ProviderLocator(new ProviderFactory());
+            var providerLocator = new ProviderLocator(new ProviderRegistry());
             int totalNumberOfSupportedProviders = options.SupportedPlatforms.Sum(n => providerLocator.GetAllForMinimumRequirement(n).Count());
             var validatorFactory = new ValidatorFactory(providerLocator.GetExactly(platformUnderExecution), options, providerLocator);
             Validator validator = validatorFactory.Create();

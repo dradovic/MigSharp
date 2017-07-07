@@ -254,8 +254,8 @@
     <Compile Include="Providers\TeradataProvider.cs" />
     <Compile Include="IProviderMetaData.cs" />
     <Compile Include="Providers\ProviderExportAttribute.cs" />
-    <Compile Include="Providers\ProviderFactory.cs" />
-    <Compile Include="Providers\IProviderFactory.cs" />
+    <Compile Include="Providers\ProviderRegistry.cs" />
+    <Compile Include="Providers\IProviderRegistry.cs" />
     <Compile Include="Process\MigrationBatch.cs" />
     <Compile Include="Migrator.cs" />
     <Compile Include="Providers\IProvider.cs" />

@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Globalization;
 using Microsoft.SqlServer.Management.Smo;
 using MigSharp.NUnit.Integration;
+using NUnit.Framework;
 
 namespace MigSharp.SqlServer.NUnit
 {
@@ -24,14 +25,17 @@ namespace MigSharp.SqlServer.NUnit
 
             _server = new Server(Server);
 
-            var database = _server.Databases[TestDbName];
-            if (database != null)
+            Database database;
+            if (_server.Databases.Contains(TestDbName))
             {
+                database = _server.Databases[TestDbName];
                 database.Drop();
             }
 
-            _database = new Database(_server, TestDbName);
-            _database.Create();
+            database = new Database(_server, TestDbName);
+            database.Create();
+            _database = _server.Databases[TestDbName]; // reference the created database (see: https://docs.microsoft.com/en-us/sql/relational-databases/server-management-objects-smo/tasks/creating-altering-and-removing-databases)
+            Assert.IsNotNull(_database, "There was a problem creating and accessing the database using SMO.");
             var schema = new Schema(_database, CustomVersioningTableSchema);
             schema.Owner = "dbo";
             schema.Create();
@@ -49,11 +53,11 @@ namespace MigSharp.SqlServer.NUnit
             get
             {
                 var builder = new SqlConnectionStringBuilder
-                    {
-                        DataSource = Server,
-                        InitialCatalog = TestDbName,
-                        IntegratedSecurity = true,
-                    };
+                {
+                    DataSource = Server,
+                    InitialCatalog = TestDbName,
+                    IntegratedSecurity = true,
+                };
                 return builder.ConnectionString;
             }
         }
@@ -63,7 +67,10 @@ namespace MigSharp.SqlServer.NUnit
         public override void Teardown()
         {
             SqlConnection.ClearAllPools();
-            _database.Drop();
+            if (_database != null)
+            {
+                _database.Drop();
+            }
 
             base.Teardown();
         }

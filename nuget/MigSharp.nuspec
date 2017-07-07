@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MigSharp</id>
-    <version>3.2</version>
+    <version>3.2.1</version>
     <title>Mig#</title>
     <authors>dradovic</authors>
     <owners />
@@ -13,6 +13,8 @@
     <summary>A .NET framework for multi-database platform migrations, versioning and schema modifications</summary>
     <tags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</tags>
     <releaseNotes>
+3.2.1
+- optimized initialization of DbSchema and Migrator instances
 3.2
 - added support for fast-forwarding using aggregate migrations
 - Generate command line tool:

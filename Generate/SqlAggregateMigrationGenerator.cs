@@ -20,7 +20,7 @@ namespace MigSharp.Generate
         public SqlAggregateMigrationGenerator(Server server, Database database, GeneratorOptions options) 
             : base(server, database, options)
         {
-            var providerLocator = new ProviderLocator(new ProviderFactory()); // CLEAN: use DI container
+            var providerLocator = new ProviderLocator(new ProviderRegistry()); // CLEAN: use DI container
             ProviderInfo provider = providerLocator.GetExactly(DbPlatform.SqlServer2008);
             var versioningTableName = new TableName(options.VersioningTableName, options.VersioningTableSchema);
             _history = new History(versioningTableName, provider.Metadata);

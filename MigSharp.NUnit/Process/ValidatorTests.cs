@@ -213,8 +213,8 @@ namespace MigSharp.NUnit.Process
 
             IProvider provider = new ProviderStub();
 
-            IProviderFactory providerFactory = A.Fake<IProviderFactory>();
-            A.CallTo(() => providerFactory.GetProvider(metadata)).Returns(provider);
+            IProviderRegistry providerRegistry = A.Fake<IProviderRegistry>();
+            A.CallTo(() => providerRegistry.GetProvider(metadata)).Returns(provider);
             providerInfos = new[] { new ProviderInfo(provider, metadata) };
 
             var options = new MigrationOptions();

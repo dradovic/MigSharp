@@ -579,8 +579,8 @@ namespace MigSharp.NUnit.Integration
             _options.SupportedPlatforms.Set(new[] { DbPlatform }); // avoid validation errors/warnings from other providers
 
             // initialize IntegrationTestContext
-            IProviderFactory providerFactory = new ProviderFactory();
-            var providerLocator = new ProviderLocator(providerFactory);
+            IProviderRegistry providerRegistry = new ProviderRegistry();
+            var providerLocator = new ProviderLocator(providerRegistry);
             ProviderInfo providerInfo = providerLocator.GetExactly(DbPlatform);
             IntegrationTestContext.Initialize(_options, providerInfo);
         }
