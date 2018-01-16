@@ -6,7 +6,7 @@ namespace MigSharp.NUnit
     [TestFixture, Category("smoke")]
     public class MigrationOptionTests
     {
-        private static readonly DbPlatform Platform = DbPlatform.SqlServer2008;
+        private static readonly DbPlatform Platform = DbPlatform.SqlServer2012;
         private const DbType Type = DbType.Int16;
 
         [Test]

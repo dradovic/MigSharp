@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FakeItEasy;
@@ -35,7 +35,7 @@ namespace MigSharp.NUnit.Process
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [UsedImplicitly]
-        private static IEnumerable<ITestCaseData> GetTestCases()
+        private static IEnumerable GetTestCases()
         {
             yield return new TestCase
                 {
@@ -59,52 +59,55 @@ namespace MigSharp.NUnit.Process
                         {
                             SupportedPlatforms =
                                 {
-                                    DbPlatform.SqlServer2008,
+                                    DbPlatform.SqlServer2012,
                                     DbPlatform.Oracle12c
                                 }
                         },
-                    ExpectedTotalNumberOfSupportedProviders = 3,
-                    ExpectedValidationRuns = 4
+                    ExpectedTotalNumberOfSupportedProviders = 2,
+                    ExpectedValidationRuns = 3
                 }.SetName("ProviderUnderExecutionIsValidatedAndSupportedProvidersToo (with a reachable minimum requirement)");
 
             yield return new TestCase
                 {
-                    DbPlatformUnderExecution = DbPlatform.SqlServer2008,
+                    DbPlatformUnderExecution = DbPlatform.SqlServer2012,
                     Options = new DbAltererOptions
                         {
                             SupportedPlatforms =
                                 {
-                                    DbPlatform.SqlServer2008
+                                    DbPlatform.SqlServer2012
                                 }
                         },
-                    ExpectedTotalNumberOfSupportedProviders = 2,
-                    ExpectedValidationRuns = 2
+                    ExpectedTotalNumberOfSupportedProviders = 1,
+                    ExpectedValidationRuns = 1
                 }.SetName("ProviderUnderExecutionIsNotValidatedTwice");
 
             yield return new TestCase
                 {
-                    DbPlatformUnderExecution = DbPlatform.SqlServer2008,
+                    DbPlatformUnderExecution = DbPlatform.SqlServer2012,
                     Options = new DbAltererOptions
                         {
                             Validate = false,
                             SupportedPlatforms =
                                 {
-                                    DbPlatform.SqlServer2008
+                                    DbPlatform.SqlServer2012
                                 }
                         },
-                    ExpectedTotalNumberOfSupportedProviders = 2,
+                    ExpectedTotalNumberOfSupportedProviders = 1,
                     ExpectedValidationRuns = 1
                 }.SetName("CheckValidateIsRepected");
         }
 
-        private class TestCase : TestCaseData, ITestCaseData
+        private class TestCase : TestCaseData
         {
-            public DbPlatform DbPlatformUnderExecution { get; set; }
-            public DbAltererOptions Options { get; set; }
-            public int ExpectedTotalNumberOfSupportedProviders { get; set; }
-            public int ExpectedValidationRuns { get; set; }
+            public DbPlatform DbPlatformUnderExecution { set { Arguments[0] = value; } }
+            public DbAltererOptions Options { set { Arguments[1] = value; } }
+            public int ExpectedTotalNumberOfSupportedProviders { set { Arguments[2] = value; } }
+            public int ExpectedValidationRuns { set { Arguments[3] = value; } }
 
-            public new object[] Arguments { get { return new object[] { DbPlatformUnderExecution, Options, ExpectedTotalNumberOfSupportedProviders, ExpectedValidationRuns }; } }
+            public TestCase()
+                : base(null, null, null, null)
+            {
+            }
         }
     }
 }

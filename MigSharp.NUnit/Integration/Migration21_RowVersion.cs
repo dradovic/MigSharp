@@ -99,7 +99,6 @@ namespace MigSharp.NUnit.Integration
                         Platform.MySql,
                         Platform.SQLite,
                         Platform.Oracle,
-                        Platform.Teradata,
                     };
             }
         }

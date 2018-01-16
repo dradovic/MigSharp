@@ -28,10 +28,10 @@ namespace MigSharp.NUnit.Providers
             Assert.AreEqual("C_I_N_DF", ObjectNameHelper.GetObjectName("Customer", "DF", 8, "Id", "Name"), "Eleven chars too long.");
         }
 
-        [Test, ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void VerifyGetObjectNameThrowsIfTooShort()
         {
-            ObjectNameHelper.GetObjectName("Customer", "DF", 7, "Id", "Name");
+            Assert.That(() => ObjectNameHelper.GetObjectName("Customer", "DF", 7, "Id", "Name"), Throws.ArgumentException);
         }
     }
 }

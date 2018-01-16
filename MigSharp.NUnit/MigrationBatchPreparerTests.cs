@@ -5,6 +5,7 @@ using FakeItEasy;
 using MigSharp.Core;
 using MigSharp.Process;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 
 namespace MigSharp.NUnit
 {

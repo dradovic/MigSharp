@@ -1,20 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using NUnit.Framework;
 
 namespace MigSharp.NUnit.Integration
 {
     [MigrationExport(Tag = "Test DropIfExists.")]
-    internal class Migration20 : IExclusiveIntegrationTestMigration
+    internal class Migration20 : IIntegrationTestMigration
     {
         public void Up(IDatabase db)
         {
-            if (!this.IsFeatureSupported(db))
-            {
-                return;
-            }
-
             AssertMig20DoesNotExist(db);
 
             db.Tables["Mig20"].DropIfExists();
@@ -70,16 +64,5 @@ namespace MigSharp.NUnit.Integration
         }
 
         public ExpectedTables Tables { get { return new ExpectedTables(); } }
-
-        public IEnumerable<Platform> PlatformsNotSupportingFeatureUnderTest
-        {
-            get
-            {
-                return new[]
-                    {
-                        Platform.Teradata,
-                    };
-            }
-        }
     }
 }

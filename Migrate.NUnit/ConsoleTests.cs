@@ -1,10 +1,6 @@
-﻿using System.Diagnostics;
+﻿using NUnit.Framework;
 
-using MigSharp.Migrate;
-
-using NUnit.Framework;
-
-namespace MigSharp.NUnit.Migrate
+namespace Migrate.NUnit
 {
     [TestFixture, Category("smoke")]
     public class ConsoleTests
@@ -15,7 +11,11 @@ namespace MigSharp.NUnit.Migrate
         public void ProvidingNoArgumentsShouldFail()
         {
             int exitCode = MigrateProcess.Execute(null);
-            Assert.AreEqual(Program.InvalidArgumentsExitCode, exitCode);
+#if NET462
+            Assert.AreEqual(MigSharp.Migrate.Program.InvalidArgumentsExitCode, exitCode);
+#elif NETCOREAPP2_0
+            Assert.AreEqual(Cli.Program.InvalidArgumentsExitCode, exitCode);
+#endif
         }
 
         [Test]
@@ -23,7 +23,11 @@ namespace MigSharp.NUnit.Migrate
         {
             const string arguments = "target-xxx some.dll";
             int exitCode = MigrateProcess.Execute(arguments);
-            Assert.AreEqual(Program.InvalidTargetExitCode, exitCode);
+#if NET462
+            Assert.AreEqual(MigSharp.Migrate.Program.InvalidTargetExitCode, exitCode);
+#elif NETCOREAPP2_0
+            Assert.AreEqual(Cli.Program.InvalidTargetExitCode, exitCode);
+#endif
         }
 
         [Test]
@@ -31,13 +35,17 @@ namespace MigSharp.NUnit.Migrate
         {
             const string arguments = "qa some.dll";
             int exitCode = MigrateProcess.Execute(arguments);
-            Assert.AreEqual(Program.FailedMigrationExitCode, exitCode);
+#if NET462
+            Assert.AreEqual(MigSharp.Migrate.Program.FailedMigrationExitCode, exitCode);
+#elif NETCOREAPP2_0
+            Assert.AreEqual(Cli.Program.FailedMigrationExitCode, exitCode);
+#endif
         }
 
         [Test]
         public void ProvidingOnlyHelpArgumentShouldSucceed()
         {
-            const string arguments = "-help";
+            const string arguments = "--help";
             int exitCode = MigrateProcess.Execute(arguments);
             Assert.AreEqual(SuccessExitCode, exitCode);
         }

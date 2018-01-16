@@ -29,3 +29,5 @@ _ReSharper*/
 .svn
 packages/
 ~$*
+.vs/
+launchSettings.json

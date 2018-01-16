@@ -15,7 +15,7 @@ namespace MigSharp.NUnit.Process
     [TestFixture, Category("smoke")]
     public class ValidatorTests
     {
-        private static readonly DbPlatform Platform = DbPlatform.SqlServer2008;
+        private static readonly DbPlatform Platform = DbPlatform.SqlServer2012;
         private const int MaximumSupportedLength = 10;
         private const string MigrationName = "TestMigration";
 
@@ -38,7 +38,7 @@ namespace MigSharp.NUnit.Process
                 string.Format(CultureInfo.CurrentCulture, "Error in migration '{0}': Some other validation error.", MigrationName) + Environment.NewLine +
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' contains object names that are longer than what is supported by '{1}' ('{2}': {3}, supported: {4}).", MigrationName, Platform, longestName, longestName.Length, MaximumSupportedLength),
                 errors);
-            Assert.IsNullOrEmpty(warnings);
+            Assert.That(warnings, Is.Null.Or.Empty);
         }
 
         [Test]
@@ -83,7 +83,7 @@ namespace MigSharp.NUnit.Process
             string warnings;
             string errors = GetWarnings(providerInfos, options, out warnings);
 
-            Assert.IsNullOrEmpty(errors);
+            Assert.That(errors, Is.Null.Or.Empty);
             Assert.AreEqual(
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.Guid, Platform, ProviderStub.WarningMessage) + Environment.NewLine +
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.String, Platform, ProviderStub.WarningMessageWithoutSize),
@@ -99,7 +99,7 @@ namespace MigSharp.NUnit.Process
             string warnings;
             string errors = GetWarnings(providerInfos, options, out warnings);
 
-            Assert.IsNullOrEmpty(errors);
+            Assert.That(errors, Is.Null.Or.Empty);
             Assert.AreEqual(
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': {3}", MigrationName, DbType.String, Platform, ProviderStub.WarningMessageWithoutSize),
                 warnings);
@@ -138,7 +138,7 @@ namespace MigSharp.NUnit.Process
             string warnings;
             Validate(report, out errors, out warnings);
 
-            Assert.IsNullOrEmpty(errors);
+            Assert.That(errors, Is.Null.Or.Empty);
             Assert.AreEqual(
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not fully supported by '{2}': Int64 is not supported for DbParameters with ODBC; requires calling ToString to directly inline the value in the CommandText.", MigrationName, DbType.Int64, Platform),
                 warnings);
@@ -167,7 +167,7 @@ namespace MigSharp.NUnit.Process
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}(null,777)' which is not supported by '{2}'.", MigrationName, DbType.String, Platform) + Environment.NewLine +
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' uses the data type '{1}' which is not supported by '{2}'.", MigrationName, DbType.Decimal, Platform),
                 errors);
-            Assert.IsNullOrEmpty(warnings);
+            Assert.That(warnings, Is.Null.Or.Empty);
         }
 
         [Test]
@@ -201,7 +201,7 @@ namespace MigSharp.NUnit.Process
             Assert.AreEqual(
                 string.Format(CultureInfo.CurrentCulture, "Migration '{0}' calls the '{1}' method which is not supported by '{2}': AddColumn is not supported because this is just a test.", MigrationName, "AddColumn", Platform),
                 errors);
-            Assert.IsNullOrEmpty(warnings);
+            Assert.That(warnings, Is.Null.Or.Empty);
         }
 
         private static MigrationOptions GetOptions(out IEnumerable<ProviderInfo> providerInfos)

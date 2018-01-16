@@ -3,16 +3,18 @@ Pre-conditions:
 - Build environment is green
 - No FIXME or NotImplementedException left in source code
 - All versions are up-to-date:
-  - MigSharp\AssemblyInfo.cs
+  - MigSharp\MigSharp.csproj
+	- see "Assembly version" under Properties > Package
   - Migrate\AssemblyInfo.cs
   - Generate\AssemblyInfo.cs
   - nuget\MigSharp.nuspec
-- Release Notes in nuspec are up-to-date
+- Release Notes are up-to-date
 - All changes synched and pushed to GitHub
 - Wiki on GitHub reflects new features and changes
 
 Releasing:
 ----------
+- Build the NuGet on TC: adjust /p:PackageVersion=1.0.0 paremter of "dotnet pack" step
 - On GitHub: tag the sources with AssemblyVersion
   git tag -a v1.0.0 -m "v1.0.0"
   git push origin v1.0.0

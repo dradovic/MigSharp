@@ -57,7 +57,6 @@ namespace MigSharp.NUnit.Integration
                     {
                         Platform.MySql,
                         Platform.Oracle,
-                        Platform.Teradata,
                         Platform.SQLite
                     };
             }

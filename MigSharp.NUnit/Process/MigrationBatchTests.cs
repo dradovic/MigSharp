@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using FakeItEasy;
@@ -11,7 +10,7 @@ namespace MigSharp.NUnit.Process
     [TestFixture, Category("smoke")]
     public class MigrationBatchTests
     {
-        [Test, ExpectedException(typeof(InvalidOperationException))]
+        [Test]
         public void VerifyValidationErrorsResultInException()
         {
             string errors;
@@ -24,8 +23,7 @@ namespace MigSharp.NUnit.Process
             A.CallTo(() => configuration.Validator).Returns(validator);
             MigrationBatch batch = new MigrationBatch(steps, Enumerable.Empty<IMigrationMetadata>(), A.Fake<IVersioning>(), configuration);
 
-            batch.Execute();
-            Assert.IsTrue(batch.IsExecuted);
+            Assert.That(() => batch.Execute(), Throws.InvalidOperationException);
         }
 
         [Test]
@@ -60,12 +58,12 @@ namespace MigSharp.NUnit.Process
             Assert.AreEqual(steps.Length, countExecutedEvent);
         }
 
-        [Test, ExpectedException(typeof(InvalidOperationException))]
+        [Test]
         public void VerifyCallingExecuteTwiceThrows()
         {
             var batch = new MigrationBatch(Enumerable.Empty<IMigrationStep>(), Enumerable.Empty<IMigrationMetadata>(), A.Fake<IVersioning>(), A.Fake<IRuntimeConfiguration>());
             batch.Execute();
-            batch.Execute();
+            Assert.That(() => batch.Execute(), Throws.InvalidOperationException);
         }
 
         private static IMigrationStep FakeMigrationStep(IMigrationStepMetadata metadata)

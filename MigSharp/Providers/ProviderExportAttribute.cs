@@ -1,5 +1,5 @@
 using System;
-using System.ComponentModel.Composition;
+using System.Composition;
 using System.Data;
 using System.Data.Common;
 

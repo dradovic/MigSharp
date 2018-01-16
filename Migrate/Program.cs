@@ -15,8 +15,6 @@ namespace MigSharp.Migrate
         public const int InvalidTargetExitCode = 0x2;
         public const int FailedMigrationExitCode = 0x10;
 
-        internal const string SupportedProviderSeparator = ";";
-
         private static void Main()
         {
             CommandLineOptions commandLineOptions;
@@ -74,7 +72,7 @@ namespace MigSharp.Migrate
         internal static MigrationOptions ParseCommandLineArguments(CommandLineOptions options, CommandLineParser parser, ConnectionStringSettingsCollection connectionStrings,
             out string connectionString, out DbPlatform dbPlatform, out string assemblyPath, out string[] additionalAssemblyPaths, out long timestamp, out SourceLevels traceLevels)
         {
-            if (parser.Parameters.Length < 2 || // expect at least the target and one assemlby
+            if (parser.Parameters.Length < 2 || // expect at least the target and one assembly
                 parser.UnhandledSwitches.Length > 0)
             {
                 throw new InvalidCommandLineArgumentException("Invalid command line arguments. Specify at least the target and one assembly." + Environment.NewLine + Environment.NewLine + GetUsageMessage(parser),

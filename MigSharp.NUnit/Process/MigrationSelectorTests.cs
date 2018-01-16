@@ -97,7 +97,7 @@ namespace MigSharp.NUnit.Process
             CollectionAssert.IsEmpty(unidentifiedMigrations);
         }
 
-        [Test, ExpectedException(typeof(IrreversibleMigrationException))]
+        [Test]
         public void TestRevertingThrowsWhenImpossible()
         {
             var migration = A.Fake<IMigration>();
@@ -118,7 +118,7 @@ namespace MigSharp.NUnit.Process
 
             IEnumerable<ApplicableMigration> applicableMigrations;
             IEnumerable<IMigrationMetadata> unidentifiedMigrations;
-            selector.GetMigrationsTo(2, m => true, out applicableMigrations, out unidentifiedMigrations);
+            Assert.Throws<IrreversibleMigrationException>(() => selector.GetMigrationsTo(2, m => true, out applicableMigrations, out unidentifiedMigrations));
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace MigSharp.NUnit.Process
             Assert.AreEqual(13, unidentifiedMigrations.First().Timestamp);
         }
 
-        [Test, ExpectedException(typeof(InvalidMigrationExportException), ExpectedMessage = "The migration with timestamp 1 and module name '" + MigrationExportAttribute.DefaultModuleName + "' is defined more than once.")]
+        [Test]
         public void TestDuplicateMigrationsThrowInvalidMigrationException()
         {
             var migration = A.Fake<IMigration>();
@@ -164,8 +164,7 @@ namespace MigSharp.NUnit.Process
                 {
                 };
 
-            var selector = new MigrationSelector(importedMigrations, executedMigrations);
-            Assert.IsNotNull(selector, "Just to satisfy R# and FxCop.");
+            Assert.That(() => new MigrationSelector(importedMigrations, executedMigrations), Throws.TypeOf<InvalidMigrationExportException>().With.Message.EqualTo("The migration with timestamp 1 and module name '" + MigrationExportAttribute.DefaultModuleName + "' is defined more than once."));
         }
     }
 }

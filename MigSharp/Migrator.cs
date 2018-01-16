@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
+using System.Composition;
+using System.Composition.Hosting;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -111,8 +111,8 @@ namespace MigSharp
         public IMigrationBatch FetchMigrationsTo(Assembly assembly, long timestamp, params Assembly[] additionalAssemblies)
         {
             IEnumerable<Assembly> assemblies = new[] { assembly }.Concat(additionalAssemblies);
-            ComposablePartCatalog catalog = CreateCatalog(assemblies, a => new AssemblyCatalog(a), a => a.FullName);
-            return FetchMigrationsTo(catalog, timestamp);
+            var containerConfiguration = new ContainerConfiguration().WithAssemblies(assemblies);
+            return FetchMigrationsTo(containerConfiguration, timestamp);
         }
 
         /// <summary>
@@ -125,45 +125,47 @@ namespace MigSharp
         public IMigrationBatch FetchMigrationsTo(string assemblyPath, long timestamp, params string[] additionalAssemblyPaths)
         {
             IEnumerable<string> assemblyPaths = new[] { assemblyPath }.Concat(additionalAssemblyPaths);
-            ComposablePartCatalog catalog = CreateCatalog(assemblyPaths, p => new AssemblyCatalog(p), p => p);
-            return FetchMigrationsTo(catalog, timestamp);
+            ContainerConfiguration containerConfiguration = new ContainerConfiguration().WithAssemblies(LoadAssemblies(assemblyPaths));
+            return FetchMigrationsTo(containerConfiguration, timestamp);
         }
 
-        private IMigrationBatch FetchMigrationsTo(ComposablePartCatalog catalog, long timestamp)
+        private IMigrationBatch FetchMigrationsTo(ContainerConfiguration containerConfiguration, long timestamp)
         {
-            IVersioning versioning = InitializeVersioning(catalog);
-            IDictionary<string, IMigrationTimestampProvider> timestampProviders = InitializeTimestampProviders(catalog);
-            var importer = new MigrationImporter(catalog, timestampProviders);
+            IVersioning versioning = InitializeVersioning(containerConfiguration);
+            IDictionary<string, IMigrationTimestampProvider> timestampProviders = InitializeTimestampProviders(containerConfiguration);
+            var importer = new MigrationImporter(containerConfiguration, timestampProviders);
             var batchPreparer = new MigrationBatchPreparer(importer, versioning, Configuration);
             return batchPreparer.Prepare(timestamp, _options);
         }
 
-        private static IDictionary<string, IMigrationTimestampProvider> InitializeTimestampProviders(ComposablePartCatalog catalog)
+        private static IDictionary<string, IMigrationTimestampProvider> InitializeTimestampProviders(ContainerConfiguration containerConfiguration)
         {
             // get timestamp providers from the MEF catalog
-            var container = new CompositionContainer(catalog);
-            var providers = container.GetExports<IMigrationTimestampProvider, IMigrationTimestampProviderExportMetadata>();
-            var result = new Dictionary<string, IMigrationTimestampProvider>();
-            foreach (var provider in providers)
+            using (CompositionHost container = containerConfiguration.CreateContainer())
             {
-                if (result.ContainsKey(provider.Metadata.ModuleName))
+                var timestampProviderFactories = container.GetExports<ExportFactory<IMigrationTimestampProvider, MigrationTimestampProviderMetadata>>();
+                var result = new Dictionary<string, IMigrationTimestampProvider>();
+                foreach (var factory in timestampProviderFactories)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Cannot have more than one timestamp provider responsible for module: '{0}'.", provider.Metadata.ModuleName));
+                    if (result.ContainsKey(factory.Metadata.ModuleName))
+                    {
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Cannot have more than one timestamp provider responsible for module: '{0}'.", factory.Metadata.ModuleName));
+                    }
+                    else
+                    {
+                        result.Add(factory.Metadata.ModuleName, factory.CreateExport().Value);
+                    }
                 }
-                else
+                // add default timestamp provider if needed
+                if (!result.ContainsKey(MigrationExportAttribute.DefaultModuleName))
                 {
-                    result.Add(provider.Metadata.ModuleName, provider.Value);
+                    result.Add(MigrationExportAttribute.DefaultModuleName, new DefaultMigrationTimestampProvider());
                 }
+                return result;
             }
-            // add default timestamp provider if needed
-            if (!result.ContainsKey(MigrationExportAttribute.DefaultModuleName))
-            {
-                result.Add(MigrationExportAttribute.DefaultModuleName, new DefaultMigrationTimestampProvider());
-            }
-            return result;
         }
 
-        private IVersioning InitializeVersioning(ComposablePartCatalog catalog)
+        private IVersioning InitializeVersioning(ContainerConfiguration containerConfiguration)
         {
             IVersioning versioning;
             if (_customVersioning != null)
@@ -175,16 +177,16 @@ namespace MigSharp
                 var v = new Versioning(Configuration, _options.VersioningTable);
                 if (_customBootstrapper != null && !v.VersioningTableExists)
                 {
-                    ApplyCustomBootstrapping(v, catalog);
+                    ApplyCustomBootstrapping(v, containerConfiguration);
                 }
                 versioning = v;
             }
             return versioning;
         }
 
-        private void ApplyCustomBootstrapping(Versioning versioning, ComposablePartCatalog catalog)
+        private void ApplyCustomBootstrapping(Versioning versioning, ContainerConfiguration containerConfiguration)
         {
-            var timestampProviders = InitializeTimestampProviders(catalog);
+            var timestampProviders = InitializeTimestampProviders(containerConfiguration);
             using (IDbConnection connection = Configuration.OpenConnection())
             {
                 using (IDbTransaction transaction = Configuration.ConnectionInfo.SupportsTransactions ? connection.BeginTransaction() : null)
@@ -192,7 +194,7 @@ namespace MigSharp
                     _customBootstrapper.BeginBootstrapping(connection, transaction);
 
                     // bootstrapping is a "global" operation; therefore we need to call IsContained on *all* migrations
-                    var importer = new MigrationImporter(catalog, timestampProviders);
+                    var importer = new MigrationImporter(containerConfiguration, timestampProviders);
                     var allMigrations = importer.ImportMigrations()
                         .Select(m => m.Metadata);
                     var migrationsContainedAtBootstrapping = allMigrations.Where(m => _customBootstrapper.IsContained(m));
@@ -228,15 +230,19 @@ namespace MigSharp
             _customBootstrapper = customBootstrapper;
         }
 
-        private static ComposablePartCatalog CreateCatalog<T>(IEnumerable<T> assemblies, Func<T, ComposablePartCatalog> createCatalogFor, Func<T, string> getAssemblyName)
+        private static IEnumerable<Assembly> LoadAssemblies(IEnumerable<string> assemblyPaths)
         {
-            var catalog = new AggregateCatalog();
-            foreach (T assembly in assemblies)
+            foreach (string assemblyPath in assemblyPaths)
             {
-                Log.Info("Including migrations from assembly '{0}'", getAssemblyName(assembly));
-                catalog.Catalogs.Add(createCatalogFor(assembly));
+                Log.Info("Including migrations from assembly '{0}'", assemblyPath);
+                yield return LoadAssembly(assemblyPath);
             }
-            return catalog;
+        }
+
+        private static Assembly LoadAssembly(string assemblyPath)
+        {
+            AssemblyName assemblyName = AssemblyName.GetAssemblyName(assemblyPath);
+            return Assembly.Load(assemblyName);
         }
     }
 }

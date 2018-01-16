@@ -128,14 +128,20 @@ namespace MigSharp.Generate
         {
             options = new CommandLineOptions();
             parser = new CommandLineParser(commandLine, options);
-            parser.Parse();
-
+            try
+            {
+                parser.Parse();
+            }
+            catch (CommandLineArgumentMissingException)
+            {
+                return true;
+            }
             return options.Help;
         }
 
         private static string GetUsageMessage(CommandLineParser parser)
         {
-            string usage = "Migrate.exe <target> [<Arguments>]" + Environment.NewLine + Environment.NewLine +
+            string usage = "Generate.exe <target> [<Arguments>]" + Environment.NewLine + Environment.NewLine +
                            "target:     name of the connectionString as specified in Generate.exe.config" + Environment.NewLine +
                            Environment.NewLine + parser.GetUsage();
             return string.Format(CultureInfo.CurrentCulture, "Usage:{0}{1}", Environment.NewLine, usage);

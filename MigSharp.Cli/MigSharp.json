@@ -1,0 +1,16 @@
+﻿{
+  "ConnectionStrings": [
+    {
+      "name": "dev",
+      "connectionString": "YOUR DATABASE CONNECTION STRING HERE"
+    },
+    {
+      "name": "qa",
+      "connectionString": "YOUR DATABASE CONNECTION STRING HERE"
+    },
+    {
+      "name": "prod",
+      "connectionString": "YOUR DATABASE CONNECTION STRING HERE"
+    }
+  ]
+}

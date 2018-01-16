@@ -46,26 +46,6 @@
     </Module>
    </Modules>
   </Target>
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.dll" Analyze="True" AnalyzeAllChildren="False">
-   <Modules AnalyzeAllChildren="False">
-    <Module Name="migsharp.dll" Analyze="True" AnalyzeAllChildren="False">
-     <Namespaces AnalyzeAllChildren="False">
-      <Namespace Name="" Analyze="True" AnalyzeAllChildren="True" />
-      <Namespace Name="MigSharp" Analyze="True" AnalyzeAllChildren="True" />
-      <Namespace Name="MigSharp.Core" Analyze="True" AnalyzeAllChildren="True" />
-      <Namespace Name="MigSharp.Core.Commands" Analyze="True" AnalyzeAllChildren="True" />
-      <Namespace Name="MigSharp.Process" Analyze="True" AnalyzeAllChildren="True" />
-      <Namespace Name="MigSharp.Providers" Analyze="True" AnalyzeAllChildren="True" />
-     </Namespaces>
-     <Resources AnalyzeAllChildren="True" />
-    </Module>
-   </Modules>
-  </Target>
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.Oracle.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.SQLite.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.SqlServer.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
-  <Target Name="$(ProjectDir)/bin/Release/MigSharp.Teradata.NUnit.dll" Analyze="True" AnalyzeAllChildren="True" />
  </Targets>
  <Rules>
   <RuleFiles>

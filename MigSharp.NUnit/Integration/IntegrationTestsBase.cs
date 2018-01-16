@@ -12,7 +12,6 @@ using System.Text.RegularExpressions;
 using System.Transactions;
 using FakeItEasy;
 using MigSharp.Core;
-using MigSharp.NUnit.Migrate;
 using MigSharp.Process;
 using MigSharp.Providers;
 
@@ -147,14 +146,6 @@ namespace MigSharp.NUnit.Integration
                 targetDirectory = new DirectoryInfo(targetPath); // it seems that the Exists flag is not updated by the call to Create
             }
             return targetDirectory;
-        }
-
-        [Test]
-        public virtual void TestMigration1UsingConsoleApp()
-        {
-            int exitCode = MigrateProcess.Execute(ConnectionString, DbPlatform, typeof(Migration1).Assembly, Timestamps[0]);
-            Assert.AreEqual(0, exitCode, "Migrate.exe failed.");
-            CheckResultsOfMigration1();
         }
 
         [Test]
@@ -388,8 +379,7 @@ namespace MigSharp.NUnit.Integration
         [Test]
         public void TestUnidentifiedMigrations()
         {
-            if (DbPlatform.Platform == Platform.Teradata ||
-                DbPlatform.Platform == Platform.Oracle) return; // for some reason, the ODBC data adapter updating does not work
+            if (DbPlatform.Platform == Platform.Oracle) return; // for some reason, the ODBC data adapter updating does not work
 
             // migrate to 1 in order to create a versioning table
             Migrator migrator = CreateMigrator();
@@ -451,6 +441,7 @@ namespace MigSharp.NUnit.Integration
             Assert.AreEqual(1, versioningTable.Rows.Count, "The versioning table has a wrong number of entries.");
         }
 
+#if !NETCOREAPP2_0 // .NET Core 2.0 does not support TransactionScope (see: https://github.com/dotnet/corefx/issues/24282)
         [Test]
         public virtual void TestMigrationWithinTransactionScopeComplete()
         {
@@ -513,6 +504,7 @@ namespace MigSharp.NUnit.Integration
             DataTable customerTable = GetTable(migration1.Tables[0].FullName);
             Assert.IsNull(customerTable, string.Format(CultureInfo.CurrentCulture, "The '{0}' table was created.", migration1.Tables[0].FullName));
         }
+#endif
 
         /// <summary>
         /// Gets the content of the specified table or null if the table does not exist.
@@ -522,8 +514,7 @@ namespace MigSharp.NUnit.Integration
             var dataTable = new DataTable(table.Name) { Locale = CultureInfo.InvariantCulture };
             try
             {
-                DbCommandBuilder builder;
-                using (DbDataAdapter adapter = GetDataAdapter(table.Name, table.Schema, out builder))
+                using (DbDataAdapter adapter = GetDataAdapter(table.Name, table.Schema, false))
                 {
                     adapter.Fill(dataTable);
                 }
@@ -542,16 +533,14 @@ namespace MigSharp.NUnit.Integration
         private void SaveTable(DataTable table)
         {
             DbDataAdapter adapter;
-            DbCommandBuilder builder;
-            using (adapter = GetDataAdapter(table.TableName, null, out builder))
+            using (adapter = GetDataAdapter(table.TableName, null, true))
             {
-                adapter.InsertCommand = builder.GetInsertCommand();
                 adapter.Update(table);
             }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#")]
-        protected abstract DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder);
+        protected abstract DbDataAdapter GetDataAdapter(string tableName, string schemaName, bool forUpdating);
 
         protected abstract string ConnectionString { get; }
 
@@ -560,7 +549,7 @@ namespace MigSharp.NUnit.Integration
         /// <summary>
         /// Test fixtures returning true must provided a database that has a schema called <see cref="CustomVersioningTableSchema"/>.
         /// </summary>
-        protected virtual bool ProviderSupportsSchemas { get { return false; } }
+        protected virtual bool ProviderSupportsSchemas => false;
 
         protected static string GetEnvironmentVariable(string variable)
         {
@@ -594,9 +583,6 @@ namespace MigSharp.NUnit.Integration
         /// Override if you want to use a custom connection.
         /// </summary>
         /// <returns></returns>
-        protected virtual IDbConnection CustomConnection
-        {
-            get { return null; }
-        }
+        protected virtual IDbConnection CustomConnection => null;
     }
 }

@@ -10,14 +10,6 @@ namespace MigSharp.SQLite.NUnit
         protected override DbPlatform DbPlatform { get { return DbPlatform.SQLite3; } }
 
         [Test]
-        public override void TestMigration1UsingConsoleApp()
-        {
-            // we don't execute this test yet since the Migrate.exe
-            // would require a config file that includes the definition of
-            // the .Net Framework Data Provider
-        }
-
-        [Test]
         public override void TestMigrationWithinTransactionScopeComplete()
         {
             // we don't execute this test yet since

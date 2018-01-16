@@ -1,6 +1,15 @@
 This file contains global TODOs for the next release that are not in the source code
 ====================================================================================
 
+MigSharp.Cli
+------------
+- currently ON HOLD as there is no way to dynamically load the correct ASP.NET DbFactory (see: https://stackoverflow.com/questions/47494955/how-to-write-a-db-agnostic-net-core-app)
+- reference Microsft.Extension.CommandLineUtils for Migrate.exe (and Generate.exe) and share code?
+- make sure MigSharp.Cli is published well
+- document new MigSharp.Cli app
+
+General
+-------
 - use optional parameters on fluent interface?
 - SQLite
 	- Add support for foreign keys (see https://github.com/dradovic/MigSharp/issues/2)

@@ -1,5 +1,7 @@
-﻿using System.Data.Common;
+﻿using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.SqlServer.Management.Smo;
 using MigSharp.NUnit.Integration;
@@ -7,7 +9,8 @@ using NUnit.Framework;
 
 namespace MigSharp.SqlServer.NUnit
 {
-    public abstract class SqlServerIntegrationTests : IntegrationTestsBase
+    [TestFixture, Category("SqlServer2012")]
+    public partial class SqlServerIntegrationTests : IntegrationTestsBase
     {
         protected const string Server = "localhost";
         protected const string TestDbName = "MigSharp_TestDb";
@@ -18,6 +21,8 @@ namespace MigSharp.SqlServer.NUnit
         protected Server ServerSmo { get { return _server; } }
 
         protected Database DatabaseSmo { get { return _database; } }
+
+        protected override DbPlatform DbPlatform { get { return DbPlatform.SqlServer2012; } }
 
         public override void Setup()
         {
@@ -41,10 +46,30 @@ namespace MigSharp.SqlServer.NUnit
             schema.Create();
         }
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, bool forUpdating)
         {
             var adapter = new SqlDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}]", schemaName ?? "dbo", tableName), ConnectionString);
-            builder = new SqlCommandBuilder(adapter);
+            if (forUpdating)
+            {
+#if NET462
+                var builder = new SqlCommandBuilder(adapter);
+                adapter.InsertCommand = builder.GetInsertCommand();
+#else
+                Debug.Assert(tableName == "MigSharp" || tableName == "MyVersioningTable");
+                var insertCommand = adapter.SelectCommand.Connection.CreateCommand();
+                insertCommand.CommandText = $"INSERT INTO [{schemaName ?? "dbo"}].[{tableName}] VALUES (@p1, @p2, @p3)";
+                SqlParameter p1 = insertCommand.Parameters.Add("@p1", SqlDbType.BigInt);
+                p1.SourceColumn = "Timestamp";
+                p1.SourceVersion = DataRowVersion.Proposed;
+                SqlParameter p2 = insertCommand.Parameters.Add("@p2", SqlDbType.VarChar);
+                p2.SourceColumn = "Module";
+                p2.SourceVersion = DataRowVersion.Proposed;
+                SqlParameter p3 = insertCommand.Parameters.Add("@p3", SqlDbType.VarChar);
+                p3.SourceColumn = "Tag";
+                p3.SourceVersion = DataRowVersion.Proposed;
+                adapter.InsertCommand = insertCommand;
+#endif
+            }
             return adapter;
         }
 

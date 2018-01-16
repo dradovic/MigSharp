@@ -11,7 +11,7 @@ namespace MigSharp
         MySql = 1,
         Oracle = 2,
         SQLite = 3,
-        Teradata = 4
+        //Teradata = 4
 #pragma warning restore 1591
     }
 }

@@ -69,7 +69,6 @@ namespace MigSharp.NUnit.Integration
                 return new[]
                 {
                         Platform.MySql,
-                        Platform.Teradata,
                         Platform.SQLite
                 };
             }

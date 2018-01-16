@@ -12,10 +12,14 @@ namespace MigSharp.SQLite.NUnit
     {
         private SQLiteConnection _connection;
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, bool forUpdating)
         {
             var adapter = new SQLiteDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), _connection);
-            builder = new SQLiteCommandBuilder(adapter);
+            if (forUpdating)
+            {
+                var builder = new SQLiteCommandBuilder(adapter);
+                adapter.InsertCommand = builder.GetInsertCommand();
+            }
             return adapter;
         }
 

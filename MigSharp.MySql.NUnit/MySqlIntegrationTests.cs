@@ -37,10 +37,14 @@ namespace MigSharp.MySql.NUnit
             }
         }
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, bool forUpdating)
         {
             var adapter = new MySqlDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), ConnectionString);
-            builder = new MySqlCommandBuilder(adapter);
+            if (forUpdating)
+            {
+                var builder = new MySqlCommandBuilder(adapter);
+                adapter.InsertCommand = builder.GetInsertCommand();
+            }
             return adapter;
         }
 

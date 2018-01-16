@@ -49,7 +49,6 @@ namespace MigSharp.Process
                 Escape(_tableName));
             Log.Verbose(LogCategory.Sql, command.CommandText);
 
-            // Teradata provider does not behave as expected: when using CommandBehavior.SingleResult, reader.Read() will return true even if there are no rows
             using (IDataReader reader = command.ExecuteReader())
             {
                 while (reader.Read())

@@ -163,8 +163,7 @@ namespace MigSharp.NUnit.Integration
 
             // Special treatment of certain data types for certain providers.
             // IMPORTANT: All these DbTypes should be marked with a Warning in the SupportsAttribute declaration!
-            if (db.Context.ProviderMetadata.Platform == Platform.Oracle ||
-                db.Context.ProviderMetadata.Platform == Platform.Teradata)
+            if (db.Context.ProviderMetadata.Platform == Platform.Oracle)
             {
                 if (result is Guid)
                 {
@@ -178,7 +177,6 @@ namespace MigSharp.NUnit.Integration
                 }
             }
             if (db.Context.ProviderMetadata.Platform == Platform.Oracle ||
-                db.Context.ProviderMetadata.Platform == Platform.Teradata ||
                 db.Context.ProviderMetadata.Platform == Platform.SQLite ||
                 db.Context.ProviderMetadata.Platform == Platform.MySql)
             {

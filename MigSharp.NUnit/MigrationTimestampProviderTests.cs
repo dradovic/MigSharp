@@ -1,9 +1,16 @@
 ﻿using System;
-using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Composition;
+using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using FakeItEasy;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using MigSharp.Process;
 using NUnit.Framework;
 
@@ -121,9 +128,9 @@ namespace MigSharp.NUnit
         [Test]
         public void MigratorUsesModuleSpecificTimestampProvider()
         {
-            var migrator = new Migrator("not-used", DbPlatform.SqlServer2005);
+            var migrator = new Migrator("not-used", DbPlatform.SqlServer2012);
             var versioning = A.Fake<IVersioning>();
-            A.CallTo(() => versioning.ExecutedMigrations).Returns(Enumerable.Empty<IMigrationMetadata>()); // pretend, no migrations ran so far
+            A.CallTo(() => versioning.ExecutedMigrations).Returns(Enumerable.Empty<IMigrationMetadata>()); // pretend no migrations ran so far
             migrator.UseCustomVersioning(versioning);
 
             IMigrationBatch batch = migrator.FetchMigrations(_timestampModuleTestAssembly);
@@ -143,11 +150,11 @@ namespace MigSharp.NUnit
             Assert.AreEqual(201211171825L, step.Migrations.Single().Timestamp);
         }
 
-        [Test, ExpectedException(typeof(ArgumentException), ExpectedMessage = "Cannot have more than one timestamp provider responsible for module: 'TimestampProviderDuplicateTest'.")]
+        [Test]
         public void MigratorThrowsErrorIfDuplicateTimestampProvidersFoundForModule()
         {
             var migrator = new Migrator("not-used", DbPlatform.SQLite3, new MigrationOptions("TimestampProviderDuplicateTest"));
-            migrator.MigrateTo(_duplicateProviderTestAssembly, 1);
+            Assert.That(() => migrator.MigrateTo(_duplicateProviderTestAssembly, 1), Throws.ArgumentException.With.Message.EqualTo("Cannot have more than one timestamp provider responsible for module: 'TimestampProviderDuplicateTest'."));
         }
 
 
@@ -159,37 +166,48 @@ namespace MigSharp.NUnit
         private Assembly _timestampModuleTestAssembly;
         private Assembly _duplicateProviderTestAssembly;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUpAttribute]
         public void SetupTimestampProvider()
         {
-            // Configure the compiler to generate in-memory
-            var parameters = new CompilerParameters
-                {
-                    GenerateExecutable = false,
-                    GenerateInMemory = true
-                };
-
-            // Add assemblies referenced by this assembly be referenced by the compiled assembly
-            var assemblies = AppDomain.CurrentDomain
-                                      .GetAssemblies()
-                                      .Where(a => !a.IsDynamic)
-                                      .Select(a => a.Location);
-            parameters.ReferencedAssemblies.AddRange(assemblies.ToArray());
-
-            _timestampModuleTestAssembly = Compile(parameters, TimestampModuleTestAssemblySource);
-            _duplicateProviderTestAssembly = Compile(parameters, DuplicateTimestampProviderAssemblySource);
+            _timestampModuleTestAssembly = Compile(TimestampModuleTestAssemblySource);
+            _duplicateProviderTestAssembly = Compile(DuplicateTimestampProviderAssemblySource);
         }
 
-        private static Assembly Compile(CompilerParameters parameters, string sources)
+        private static Assembly Compile(string sources)
         {
-            CompilerResults result = CodeDomProvider
-                .CreateProvider("C#")
-                .CompileAssemblyFromSource(parameters, sources);
-            if (result.Errors.Count != 0)
+            string dotnetDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
+            Assert.IsNotNull(dotnetDir, "Cannot find base directory of the .NET runtime.");
+            MetadataReference[] references =
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Error compiling: {0}", sources));
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location), // System
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location), // System.Linq
+                MetadataReference.CreateFromFile(typeof(Regex).Assembly.Location), // System.Text.RegularExpressions
+                MetadataReference.CreateFromFile(typeof(DbType).Assembly.Location), // System.Data
+                MetadataReference.CreateFromFile(typeof(ExportAttribute).Assembly.Location), // System.Composition
+                MetadataReference.CreateFromFile(typeof(IDatabase).Assembly.Location), // MigSharp
+                MetadataReference.CreateFromFile(Path.Combine(dotnetDir, "System.Runtime.dll")),
+                MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location) // see: https://stackoverflow.com/questions/46421686/how-to-write-a-roslyn-analyzer-that-references-a-dotnet-standard-2-0-project
+            };
+
+            string assemblyName = Path.GetRandomFileName();
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sources);
+            CSharpCompilation compilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            using (var ms = new MemoryStream())
+            {
+                EmitResult result = compilation.Emit(ms);
+
+                List<string> compilationErrors = new List<string>();
+                foreach (Diagnostic diagnostic in result.Diagnostics.Where(diagnostic =>
+                    diagnostic.IsWarningAsError ||
+                    diagnostic.Severity == DiagnosticSeverity.Error))
+                {
+                    compilationErrors.Add(diagnostic.Id + ": " + diagnostic.GetMessage());
+                }
+                CollectionAssert.IsEmpty(compilationErrors, "Could not compile sources."); // this nicely outputs the compilation errors at the top of the output
+                Assert.IsTrue(result.Success, "Could not compile sources.");
+                ms.Seek(0, SeekOrigin.Begin);
+                return Assembly.Load(ms.ToArray());
             }
-            return result.CompiledAssembly;
         }
 
         // Code to test module-specifc timestamp providers

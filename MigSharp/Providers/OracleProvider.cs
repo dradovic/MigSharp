@@ -8,7 +8,7 @@ using MigSharp.Core;
 
 namespace MigSharp.Providers
 {
-    [ProviderExport(Platform.Oracle, 10, "Oracle.DataAccess.Client", MaximumDbObjectNameLength = MaximumDbObjectNameLength, ParameterExpression = ":p", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
+    [ProviderExport(Platform.Oracle, 10, "Oracle.ManagedDataAccess.Client", MaximumDbObjectNameLength = MaximumDbObjectNameLength, ParameterExpression = ":p", PrefixUnicodeLiterals = PrefixUnicodeLiterals)]
     [Supports(DbType.AnsiString, MaximumSize = 4000, CanBeUsedAsPrimaryKey = true)]
     [Supports(DbType.AnsiString, Warning = "Might require custom ADO.NET code as CLOB has unique restrictions (e.g. columns using this data type cannot appear in a WHERE clause without converting using the Oracle 'to_char' function).")]
     [Supports(DbType.Binary)]
@@ -60,7 +60,10 @@ namespace MigSharp.Providers
             bool columnDelimiterIsNeeded = false;
             foreach (CreatedColumn column in columns)
             {
-                if (columnDelimiterIsNeeded) commandText += string.Format(CultureInfo.InvariantCulture, ",{0}", Environment.NewLine);
+                if (columnDelimiterIsNeeded)
+                {
+                    commandText += string.Format(CultureInfo.InvariantCulture, ",{0}", Environment.NewLine);
+                }
 
                 if (column.IsPrimaryKey)
                 {
@@ -87,7 +90,10 @@ namespace MigSharp.Providers
                 columnDelimiterIsNeeded = false;
                 foreach (string column in primaryKeyColumns)
                 {
-                    if (columnDelimiterIsNeeded) commandText += string.Format(CultureInfo.InvariantCulture, ", {0}", Environment.NewLine);
+                    if (columnDelimiterIsNeeded)
+                    {
+                        commandText += string.Format(CultureInfo.InvariantCulture, ", {0}", Environment.NewLine);
+                    }
 
                     // FEATURE: make sort order configurable
                     commandText += string.Format(CultureInfo.InvariantCulture, "{0} {1} ", Identation, Escape(column));
@@ -110,7 +116,10 @@ namespace MigSharp.Providers
                 columnDelimiterIsNeeded = false;
                 foreach (string column in uniqueColumns.Select(c => c.Name))
                 {
-                    if (columnDelimiterIsNeeded) commandText += string.Format(CultureInfo.InvariantCulture, ",{0}", Environment.NewLine);
+                    if (columnDelimiterIsNeeded)
+                    {
+                        commandText += string.Format(CultureInfo.InvariantCulture, ",{0}", Environment.NewLine);
+                    }
                     commandText += string.Format(CultureInfo.InvariantCulture, "{0}{1}", Identation, Escape(column));
                     columnDelimiterIsNeeded = true;
                 }
@@ -204,7 +213,9 @@ END;", Escape(tableName.Name));
         {
             if (value is SpecialDefaultValue)
             {
+#pragma warning disable IDE0010 // Add missing cases
                 switch ((SpecialDefaultValue)value)
+#pragma warning restore IDE0010 // Add missing cases
                 {
                     case SpecialDefaultValue.CurrentDateTime:
                         return "SYSDATE";
@@ -429,7 +440,9 @@ END;", Escape(tableName.Name));
 
         private static string GetTypeSpecifier(DataType type)
         {
+#pragma warning disable IDE0010 // Add missing cases
             switch (type.DbType)
+#pragma warning restore IDE0010 // Add missing cases
             {
                 case DbType.AnsiString:
                     if (type.Size.HasValue)

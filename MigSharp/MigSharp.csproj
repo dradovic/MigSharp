@@ -1,295 +1,58 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EAFA7470-A919-449C-9142-3D515DAB52AD}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MigSharp</RootNamespace>
-    <AssemblyName>MigSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>Mig#</Title>
+    <Version>4.0.0</Version>
+    <Authors>dradovic</Authors>
+    <Company />
+    <Description>A .NET framework for multi-database platform migrations, versioning and schema modifications. Write database migrations and/or schema modifications in your favorite .NET language and let Mig# generate the platform-dependent SQL code and update your schema. Features: fluent interface, automatic versioning, multi-module support, scripting to SQL files, validation framework for portability issues, suport for SQL Server, Oracle, MySQL, Teradata, SQLite, legacy integration and more.</Description>
+    <Copyright />
+    <PackageLicenseUrl>https://github.com/dradovic/MigSharp/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/dradovic/MigSharp</PackageProjectUrl>
+    <PackageTags>mig# migsharp schema migration database agnostic fluent versioning sql oracle teradata sqlite mysql</PackageTags>
+    <PackageReleaseNotes>
+GENERAL:
+This major release is fully compatible with the previous DB schema that Mig# used to keep track of migration history; in other words you can upgrade to this version and use it on existing databases
+- targeting .NET Standard 2.0 so Mig# runs on both .NET Framework and .NET Core
+- using MEF2 (https://www.nuget.org/packages/Microsoft.Composition/)
+- Migrate.exe and Generate.exe are not part of the NuGet package anymore (open an issue if you feel you need these tools in order to start a discussion)
+SQL Server:
+- dropped support for SQL Server 2005 and SQL Server 2008 (although, Mig# very likely still runs on those platforms too)
+Oracle:
+- Managed: switched to Oracle.ManagedDataAccess.Client
+- ODBC: continues to work as in Mig# 3.x (also works on .NET Core)
+Teradata:
+- dropped support for Teradata (open an issue if you miss that support so we can discuss)
+BUG FIXES:
+- #70: Generate.exe Throws Exception when called with no arguments
+    </PackageReleaseNotes>
+    <NeutralLanguage>en</NeutralLanguage>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Open.snk</AssemblyOriginatorKeyFile>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;CodeAnalysis</Configurations>
+    <CodeAnalysisRuleSet>..\MigSharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE;CODE_ANALYSIS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\MigSharp.xml</DocumentationFile>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=8.0.5.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\net20\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|AnyCPU'">
+    <OutputPath>..\bin\CodeAnalysis\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|AnyCPU'">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Core\AggregateMigrationMetadata.cs" />
-    <Compile Include="Core\Commands\AlterSchemaCommand.cs" />
-    <Compile Include="Core\Commands\CreateSchemaCommand.cs" />
-    <Compile Include="Core\Commands\TableCommand.cs" />
-    <Compile Include="Core\Entities\Check.cs" />
-    <Compile Include="Core\Entities\ExistingSchema.cs" />
-    <Compile Include="Core\Entities\SchemaCollection.cs" />
-    <Compile Include="DbSchema.cs" />
-    <Compile Include="DbAltererOptions.cs" />
-    <Compile Include="DefaultMigrationTimestampProvider.cs" />
-    <Compile Include="Driver.cs" />
-    <Compile Include="Core\IAggregateMigrationMetadata.cs" />
-    <Compile Include="ICreatedSchema.cs" />
-    <Compile Include="IExistingSchema.cs" />
-    <Compile Include="IExistingSchemaCollection.cs" />
-    <Compile Include="IMigrationImporter.cs" />
-    <Compile Include="IMigrationTimestampProvider.cs" />
-    <Compile Include="IMigrationTimestampProviderExportMetadata.cs" />
-    <Compile Include="InvalidMigrationExportException.cs" />
-    <Compile Include="Core\Commands\AddPrimaryKeyCommand.cs" />
-    <Compile Include="Core\Commands\AddForeignKeyToCommand.cs" />
-    <Compile Include="Core\Commands\AddUniqueConstraintCommand.cs" />
-    <Compile Include="Core\Commands\AlterColumnDefinitionCommand.cs" />
-    <Compile Include="Core\Commands\AlterForeignKeyCommand.cs" />
-    <Compile Include="Core\Commands\AlterPrimaryKeyCommand.cs" />
-    <Compile Include="Core\Commands\AlterUniqueConstraintCommand.cs" />
-    <Compile Include="Core\Commands\CallCommand.cs" />
-    <Compile Include="Core\Commands\InvalidCommandException.cs" />
-    <Compile Include="IMigrationMetadata.cs" />
-    <Compile Include="Core\MigrationMetadata.cs" />
-    <Compile Include="DbAlterer.cs" />
-    <Compile Include="AggregateMigrationExportAttribute.cs" />
-    <Compile Include="IRuntimeConfiguration.cs" />
-    <Compile Include="Process\MigrationBatchPreparer.cs" />
-    <Compile Include="Process\MigrationImporter.cs" />
-    <Compile Include="Options.cs" />
-    <Compile Include="Process\IAggregateMigrationExportMetadata.cs" />
-    <Compile Include="Process\ImportedAggregateMigration.cs" />
-    <Compile Include="Process\IValidator.cs" />
-    <Compile Include="Process\MigrationAggregator.cs" />
-    <Compile Include="Process\MigrationMetadataComparer.cs" />
-    <Compile Include="Process\NoVersioning.cs" />
-    <Compile Include="Process\ApplicableMigration.cs" />
-    <Compile Include="Process\DbConnectionWrapper.cs" />
-    <Compile Include="Process\ImportedMigration.cs" />
-    <Compile Include="IMigrationStepMetadata.cs" />
-    <Compile Include="Core\MigrationStepMetadata.cs" />
-    <Compile Include="Process\MigrationSelector.cs" />
-    <Compile Include="Process\UsedDataType.cs" />
-    <Compile Include="Process\ValidatorFactory.cs" />
-    <Compile Include="DbPlatform.cs" />
-    <Compile Include="Providers\MySqlProvider.cs" />
-    <Compile Include="Providers\ProviderExtensions.cs" />
-    <Compile Include="Providers\ProviderInfo.cs" />
-    <Compile Include="Providers\ProviderLocator.cs" />
-    <Compile Include="Providers\SqlScriptingHelper.cs" />
-    <Compile Include="Core\StringHelper.cs" />
-    <Compile Include="Core\Entities\AddedIndex.cs" />
-    <Compile Include="Core\Entities\AddedPrimaryKey.cs" />
-    <Compile Include="Core\Commands\AlterIndexCommand.cs" />
-    <Compile Include="Core\Commands\AddIndexCommand.cs" />
-    <Compile Include="Core\Entities\ExistingForeignKey.cs" />
-    <Compile Include="Core\Entities\ExistingIndex.cs" />
-    <Compile Include="Core\Entities\ForeignKeyCollection.cs" />
-    <Compile Include="Core\Entities\IndexesCollection.cs" />
-    <Compile Include="Process\ISqlScripter.cs" />
-    <Compile Include="Process\AggregateScripter.cs" />
-    <Compile Include="Process\ExecutingCommandExecutor.cs" />
-    <Compile Include="Process\ScriptingCommandExecutor.cs" />
-    <Compile Include="Process\ISqlDispatcher.cs" />
-    <Compile Include="IDbCommandExecutor.cs" />
-    <Compile Include="Process\IMigrationReport.cs" />
-    <Compile Include="Process\IMigrationReporter.cs" />
-    <Compile Include="Process\LoggingScripter.cs" />
-    <Compile Include="Process\MigrationReport.cs" />
-    <Compile Include="IAddedIndex.cs" />
-    <Compile Include="IForeignKey.cs" />
-    <Compile Include="DefaultObjectNameProvider.cs" />
-    <Compile Include="Core\Entities\AddedUniqueConstraint.cs" />
-    <Compile Include="Core\Entities\ExistingPrimaryKey.cs" />
-    <Compile Include="Core\Entities\AddedForeignKey.cs" />
-    <Compile Include="Core\Entities\ExistingUniqueConstraint.cs" />
-    <Compile Include="Core\Entities\UniqueConstraintCollection.cs" />
-    <Compile Include="IAddedPrimaryKey.cs" />
-    <Compile Include="IAddedUniqueConstraint.cs" />
-    <Compile Include="IAlteredColumn.cs" />
-    <Compile Include="IExistingPrimaryKey.cs" />
-    <Compile Include="IAddedForeignKey.cs" />
-    <Compile Include="IForeignKeyCollection.cs" />
-    <Compile Include="IIndex.cs" />
-    <Compile Include="IIndexesCollection.cs" />
-    <Compile Include="IRuntimeContext.cs" />
-    <Compile Include="IUniqueConstraint.cs" />
-    <Compile Include="IUniqueConstraintCollection.cs" />
-    <Compile Include="Process\BootstrapMigration.cs" />
-    <Compile Include="Process\BootstrapMigrationStep.cs" />
-    <Compile Include="Process\DbCommandExtensions.cs" />
-    <Compile Include="Process\History.cs" />
-    <Compile Include="Process\MigrationContext.cs" />
-    <Compile Include="Process\ScriptingMode.cs" />
-    <Compile Include="Process\SqlDispatcher.cs" />
-    <Compile Include="Providers\SQLiteProvider.cs" />
-    <Compile Include="Providers\SqlServer2012Provider.cs" />
-    <Compile Include="Core\TableName.cs" />
-    <Compile Include="Providers\UnsupportedMethod.cs" />
-    <Compile Include="Process\ValidationWarning.cs" />
-    <Compile Include="Process\Validator.cs" />
-    <Compile Include="Process\Versioning.cs" />
-    <Compile Include="Platform.cs" />
-    <Compile Include="IMigration.cs" />
-    <Compile Include="IMigrationContext.cs" />
-    <Compile Include="IrreversibleMigrationException.cs" />
-    <Compile Include="Process\IBootstrapper.cs" />
-    <Compile Include="IMigrationBatch.cs" />
-    <Compile Include="MigrationEventArgs.cs" />
-    <Compile Include="MigrationOptions.cs" />
-    <Compile Include="Core\Commands\Command.cs" />
-    <Compile Include="Core\Commands\CustomQueryCommand.cs" />
-    <Compile Include="Core\Commands\DropCommand.cs" />
-    <Compile Include="Core\Entities\CreatedTable.cs" />
-    <Compile Include="ICreatedTableBase.cs" />
-    <Compile Include="ICreatedTableWithAddedColumn.cs" />
-    <Compile Include="IExistingTableWithAddedColumn.cs" />
-    <Compile Include="IExistingTableBase.cs" />
-    <Compile Include="Process\ConnectionInfo.cs" />
-    <Compile Include="Process\DbConnectionFactory.cs" />
-    <Compile Include="Process\IDbConnectionFactory.cs" />
-    <Compile Include="Process\IMigrationExportMetadata.cs" />
-    <Compile Include="MigrationExportAttribute.cs" />
-    <Compile Include="Process\PersistedVersioning.cs" />
-    <Compile Include="Core\ITranslatableCommand.cs" />
-    <Compile Include="Core\Commands\AddColumnCommand.cs" />
-    <Compile Include="Core\Commands\AlterColumnCommand.cs" />
-    <Compile Include="Core\Entities\ExistingColumn.cs" />
-    <Compile Include="Core\Commands\AlterTableCommand.cs" />
-    <Compile Include="Core\Commands\CreateColumnCommand.cs" />
-    <Compile Include="Core\Commands\CreateTableCommand.cs" />
-    <Compile Include="Core\Entities\ColumnCollection.cs" />
-    <Compile Include="Core\Commands\MigrateCommand.cs" />
-    <Compile Include="Core\ICommand.cs" />
-    <Compile Include="Core\Log.cs" />
-    <Compile Include="IDatabase.cs" />
-    <Compile Include="IExistingColumnCollection.cs" />
-    <Compile Include="IExistingColumn.cs" />
-    <Compile Include="IExistingTable.cs" />
-    <Compile Include="IExistingTableCollection.cs" />
-    <Compile Include="Core\Entities\AdHocCollection.cs" />
-    <Compile Include="Core\Entities\Database.cs" />
-    <Compile Include="IReversibleMigration.cs" />
-    <Compile Include="ICreatedTable.cs" />
-    <Compile Include="Process\IVersioning.cs" />
-    <Compile Include="Process\IMigrationStep.cs" />
-    <Compile Include="Process\RuntimeContext.cs" />
-    <Compile Include="MigrationDirection.cs" />
-    <Compile Include="Providers\DataType.cs" />
-    <Compile Include="Process\IRecordedMigration.cs" />
-    <Compile Include="Providers\ObjectNameHelper.cs" />
-    <Compile Include="Providers\RecordingProvider.cs" />
-    <Compile Include="Providers\SqlServer2005Provider.cs" />
-    <Compile Include="Providers\SqlServer2008Provider.cs" />
-    <Compile Include="Providers\SqlServer2005OdbcProvider.cs" />
-    <Compile Include="Providers\SqlServerProviderBase.cs" />
-    <Compile Include="Providers\SupportsAttribute.cs" />
-    <Compile Include="Process\FileScripter.cs" />
-    <Compile Include="Process\ScriptingOptions.cs" />
-    <Compile Include="RuntimeConfiguration.cs" />
-    <Compile Include="RuntimeContextExtensions.cs" />
-    <Compile Include="SupportedPlatforms.cs" />
-    <Compile Include="Providers\Column.cs" />
-    <Compile Include="Providers\ColumnReference.cs" />
-    <Compile Include="SpecialDefaultValue.cs" />
-    <Compile Include="Providers\TeradataOdbcProvider.cs" />
-    <Compile Include="Providers\OracleProvider.cs" />
-    <Compile Include="Providers\OracleOdbcProvider.cs" />
-    <Compile Include="Providers\TeradataProvider.cs" />
-    <Compile Include="IProviderMetaData.cs" />
-    <Compile Include="Providers\ProviderExportAttribute.cs" />
-    <Compile Include="Providers\ProviderRegistry.cs" />
-    <Compile Include="Providers\IProviderRegistry.cs" />
-    <Compile Include="Process\MigrationBatch.cs" />
-    <Compile Include="Migrator.cs" />
-    <Compile Include="Providers\IProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\SqlServerProvider.cs" />
-    <Compile Include="Core\CommandsToSqlTranslator.cs" />
-    <Compile Include="Providers\CreatedColumn.cs" />
-    <Compile Include="Core\Commands\RenameCommand.cs" />
-    <Compile Include="Core\Entities\ExistingTable.cs" />
-    <Compile Include="Core\Entities\TableCollection.cs" />
-    <Compile Include="Process\MigrationStep.cs" />
-    <Compile Include="MigrationTimestampProviderExportAttribute.cs" />
-    <Compile Include="SuppressCondition.cs" />
+    <PackageReference Include="System.Composition" Version="1.1.0" />
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="_CopyFilesMarkedCopyLocal" />
+
 </Project>

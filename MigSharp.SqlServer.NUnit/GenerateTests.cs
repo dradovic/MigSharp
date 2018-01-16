@@ -1,6 +1,8 @@
-﻿using System.CodeDom.Compiler;
+﻿#if NET462
+
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+using System.Composition;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -16,8 +18,7 @@ using NUnit.Framework;
 
 namespace MigSharp.SqlServer.NUnit
 {
-    [TestFixture, Category("SqlServer2012")]
-    public class SqlServer2012IntegrationTests : SqlServerIntegrationTests
+    public partial class SqlServerIntegrationTests
     {
         private const string TestDbName2 = TestDbName + "_2";
 
@@ -36,8 +37,6 @@ namespace MigSharp.SqlServer.NUnit
                 return builder.ConnectionString;
             }
         }
-
-        protected override DbPlatform DbPlatform { get { return DbPlatform.SqlServer2012; } }
 
         [Test]
         public void TestGenerate() // CLEAN: add a test that tests FirstMigration mode (just drop MigSharp table)
@@ -96,17 +95,22 @@ namespace MigSharp.SqlServer.NUnit
 
         private static Assembly Compile(string migration)
         {
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(migration);
-            string assemblyName = Path.GetRandomFileName();
-            MetadataReference[] references = new[]
+            string dotnetDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
+            Assert.IsNotNull(dotnetDir, "Cannot find base directory of the .NET runtime.");
+            MetadataReference[] references =
             {
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location), // System
                 MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location), // System.Linq
                 MetadataReference.CreateFromFile(typeof(GeneratedCodeAttribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(DbType).Assembly.Location), // System.Data
-                MetadataReference.CreateFromFile(typeof(ExportAttribute).Assembly.Location), // System.ComponentModel.Composition
+                MetadataReference.CreateFromFile(typeof(ExportAttribute).Assembly.Location), // System.Composition
                 MetadataReference.CreateFromFile(typeof(IDatabase).Assembly.Location), // MigSharp
+                MetadataReference.CreateFromFile(Path.Combine(dotnetDir, "System.Runtime.dll")),
+                MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location) // see: https://stackoverflow.com/questions/46421686/how-to-write-a-roslyn-analyzer-that-references-a-dotnet-standard-2-0-project
             };
+
+            string assemblyName = Path.GetRandomFileName();
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(migration);
             CSharpCompilation compilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
             using (var ms = new MemoryStream())
             {
@@ -139,3 +143,5 @@ namespace MigSharp.SqlServer.NUnit
         }
     }
 }
+
+#endif

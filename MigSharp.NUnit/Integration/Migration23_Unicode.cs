@@ -71,7 +71,6 @@ namespace MigSharp.NUnit.Integration
                 return new[]
                     {
                         Platform.Oracle, // although Oracle ODBC would support this test
-                        Platform.Teradata, 
                     };
             }
         }

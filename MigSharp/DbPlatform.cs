@@ -31,31 +31,18 @@ namespace MigSharp
         public static readonly DbPlatform SQLite3 = new DbPlatform(Platform.SQLite, 3);
 
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
-        public static readonly DbPlatform SqlServer2005 = new DbPlatform(Platform.SqlServer, 9);
-
-        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
-        public static readonly DbPlatform SqlServer2008 = new DbPlatform(Platform.SqlServer, 10);
-
-        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
         public static readonly DbPlatform SqlServer2012 = new DbPlatform(Platform.SqlServer, 11);
 
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
         public static readonly DbPlatform SqlServer2014 = new DbPlatform(Platform.SqlServer, 12);
 
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
-        public static readonly DbPlatform Teradata12 = new DbPlatform(Platform.Teradata, 12);
-
-        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
-        public static readonly DbPlatform Teradata13 = new DbPlatform(Platform.Teradata, 13);
-
-        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "DbPlatform is immutable.")]
-        public static readonly DbPlatform Teradata14 = new DbPlatform(Platform.Teradata, 14);
+        public static readonly DbPlatform SqlServer2016 = new DbPlatform(Platform.SqlServer, 13);
 
 // ReSharper restore InconsistentNaming
 #pragma warning restore 1591
 
-
-        internal const int MaximumMajorVersion = 1000;
+        public const int MaximumMajorVersion = 1000;
 
         /// <summary>
         /// Gets the database platform.

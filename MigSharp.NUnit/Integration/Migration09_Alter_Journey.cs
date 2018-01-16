@@ -25,8 +25,7 @@ namespace MigSharp.NUnit.Integration
             db.Tables[TableNameInitial].Rename(Tables[0].Name);
 
             // add primary key constraint
-            if (db.Context.ProviderMetadata.Platform != Platform.Teradata && 
-                db.Context.ProviderMetadata.Platform != Platform.SQLite) // Teradata and SQLite do not support adding/dropping of PKs
+            if (db.Context.ProviderMetadata.Platform != Platform.SQLite) // SQLite does not support adding/dropping of PKs
             {
                 db.Tables[Tables[0].Name].AddPrimaryKey()
                                          .OnColumn(Tables[0].Columns[0]);

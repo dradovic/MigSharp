@@ -5,12 +5,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using FakeItEasy;
 using JetBrains.Annotations;
+using MigSharp;
 using MigSharp.Migrate;
 using MigSharp.Migrate.Util;
 using MigSharp.Process;
 using NUnit.Framework;
 
-namespace MigSharp.NUnit.Migrate
+namespace Migrate.NUnit
 {
     [TestFixture, Category("smoke")]
     public class CommandLineParsingTests
@@ -44,7 +45,7 @@ namespace MigSharp.NUnit.Migrate
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [UsedImplicitly]
-        private IEnumerable<TestCaseData> GetValidCommandLineCases()
+        private static IEnumerable<TestCaseData> GetValidCommandLineCases()
         {
             yield return new TestCaseData("Migrate.exe qa some.dll",
                                           QaConnectionString, new DbPlatform(CommandLineOptions.DefaultPlatform, 1000, Driver.AdoNet), "some.dll", new string[] { }, long.MaxValue, SourceLevels.Warning, (Action<MigrationOptions>)(o =>
@@ -157,7 +158,7 @@ namespace MigSharp.NUnit.Migrate
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [UsedImplicitly]
-        private IEnumerable<TestCaseData> GetInvalidCommandLineCases()
+        private static IEnumerable<TestCaseData> GetInvalidCommandLineCases()
         {
             yield return new TestCaseData("Migrate.exe", Program.InvalidArgumentsExitCode)
                 .SetDescription("No arguments");

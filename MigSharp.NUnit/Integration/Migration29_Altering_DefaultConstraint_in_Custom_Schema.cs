@@ -67,7 +67,6 @@ namespace MigSharp.NUnit.Integration
                 {
                         Platform.MySql,
                         Platform.Oracle,
-                        Platform.Teradata,
                         Platform.SQLite
                 };
             }
@@ -77,7 +76,7 @@ namespace MigSharp.NUnit.Integration
         {
             if (platform != Platform.SqlServer) throw new ArgumentOutOfRangeException("platform");
 
-            return DbPlatform.SqlServer2008;
+            return DbPlatform.SqlServer2012;
         }
     }
 }

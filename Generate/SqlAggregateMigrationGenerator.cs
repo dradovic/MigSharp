@@ -21,7 +21,7 @@ namespace MigSharp.Generate
             : base(server, database, options)
         {
             var providerLocator = new ProviderLocator(new ProviderRegistry()); // CLEAN: use DI container
-            ProviderInfo provider = providerLocator.GetExactly(DbPlatform.SqlServer2008);
+            ProviderInfo provider = providerLocator.GetExactly(DbPlatform.SqlServer2012);
             var versioningTableName = new TableName(options.VersioningTableName, options.VersioningTableSchema);
             _history = new History(versioningTableName, provider.Metadata);
             IDbConnection connection = server.ConnectionContext.SqlConnectionObject;

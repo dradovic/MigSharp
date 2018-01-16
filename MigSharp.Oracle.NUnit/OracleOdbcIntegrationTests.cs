@@ -72,10 +72,14 @@ namespace MigSharp.Oracle.NUnit
             CreateDatabase(TestDbName);
         }
 
-        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, out DbCommandBuilder builder)
+        protected override DbDataAdapter GetDataAdapter(string tableName, string schemaName, bool forUpdating)
         {
             var adapter = new OdbcDataAdapter(string.Format(CultureInfo.InvariantCulture, "SELECT * FROM \"{0}\"", tableName), OdbcConnectionString);
-            builder = new OdbcCommandBuilder(adapter);
+            if (forUpdating)
+            {
+                var builder = new OdbcCommandBuilder(adapter);
+                adapter.InsertCommand = builder.GetInsertCommand();
+            }
             return adapter;
         }
 
@@ -95,14 +99,7 @@ namespace MigSharp.Oracle.NUnit
             DropDatabase(TestDbName);
         }
 
-        [Test]
-        public override void TestMigration1UsingConsoleApp()
-        {
-            // we don't execute this test yet since the Migrate.exe
-            // would require a config file that includes the definition of
-            // the .Net Framework Data Provider
-        }
-
+#if !NETCOREAPP2_0
         [Test]
         public override void TestMigrationWithinTransactionScopeComplete()
         {
@@ -118,11 +115,12 @@ namespace MigSharp.Oracle.NUnit
             // TransactionScope is not fully supported
             // by this provider
         }
+#endif
 
         private static void CreateDatabase(string databaseName)
         {
-            var query1 = @"CREATE USER " + databaseName + " IDENTIFIED BY " + Password + " DEFAULT TABLESPACE " + TableSpace + " QUOTA UNLIMITED ON " + TableSpace;
-            var query = @"GRANT CONNECT, RESOURCE TO " + databaseName;
+            var query1 = "CREATE USER " + databaseName + " IDENTIFIED BY " + Password + " DEFAULT TABLESPACE " + TableSpace + " QUOTA UNLIMITED ON " + TableSpace;
+            var query = "GRANT CONNECT, RESOURCE TO " + databaseName;
 
             using (OdbcConnection con = new OdbcConnection(MasterConnectionString))
             {

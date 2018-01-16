@@ -58,7 +58,6 @@ namespace MigSharp.NUnit.Integration
                 return new[]
                     {
                         Platform.SQLite,
-                        Platform.Teradata,
                     };
             }
         }

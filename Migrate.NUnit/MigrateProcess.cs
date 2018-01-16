@@ -4,18 +4,19 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-
+using MigSharp;
 using MigSharp.Migrate;
-
 using NUnit.Framework;
 
-namespace MigSharp.NUnit.Migrate
+namespace Migrate.NUnit
 {
     internal static class MigrateProcess
     {
-        public static int Execute(string connectionString, DbPlatform dbPlatform, Assembly assembly, long timestamp)
+        private const string TestTarget = "test-target";
+
+        public static int SetupAndExecute(string connectionString, DbPlatform dbPlatform, Assembly assembly, long timestamp)
         {
-            string pathToExe = GetPathToAssembly(typeof(Program).Assembly);
+            string pathToExe = GetPathToExe();
             Configuration migrateExeConfig = ConfigurationManager.OpenExeConfiguration(pathToExe);
 
             // make a backup of the config file
@@ -23,16 +24,14 @@ namespace MigSharp.NUnit.Migrate
             File.Copy(migrateExeConfig.FilePath, backupPath, true);
 
             // add connection string to config file
-            const string testTarget = "test-target";
-            migrateExeConfig.ConnectionStrings.ConnectionStrings.Add(new ConnectionStringSettings(testTarget, connectionString));
+            migrateExeConfig.ConnectionStrings.ConnectionStrings.Add(new ConnectionStringSettings(TestTarget, connectionString));
 
             try
             {
                 migrateExeConfig.Save();
 
-                // call Migrate.exe
                 return Execute(string.Format(CultureInfo.InvariantCulture, "{0} {1} -platform {2} -version {3} -driver {4} -to {5} -traceLevel Verbose",
-                    testTarget,
+                    TestTarget,
                     GetPathToAssembly(assembly),
                     dbPlatform.Platform,
                     dbPlatform.MajorVersion,
@@ -48,7 +47,11 @@ namespace MigSharp.NUnit.Migrate
 
         public static int Execute(string arguments)
         {
-            string pathToExe = GetPathToAssembly(typeof(Program).Assembly);
+            return Execute(GetPathToExe(), arguments);
+        }
+
+        private static int Execute(string pathToExe, string arguments)
+        {
             var startInfo = new ProcessStartInfo(pathToExe, arguments)
             {
                 UseShellExecute = false,
@@ -56,14 +59,20 @@ namespace MigSharp.NUnit.Migrate
                 RedirectStandardOutput = true,
                 CreateNoWindow = true,
             };
-            System.Diagnostics.Process process = System.Diagnostics.Process.Start(startInfo);
-            process.ErrorDataReceived += (sender, args) => Console.Error.WriteLine("Migrate.exe [ERR]: " + args.Data);
-            process.OutputDataReceived += (sender, args) => Console.WriteLine("Migrate.exe [OUT]: " + args.Data);
+            Console.WriteLine($"Starting: {pathToExe} {arguments}");
+            Process process = Process.Start(startInfo);
+            Assert.IsNotNull(process, $"Could not start '{pathToExe}'.");
+            process.ErrorDataReceived += (sender, args) => Console.WriteLine($"{process.ProcessName} [ERR]: " + args.Data);
+            process.OutputDataReceived += (sender, args) => Console.WriteLine($"{process.ProcessName} [OUT]: " + args.Data);
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
-            Assert.IsNotNull(process, "Could not start Migrate.exe.");
             process.WaitForExit();
             return process.ExitCode;
+        }
+
+        private static string GetPathToExe()
+        {
+            return GetPathToAssembly(typeof(Program).Assembly);
         }
 
         private static string GetPathToAssembly(Assembly assembly)
