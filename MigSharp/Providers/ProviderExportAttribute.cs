@@ -1,7 +1,7 @@
 using System;
 using System.Composition;
 using System.Data;
-using System.Data.Common;
+using MigSharp.Process;
 
 namespace MigSharp.Providers
 {

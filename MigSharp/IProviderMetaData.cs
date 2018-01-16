@@ -1,6 +1,6 @@
 using System;
 using System.Data;
-using System.Data.Common;
+using MigSharp.Process;
 using MigSharp.Providers;
 
 namespace MigSharp
@@ -60,7 +60,7 @@ namespace MigSharp
     {
         public static string GetParameterSpecifier(this IProviderMetadata metadata, IDataParameter parameter)
         {
-            if (parameter == null) throw new ArgumentNullException("parameter");
+            if (parameter == null) throw new ArgumentNullException(nameof(parameter));
             if (!parameter.ParameterName.StartsWith("@", StringComparison.Ordinal)) throw new ArgumentException("Parameter names must start with an '@'.");
 
             string name = parameter.ParameterName.Substring(1); // the name itself starts after the @

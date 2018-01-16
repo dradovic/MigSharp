@@ -12,6 +12,9 @@ namespace MigSharp
     {
         internal IRuntimeConfiguration Configuration { get; }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DbAlterer"/>.
+        /// </summary>
         protected DbAlterer(string connectionString, DbPlatform dbPlatform, DbAltererOptions options)
         {
             if (connectionString == null) throw new ArgumentNullException("connectionString");

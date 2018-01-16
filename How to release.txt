@@ -4,10 +4,9 @@ Pre-conditions:
 - No FIXME or NotImplementedException left in source code
 - All versions are up-to-date:
   - MigSharp\MigSharp.csproj
-	- see "Assembly version" under Properties > Package
+	- see "Assembly version" and "Assembly file version" under Properties > Package
   - Migrate\AssemblyInfo.cs
   - Generate\AssemblyInfo.cs
-  - nuget\MigSharp.nuspec
 - Release Notes are up-to-date
 - All changes synched and pushed to GitHub
 - Wiki on GitHub reflects new features and changes
@@ -18,23 +17,17 @@ Releasing:
 - On GitHub: tag the sources with AssemblyVersion
   git tag -a v1.0.0 -m "v1.0.0"
   git push origin v1.0.0
-- Grab the MigSharp.1.0.0.nupkg from TC artifacts and go to https://www.nuget.org/packages/upload
+- Grab the MigSharp.1.0.0.nupkg from TC artifacts and go to https://www.nuget.org/packages/manage/upload
 - Verify upload was okay. The content should be:
     lib/
-	  net45/
+	  netstandard2.0/
 	    MigSharp.dll
 		MigSharp.xml
-	tools/
-	  net45/
-		Migrate.exe
-		Migrate.exe.config
-		Generate.exe
-		Generate.exe.config
 
 Post-actions:
 -------------
 - Increment AssemblyVersion (see above)
-- TC: edit NuGet Package step: Version = 3.*.*-alpha1
+- TC: adjust /p:PackageVersion=1.0.1-beta1 paremter of "dotnet pack" step
 - Announce
 - Close all issues related to the released milestone and close milestone
 

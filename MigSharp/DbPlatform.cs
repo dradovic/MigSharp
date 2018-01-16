@@ -42,7 +42,7 @@ namespace MigSharp
 // ReSharper restore InconsistentNaming
 #pragma warning restore 1591
 
-        public const int MaximumMajorVersion = 1000;
+        internal const int MaximumMajorVersion = 1000;
 
         /// <summary>
         /// Gets the database platform.
